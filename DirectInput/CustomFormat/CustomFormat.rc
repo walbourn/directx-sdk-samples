@@ -1,0 +1,124 @@
+//Microsoft Developer Studio generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include <windows.h>
+#define IDC_STATIC -1
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_MOUSE_IMM DIALOG DISCARDABLE  0, 0, 200, 174
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "CustomFormat Sample"
+FONT 8, "MS Shell Dlg"
+BEGIN
+    PUSHBUTTON      "E&xit",IDCANCEL,143,153,50,14
+    GROUPBOX        "Mouse State",IDC_STATIC,52,73,95,62
+    LTEXT           "X Axis:",IDC_X_AXIS_TEXT,72,89,22,8
+    LTEXT           "Y Axis:",IDC_Y_AXIS_TEXT,72,100,22,8
+    LTEXT           "Buttons:",IDC_BUTTONS_TEXT,68,116,27,8
+    LTEXT           "0",IDC_X_AXIS,98,89,46,8
+    LTEXT           "0",IDC_Y_AXIS,98,100,45,8
+    LTEXT           "",IDC_BUTTONS,98,116,46,8
+    LTEXT           "This sample demonstrates the use of a custom data format",
+                    IDC_STATIC,7,7,184,8
+    LTEXT           "to retrieve input from a non-standard device.",
+                    IDC_STATIC,7,15,140,8
+    LTEXT           "system mouse; however, DirectInput provides general data",
+                    IDC_STATIC,7,37,185,8
+    LTEXT           "formats for mice, keyboards, and joysticks. ",
+                    IDC_STATIC,7,45,136,8
+    GROUPBOX        "",IDC_STATIC,7,62,186,85
+    LTEXT           "For compatibility, this sample defines a new format for the",
+                    IDC_STATIC,7,29,179,8
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO DISCARDABLE 
+BEGIN
+    IDD_MOUSE_IMM, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 193
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 167
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDI_MAIN                ICON    DISCARDABLE     "directx.ico"
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+
