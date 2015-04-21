@@ -1,0 +1,280 @@
+<?xml version="1.0"?>
+<Ratings>
+ <!-- Computer Entertainment Rating Organization (Japan) http://go.microsoft.com/fwlink/?LinkId=62077 -->
+ <RatingSystem ID="{30D34ABD-C6B3-4802-924E-F0C9FC65022B}" Text="CERO">
+  <Rating ID="{17A01A46-0FF6-4693-9F18-D162C2A5C703}" Text="E - Everyone"/>
+  <Rating ID="{CA12E389-7F8F-4C3E-AC0D-E2762653A9DB}" Text="12 - 12+"/>
+  <Rating ID="{AEB8A50F-BC53-4005-8701-D9EF48A80A63}" Text="15 - 15+"/>
+  <Rating ID="{6B9EB3C0-B49A-4708-A6E6-F5476CE7567B}" Text="18 - 18+"/>  
+  <Rating ID="{24D81953-37B6-4E5E-B7DF-2B7D7AA6E53B}" Text="A - All Ages"/>
+  <Rating ID="{4F40F8FD-D79B-45A9-ABCD-6E556EA2EC6B}" Text="B - 12+"/>
+  <Rating ID="{2199BFC8-1145-4DBD-9A26-8373B6D2E6F1}" Text="C - 15+"/>
+  <Rating ID="{44261720-C043-4837-BE91-D488B590AEAF}" Text="D - 17+"/>
+  <Rating ID="{5AD0F4EC-C8D6-45D8-A9DE-094108A693BD}" Text="Z - 18+"/>   
+  <Descriptor ID="{42D82147-655C-488C-BB2D-C952602556EA}" Text="Alcohol and/or Tobacco"/>
+  <Descriptor ID="{D7BA9C09-9FCB-40C1-9D16-E0102F82EA97}" Text="Crime"/> 
+  <Descriptor ID="{4E4A7BFB-28AC-48BA-BC1C-08BEC7F738B5}" Text="Drugs"/> 
+  <Descriptor ID="{55A31F69-DDD5-4A91-AAAE-39D004060D15}" Text="Explicit Language"/> 
+  <Descriptor ID="{CF89F669-7BB2-40DC-AE5D-D570BFEC1459}" Text="Gambling"/> 
+  <Descriptor ID="{3D1CE387-2027-4635-BA20-3806AD2A91AA}" Text="Horror"/> 
+  <Descriptor ID="{C0A9A22E-6B9F-49D6-8969-243D66EB9031}" Text="Romantic/Adult Situations"/> 
+  <Descriptor ID="{E94D3DF8-1350-4FA8-998C-8994956FEF88}" Text="Sex"/> 
+  <Descriptor ID="{60E0BC41-13BF-42ED-B9B4-CA625E1F69C0}" Text="Violence"/> 
+ </RatingSystem>
+ <!-- Classification Operations Board (Australia) http://go.microsoft.com/fwlink/?LinkId=241628 -->
+ <RatingSystem ID="{1943DF5C-C7D6-44CA-90F1-41181F5CCA0A}" Text="COB-AU">
+  <Rating ID="{C8FAE19C-6032-4D7F-8B34-F36B89D07217" Text="G - General"/>
+  <Rating ID="{D56B59B2-673E-4039-9155-93BA25030FE5}" Text="PG - Parental guidance"/>
+  <Rating ID="{672EC5EA-4452-4CFC-8000-AE5FEA579665}" Text="M - Mature"/>
+  <Rating ID="{56CEA203-3088-45F0-94A8-1A8D97CE1A7E}" Text="MA15+ - Mature/Adult"/>
+  <Rating ID="{B40DD3CB-2A8E-4803-BDB9-F4DB9BB54735}" Text="R18+ - Restricted to persons 18 and older"/>
+ </RatingSystem>
+ <!-- Department of Justice (Brazil) http://go.microsoft.com/fwlink/?LinkId=241631 -->
+ <RatingSystem ID="{48FADB07-3DF2-4B2C-9D01-EEE9FC102290}" Text="DJCTQ">
+  <Rating ID="{FF84D920-1385-4069-B1CB-12474E8234B6}" Text="L - All Ages"/>
+  <Rating ID="{F0E96EA3-D3B6-489B-8F9A-CC7E1F258396}" Text="10 - Over 10"/>
+  <Rating ID="{F36008A9-7807-4BC1-8A18-C6D03BC1F86D}" Text="12 - Over 12"/>
+  <Rating ID="{8E766D63-8AC5-43D9-8823-8E3B0274E03D}" Text="14 - Over 14"/>
+  <Rating ID="{FC92DD78-5A86-4C4F-8FD5-7B4247485E1E}" Text="16 - Over 16"/>
+  <Rating ID="{36A7E8F4-F659-4B10-9256-A97F2EDCE2F2}" Text="18 - Over 18"/>
+ </RatingSystem>
+ <!-- Entertainment Software Rating Board (United States) http://go.microsoft.com/fwlink/?linkid=58927 -->
+ <RatingSystem ID="{768BD93D-63BE-46A9-8994-0B53C4B5248F}" Text="ESRB">
+  <Rating ID="{C9603587-8F97-48B0-B049-31F21AFD6795}" Text="Ec - EARLY CHILDHOOD"/>
+  <Rating ID="{7A53B0BE-B92D-4E8A-A11F-8E6F9F3C575B}" Text="E - EVERYONE"/>
+  <Rating ID="{9DD9B30C-E89F-4D1C-AEC4-174D7432C39B}" Text="E10+ - EVERYONE 10+"/>
+  <Rating ID="{18CD34B7-7AA3-42B9-A303-5A729B2FF228}" Text="T - TEEN"/>
+  <Rating ID="{78D8CC82-372F-44E4-B70C-8944DB7BCC24}" Text="M - MATURE"/>
+  <Rating ID="{11F45C2B-6B8A-4524-B294-88E7FDAAF616}" Text="Ao - ADULTS ONLY"/>
+  <Descriptor ID="{9A82F712-5A9D-4409-9539-666BBCDFE12D}" Text="Alcohol Reference"/>
+  <Descriptor ID="{C4BC3674-E649-470E-8C2B-5EFF5907213E}" Text="Animated Blood"/>
+  <Descriptor ID="{0CFCF432-3544-4F78-9426-07A36843E6BA}" Text="Blood"/>
+  <Descriptor ID="{ABE23B46-7F9F-495B-B4A9-87F41743727F}" Text="Blood and Gore"/>
+  <Descriptor ID="{D65663FB-D977-4641-A742-5B47E6D8B81C}" Text="Cartoon Violence"/>
+  <Descriptor ID="{9F3B6BCD-A23B-4645-B3D1-FF8CB32A096F}" Text="Comic Mischief"/>
+  <Descriptor ID="{854E435E-3100-4B46-B7E1-19EDEE9FEC59}" Text="Crude Humor"/>
+  <Descriptor ID="{7D8397ED-DED4-46F1-BF9E-C41B8D4E4E3E}" Text="Drug Reference"/>
+  <Descriptor ID="{E3C3499A-5BBB-402A-A2F8-FF2B35D597C1}" Text="Edutainment"/>
+  <Descriptor ID="{9BE7B916-F237-4328-8157-24282DA66151}" Text="Fantasy Violence"/>
+  <Descriptor ID="{5990705B-1E85-4435-AE11-129B9319FF09}" Text="Gambling"/>
+  <Descriptor ID="{8730ABFA-476C-48D7-976C-149E36EFA57E}" Text="Informational"/>
+  <Descriptor ID="{4BDB9E0D-53CF-4A28-865F-B315818E7627}" Text="Intense Violence"/>
+  <Descriptor ID="{22F2530E-A42D-4351-A7F1-0242CFEFF822}" Text="Language"/>
+  <Descriptor ID="{1D883E73-29D1-462F-82EC-D7A0665B8CCF}" Text="Lyrics"/>
+  <Descriptor ID="{07B4529D-66F1-47E3-BA5E-153BA5785CA2}" Text="Mature Humor"/>
+  <Descriptor ID="{E9476FB8-0B11-4209-9A7D-CBA553C1555D}" Text="Mature Sexual Themes"/>
+  <Descriptor ID="{1A796A5D-1E25-4862-9443-1550578FF4C4}" Text="Mild Language"/>
+  <Descriptor ID="{40B262D1-11AA-43C2-B7BA-63A9F5756A06}" Text="Mild Lyrics"/>
+  <Descriptor ID="{F8635B3A-C121-480A-9090-31DAA90490D0}" Text="Mild Violence"/>
+  <Descriptor ID="{DD3146A6-20D6-4F57-A170-E621500614AD}" Text="Nudity"/>
+  <Descriptor ID="{7231EA3A-1ACC-4BCD-9C3A-A60EA6888B6D}" Text="Partial Nudity"/>
+  <Descriptor ID="{E04AAEE8-950C-43C4-B75C-D87736A7FAFD}" Text="Online Rating Notice"/>
+  <Descriptor ID="{28B44B60-7309-491F-AE89-EBF1B6752FFA}" Text="Real Gambling"/>
+  <Descriptor ID="{67987CC4-6B79-4C6B-B3F0-3B6D8677BBEC}" Text="Sexual Themes"/>
+  <Descriptor ID="{2F34037C-7838-4820-975B-2E9D6ED18E6B}" Text="Sexual Violence"/>
+  <Descriptor ID="{039CEFE8-73E5-4DC3-BC5F-F6B19EA4A5FE}" Text="Simulated Gambling"/>
+  <Descriptor ID="{F1752124-8124-4751-B2D0-F25EC83DB071}" Text="Some Adult Assistance May Be Needed"/>
+  <Descriptor ID="{D49A8F0C-B183-4A34-8D86-33F2DC0E2D6C}" Text="Strong Language"/>
+  <Descriptor ID="{E6215F31-2724-4F77-B455-75FB93F59290}" Text="Strong Lyrics"/>
+  <Descriptor ID="{B0DEC59B-3AC4-475E-90F7-242C2A60CA71}" Text="Strong Sexual Content"/>
+  <Descriptor ID="{B54162A2-F67F-46DC-9ED5-F6067520EC94}" Text="Suggestive Themes"/>
+  <Descriptor ID="{41D184C2-90FA-42F5-98B2-9FA4535B8F73}" Text="Tobacco Reference"/>
+  <Descriptor ID="{E8930D9B-3E94-407C-B890-FDB5025DBCA3}" Text="Use of Drugs"/>
+  <Descriptor ID="{7E0BC004-F80B-402D-A1FC-5FCDFF04DAB1}" Text="Use of Alcohol"/>
+  <Descriptor ID="{06B2A5C3-33D1-427B-9261-6703DC794E4F}" Text="Use of Tobacco"/>
+  <Descriptor ID="{BE562A5F-2A80-4C28-9752-74C696E2ABAF}" Text="Violence"/>   
+  <Descriptor ID="{5D69B8E0-5CC6-4036-91FD-9BDC999BA634}" Text="Alcohol and Tobacco Reference"/>
+  <Descriptor ID="{67E0DE2F-AF0A-4C9D-BD79-8E72882DA79B}" Text="Drug and Alcohol Reference"/>
+  <Descriptor ID="{6264D74C-241B-463D-9AE3-B0823F089633}" Text="Drug and Tobacco Reference"/>
+  <Descriptor ID="{EECF1793-F5A2-4CAC-8A10-727E17BAD988}" Text="Mild Alcohol and Tobacco Reference"/>
+  <Descriptor ID="{35BA0703-1F11-4099-8248-F39B56EC89F5}" Text="Mild Alcohol Reference"/>
+  <Descriptor ID="{2EB1167F-D83E-48FA-A063-F5D25BE9D1E0}" Text="Mild Animated Blood"/>
+  <Descriptor ID="{6AB026D3-FAD5-4A18-A53B-2CAFA358AE8F}" Text="Mild Blood"/>
+  <Descriptor ID="{63F53B27-00DC-47A8-8211-8C6BB68FBFED}" Text="Mild Blood and Gore"/>
+  <Descriptor ID="{8C532F4F-AE69-4684-95D6-A89E25DD8692}" Text="Mild Cartoon Violence"/>
+  <Descriptor ID="{7DBCD444-5526-4370-82DB-9166FE173447}" Text="Mild Comic Mischief"/>
+  <Descriptor ID="{20265258-897E-4F61-A424-E17F19F06FC3}" Text="Mild Crude Humor"/>
+  <Descriptor ID="{901E1559-E729-45A7-A3E7-532F983FDEB4}" Text="Mild Drug and Alcohol Reference"/>
+  <Descriptor ID="{0600A863-0E69-4A86-A161-6EA11F5D0C2F}" Text="Mild Drug and Tobacco Reference"/>
+  <Descriptor ID="{C60EF3F9-13C7-4FBA-ACBA-381B15707A71}" Text="Mild Drug Reference"/>
+  <Descriptor ID="{21830D66-40E6-4484-A3B6-F74029428C3A}" Text="Mild Fantasy Violence"/>
+  <Descriptor ID="{2E453AA7-FB69-4250-A068-F111B57DD8C8}" Text="Mild Intense Violence"/>
+  <Descriptor ID="{838B294F-EDEC-4C2B-BCED-EC348F80A29A}" Text="Mild Mature Humor"/>
+  <Descriptor ID="{B2688181-FFE3-4827-A850-73A67FC05285}" Text="Mild Nudity"/>
+  <Descriptor ID="{0EB2B6C8-4BE5-48DF-9DB9-A314F40E9F2D}" Text="Mild Partial Nudity"/>
+  <Descriptor ID="{10404D7B-46B7-44B0-87F2-D6CB48651027}" Text="Mild Real Gambling"/>
+  <Descriptor ID="{87B433A2-DC81-42A9-9A68-EE01F8DC5827}" Text="Mild Sexual Content"/>
+  <Descriptor ID="{D11A71C3-F451-4C20-8427-7D45D17BC651}" Text="Mild Sexual Themes"/>
+  <Descriptor ID="{9B780834-1513-4B8C-83A9-341BBD8F8C7F}" Text="Mild Sexual Violence"/>
+  <Descriptor ID="{A7470A80-2753-4F71-B916-0C783E746639}" Text="Mild Simulated Gambling"/>
+  <Descriptor ID="{708114E1-E1EE-4A07-A73E-5EEE3DBD6E32}" Text="Mild Strong Language"/>
+  <Descriptor ID="{F54E3025-9AD6-4809-AB47-9BC9C4D624F8}" Text="Mild Strong Lyrics"/>
+  <Descriptor ID="{A1471BCA-915B-4AB7-B574-A676F6E97586}" Text="Mild Strong Sexual Content"/>
+  <Descriptor ID="{56C2626D-3794-473C-B57F-40D31D012C4C}" Text="Mild Suggestive Themes"/>
+  <Descriptor ID="{56A133B1-0512-4124-AF95-8656B499B0A7}" Text="Mild Tobacco Reference"/>
+  <Descriptor ID="{ADEA2CF9-B415-4A62-9DDD-97F29D34103A}" Text="Mild Use of Alcohol"/>
+  <Descriptor ID="{FB31AB08-A551-455F-AD24-B32F54E76656}" Text="Mild Use of Alcohol and Tobacco"/>
+  <Descriptor ID="{0A57866B-BC99-4B15-8853-991BB95E5B18}" Text="Mild Use of Drugs"/>
+  <Descriptor ID="{851B1DBB-4953-4DDF-B6BD-90B65CCD94E3}" Text="Mild Use of Drugs and Alcohol"/>
+  <Descriptor ID="{6D92BD81-28ED-4DD9-8428-72811DBD89D2}" Text="Mild Use of Drugs and Tobacco"/>
+  <Descriptor ID="{24E4B1B8-39AF-4995-85F1-08A80D618F8A}" Text="Mild Use of Tobacco"/>
+  <Descriptor ID="{B380A089-91B9-429A-A74C-EFDC38EDB352}" Text="Mild Violent References "/>
+  <Descriptor ID="{27202CE3-EB93-49BC-A570-23AEBCC2A742}" Text="Sexual Content"/>
+  <Descriptor ID="{E3C19090-88A0-4F49-870E-F104978B21AA}" Text="Use of Alcohol and Tobacco"/>
+  <Descriptor ID="{762EFF14-8713-4649-884E-2E295E2651B3}" Text="Use of Drugs and Alcohol"/>
+  <Descriptor ID="{481C8B5A-B2E0-4242-85D9-8294AC3061AE}" Text="Use of Drugs and Tobacco"/>
+  <Descriptor ID="{D1152AE8-386A-487E-83E5-D56E7F59ED12}" Text="Violent References"/>
+ </RatingSystem>
+ <!-- Film and Publication Board (South Africa) http://go.microsoft.com/fwlink/?LinkId=241627 -->
+ <RatingSystem ID="{E4143A43-A09E-44DB-9CB9-D1C96F7203F2}" Text="FPB">
+  <Rating ID="{311472AD-5899-404C-B871-28A6B789277D}" Text="A - All Ages"/>
+  <Rating ID="{928E6439-F692-406A-AF38-E9E31B81CF46}" Text="PG - Intended for Children"/>
+  <Rating ID="{20B94B7F-A4E5-4E36-BD78-440BCBC92458}" Text="13 - Restricted to children 13 or older"/>
+  <Rating ID="{96847CD2-AF36-4A98-AC22-46C6CC701466}" Text="16 - Restricted to children 16 or older"/>
+  <Rating ID="{16189ADC-A8DE-4B2D-BDAF-3052B3035287}" Text="18 - Restricted to persons 18 and older"/>
+  <Descriptor ID="{95E1E9FD-2F30-41C8-807C-36431E2EC9C8}" Text="L - Strong language"/>
+  <Descriptor ID="{75EF8109-D4B8-47F9-B05C-631718F398F3}" Text="N - Nudity"/>
+  <Descriptor ID="{7E160FFB-8EEA-4534-99FB-D3F82B239799}" Text="P - Prejudice to race, ethicity, gender, or religion"/>
+  <Descriptor ID="{8BFA212B-45D1-4A44-B345-1C7D13BF3475}" Text="S - Sexual conduct"/>
+  <Descriptor ID="{63060DB2-BC16-4946-802C-D6A4FEEF24BA}" Text="V - Violence"/>
+ </RatingSystem>
+ <!-- Office of Film and Literature Classification (Australia) http://go.microsoft.com/fwlink/?LinkId=62079 RETIRED -->
+ <RatingSystem ID="{EC290BBB-D618-4CB9-9963-1CAAE515443E}" Text="OFLC">
+  <Rating ID="{5098B1DF-486F-4E79-A6D6-6E0879A63811}" Text="G - General"/>
+  <Rating ID="{068D40C4-7809-4C67-8FEA-DA457CF990B4}" Text="PG - Parental Guidance Recommended"/>
+  <Rating ID="{997B7D18-2AFA-49DC-847B-0E8A69723040}" Text="M - Mature"/>
+  <Rating ID="{75AEE0A2-8640-4A20-8DE5-EC93D8DAB219}" Text="MA - Restricted"/>
+ </RatingSystem>  
+ <!-- Office of Film and Literature Classification (New Zealand) http://go.microsoft.com/fwlink/?LinkId=241629 -->
+ <RatingSystem ID="{03CF34A3-D6AA-49CF-8C6C-547ECC507CCF}" Text="OFLC-NZ">
+  <Rating ID="{13DB8171-627A-4D59-A80F-A5A74A10B70A}" Text="G - General - Unrestricted"/>
+  <Rating ID="{6EF871DD-D124-4CB5-B068-D07EB5E16651}" Text="PG - Parental Guidance - Unrestricted"/>
+  <Rating ID="{DED6A172-DE94-4318-8A81-6D2650595E16}" Text="M - Mature - Unrestricted"/>
+  <Rating ID="{54AEBA1B-6AF7-4565-B18E-72A8A61F0DBC}" Text="R - Restricted"/>
+  <Rating ID="{CD81AC83-4373-48A0-BB4F-1EC25CAB6165}" Text="R13 - Restricted"/>
+  <Rating ID="{87CA70DD-751D-4564-9B1D-9E3B5CA83363}" Text="R15 - Restricted"/>
+  <Rating ID="{D15D23D5-3055-49D2-AD15-4EAFB31FD6E8}" Text="R16 - Restricted"/>
+  <Rating ID="{A6539850-86EE-4576-A90E-38CD7B614852}" Text="R18 - Restricted"/>
+ </RatingSystem>  
+ <!-- Pan European Game Information (Finland) http://go.microsoft.com/fwlink/?LinkId=62076 RETIRED -->
+  <RatingSystem ID="{7F2A4D3A-23A8-4123-90E7-D986BF1D9718}" Text="PEGI - Finland">
+  <Rating ID="{464299D0-6D57-47E8-AA53-A849CBEA12CB}" Text="3+"/>
+  <Rating ID="{97D9239C-2BA3-4E1D-A710-B626DC4602A6}" Text="7+"/>
+  <Rating ID="{BDD715B0-A57E-4976-873D-4FDE4AB93875}" Text="11+"/>
+  <Rating ID="{B95035CC-A8AA-47AB-B8DF-0977ECB521A2}" Text="15+"/>
+  <Rating ID="{E2681CD6-318A-4935-8275-AF657045C333}" Text="18+"/>
+  <Descriptor ID="{609B54E7-6AD5-4A66-AEA4-0FFE84364E26}" Text="Discrimination"/>
+  <Descriptor ID="{6CA2DE44-81E2-491E-917A-3816F7298953}" Text="Drugs"/>
+  <Descriptor ID="{F6C8131A-897B-4ECF-990E-07B976D1F805}" Text="Fear"/>
+  <Descriptor ID="{6AB00271-515B-4A4D-8A6E-9E66BF96A437}" Text="Bad Language"/>
+  <Descriptor ID="{9C8680ED-C0A6-4700-ACDF-B24C979511E0}" Text="Sex"/>
+  <Descriptor ID="{F110F831-9412-40C9-860A-B489407ED374}" Text="Violence"/>
+ </RatingSystem> 
+ <!-- Pan European Game Information (Portugal) http://go.microsoft.com/fwlink/?LinkId=62076 -->
+ <RatingSystem ID="{9AAFBACD-EAB9-4946-8BE8-C4D997927C81}" Text="PEGI - Portugal">
+  <Rating ID="{BB63F1DB-83FB-4790-ABE5-920E0AC864BD}" Text="4+"/>
+  <Rating ID="{F7066480-67CC-4697-9B47-7E534B74089D}" Text="6+"/>
+  <Rating ID="{CEC5DB5A-B4C9-4809-96C6-39CE715E4790}" Text="12+"/>
+  <Rating ID="{044D131F-D763-4975-9BB4-8C24CC331063}" Text="16+"/>
+  <Rating ID="{E2681CD6-318A-4935-8275-AF657045C333}" Text="18+"/>
+  <Descriptor ID="{609B54E7-6AD5-4A66-AEA4-0FFE84364E26}" Text="Discrimination"/>
+  <Descriptor ID="{6CA2DE44-81E2-491E-917A-3816F7298953}" Text="Drugs"/>
+  <Descriptor ID="{F6C8131A-897B-4ECF-990E-07B976D1F805}" Text="Fear"/>
+  <Descriptor ID="{6AB00271-515B-4A4D-8A6E-9E66BF96A437}" Text="Bad Language"/>
+  <Descriptor ID="{9C8680ED-C0A6-4700-ACDF-B24C979511E0}" Text="Sex"/>
+  <Descriptor ID="{F110F831-9412-40C9-860A-B489407ED374}" Text="Violence"/>
+  <Descriptor ID="{0D42E13E-4F3A-43D6-A894-5FDA150FF6DC}" Text="Gambling"/>
+  <Descriptor ID="{5C5A0825-64C6-4323-9BF1-9FD38D368990}" Text="Online"/>
+ </RatingSystem>  
+ <!-- Pan European Game Information http://go.microsoft.com/fwlink/?LinkId=62076 -->
+ <RatingSystem ID="{36798944-B235-48AC-BF21-E25671F597EE}" Text="PEGI">
+  <Rating ID="{464299D0-6D57-47E8-AA53-A849CBEA12CB}" Text="3+"/>
+  <Rating ID="{97D9239C-2BA3-4E1D-A710-B626DC4602A6}" Text="7+"/>
+  <Rating ID="{CEC5DB5A-B4C9-4809-96C6-39CE715E4790}" Text="12+"/>
+  <Rating ID="{044D131F-D763-4975-9BB4-8C24CC331063}" Text="16+"/>
+  <Rating ID="{E2681CD6-318A-4935-8275-AF657045C333}" Text="18+"/>
+  <Descriptor ID="{609B54E7-6AD5-4A66-AEA4-0FFE84364E26}" Text="Discrimination"/>
+  <Descriptor ID="{6CA2DE44-81E2-491E-917A-3816F7298953}" Text="Drugs"/>
+  <Descriptor ID="{F6C8131A-897B-4ECF-990E-07B976D1F805}" Text="Fear"/>
+  <Descriptor ID="{6AB00271-515B-4A4D-8A6E-9E66BF96A437}" Text="Bad Language"/>
+  <Descriptor ID="{9C8680ED-C0A6-4700-ACDF-B24C979511E0}" Text="Sex"/>
+  <Descriptor ID="{F110F831-9412-40C9-860A-B489407ED374}" Text="Violence"/>
+  <Descriptor ID="{AB4D298A-8CC5-4D5F-9208-A576B360829E}" Text="Gambling"/>
+  <Descriptor ID="{2EE62B22-15EE-4F18-8F72-1CB2730D2942}" Text="Online"/>
+ </RatingSystem>  
+ <!-- Pan European Game Information, and British Board of Film Classification http://go.microsoft.com/fwlink/?LinkId=62076 -->
+ <RatingSystem ID="{5B39D1B8-ED49-4055-8A47-04B29A579AD6}" Text="PEGI - bbfc">
+  <Rating ID="{FCC61B08-1352-4E5B-9D96-986EAB2FC503}" Text="3+"/>
+  <Rating ID="{ECB43547-33FC-43E2-8C87-6B20C3C2D58C}" Text="U - Universal (BBFC)"/>
+  <Rating ID="{9AE7AC26-0F9A-4F59-A167-00E4F6C96E26}" Text="7+"/>
+  <Rating ID="{E2BBDA11-43D8-47F9-B8FA-1BBDDCD4FA49}" Text="PG - Parental Guidance (BBFC)"/>
+  <Rating ID="{EEC292F8-B506-403E-81A5-E4E6A68E21B0}" Text="12+ - PEGI 12+/BBFC 12+"/>
+  <Rating ID="{60665875-9C7B-4104-8124-C2094BA9A48B}" Text="15+ - BBFC 15+"/>
+  <Rating ID="{79F6B936-0C8F-4D67-90A6-B7B2E0F37973}" Text="16+ - PEGI 16+"/>
+  <Rating ID="{11F7079A-563B-4A4C-9478-156F615A78DE}" Text="18+ - PEGI 18+/BBFC 18+"/>
+  <Rating ID="{C1EFDB71-BF02-440D-8663-F93ABD09437F}" Text="R18 - BBFC R18+"/>
+  <Descriptor ID="{609B54E7-6AD5-4A66-AEA4-0FFE84364E26}" Text="Discrimination"/>
+  <Descriptor ID="{6CA2DE44-81E2-491E-917A-3816F7298953}" Text="Drugs"/>
+  <Descriptor ID="{F6C8131A-897B-4ECF-990E-07B976D1F805}" Text="Fear"/>
+  <Descriptor ID="{6AB00271-515B-4A4D-8A6E-9E66BF96A437}" Text="Bad Language"/>
+  <Descriptor ID="{9C8680ED-C0A6-4700-ACDF-B24C979511E0}" Text="Sex"/>
+  <Descriptor ID="{F110F831-9412-40C9-860A-B489407ED374}" Text="Violence"/>
+  <Descriptor ID="{0B7D6CC5-EE33-42C4-9E84-268CBC97B2C8}" Text="Gambling"/>
+  <Descriptor ID="{6DEFCFD3-FABF-4B1B-B6C5-BD46B435F23A}" Text="Online"/>
+ </RatingSystem>  
+ <!-- Unterhaltungssoftware Selbstkontrolle (Germany) http://go.microsoft.com/fwlink/?LinkId=62078 -->
+ <RatingSystem ID="{C705DCF4-6AFE-4F4F-BC51-21807E4E5CFB}" Text="UNK">
+  <Rating ID="{9236ED52-B5FE-4227-8EB3-353C0BDABECF}" Text="Everyone"/>
+  <Rating ID="{6948F4DF-FD98-41EA-979A-8364043D7FD6}" Text="6 - 6+"/>
+  <Rating ID="{B3F8E60B-DF77-4104-88AC-F5919C64649A}" Text="12 - 12+"/>
+  <Rating ID="{72C4EED7-DC34-4308-BC61-4819752AC408}" Text="16 - 16+"/>
+  <Rating ID="{B72233AA-D3F0-4258-8E32-94C99F38160E}" Text="No Youth"/>
+ </RatingSystem>  
+ <!-- Game Ratings Board (South Korea) http://go.microsoft.com/fwlink/?linkid=85450 -->
+ <RatingSystem ID="{0933BE9E-EEA2-404C-8754-F766905FF34D}" Text="GRB">
+  <Rating ID="{DC21B59B-64D9-4972-A522-5FC32DF45DE1}" Text="A - All Ages"/>
+  <Rating ID="{00C78B30-623D-4A08-BFA6-9123527C4F63}" Text="12 - 12+"/> 
+  <Rating ID="{66E646F0-782C-4163-9227-D255F0897283}" Text="15 - 15+"/>
+  <Rating ID="{A62C9D74-F436-4864-8E3B-AF4724ED490E}" Text="18 - 18+"/> 
+  <Descriptor ID="{FB81885F-536B-4177-AD17-6F5720F1F8D2}" Text="Sex"/>
+  <Descriptor ID="{3B4ECB46-F85A-4CB9-95EE-FCD6BB01E85F}" Text="Violence"/>
+  <Descriptor ID="{5865975A-6BAE-4F1C-94F0-6E89B6D09156}" Text="Fear"/>
+  <Descriptor ID="{495B5357-8618-4024-A53B-CCE00FC4980E}" Text="Bad Language"/>
+  <Descriptor ID="{4E213C2F-6920-4D5F-9675-A44C38A57B91}" Text="Drugs"/>
+  <Descriptor ID="{F16338E7-0F27-4EA5-BBDB-FDA6C8A08B98}" Text="Crime"/>
+  <Descriptor ID="{D6B7E2D1-B9D7-46A7-AFAB-315CF6852347}" Text="Gambling"/>
+ </RatingSystem>  
+ <!-- Computer Software Rating Regulation (Taiwan) http://go.microsoft.com/fwlink/?LinkID=132708&&clcid=0x409 -->
+ <RatingSystem ID="{B305AB16-9FF2-40F5-A658-C014566500DE}" Text="CSRR">
+  <Rating ID="{56DAFE1F-E267-476D-8E69-CB56652CC3D8}" Text="General"/>
+  <Rating ID="{2145DD91-3AF5-495B-8F99-D48377BA1821}" Text="Protected"/>
+  <Rating ID="{DC079638-B397-4DD5-9E45-6483401DC9C5}" Text="Parental Guidance"/>
+  <Rating ID="{80A1240F-55EB-4F82-838A-921D4390B858}" Text="PG12"/>
+  <Rating ID="{E83D1B00-2CEE-42B7-834C-616DAF85FAA3}" Text="PG15"/>
+  <Rating ID="{504E304F-4671-457D-97F7-FE9036B7D770}" Text="Restricted"/>
+  <Descriptor ID="{77793AEF-52C4-446E-B909-E1B4A6C7B485}" Text="Sex"/>
+  <Descriptor ID="{25FD5AEC-8CAD-4137-8DA1-FC679E2C0C96}" Text="Violence"/>
+  <Descriptor ID="{B42955A9-601C-4528-9452-F1714411D361}" Text="Horror"/>
+  <Descriptor ID="{C117E5E3-AF05-4FB4-9FF6-DA9070CE3DE2}" Text="Drug"/>
+  <Descriptor ID="{2868AB4C-4374-4598-BDB1-B79E545570F4}" Text="Tobacco and Alchohol"/>
+  <Descriptor ID="{A5B283F3-1BB3-40B7-BDDF-670A1FBE0A31}" Text="Inappropriate Language"/>
+  <Descriptor ID="{19E7C75B-71CB-4DB1-9F89-8AD7D39FB913}" Text="Anti-social Characteristics"/>
+  <Descriptor ID="{1EB92E31-B69F-4561-8A35-E21877D39587}" Text="Simulated Gambling"/>
+  <Descriptor ID="{E6D3866D-6F05-4F4B-AB10-77B9D5D97099}" Text="Love Affairs and Friend-making"/>
+  <Descriptor ID="{58515714-6B87-4C9D-92F8-825CBC294163}" Text="Other inappropriate content to minors"/>
+ </RatingSystem>  
+ <!-- Russian Age Rating System (PCBP) http://go.microsoft.com/fwlink/?LinkId=282715 -->
+ <RatingSystem ID="{8129E0A1-43BA-43CB-B707-6D9B14B92D99}" Text="PCBP/RARS">
+  <Rating ID="{26A5097A-A563-4731-B1A8-674FB2179341}" Text="0+"/>
+  <Rating ID="{3E05ED94-E44D-429B-941D-8CF311DB8018}" Text="6+"/>
+  <Rating ID="{1167904D-38EF-42B3-90FE-753896CE3880}" Text="12+"/>
+  <Rating ID="{10EC1A81-C04D-4110-8BA9-00B36AF16874}" Text="16+"/>
+  <Rating ID="{10C4320C-112E-4209-901F-2472D95074EF}" Text="18+"/>
+  <Descriptor ID="{34F99DB7-6028-4747-AE2C-24E5FF02C0E4}" Text="Self harm"/>
+  <Descriptor ID="{FCBD0E34-F48D-4D68-A071-4A199BADB3E0}" Text="Antisocial behavior"/>
+  <Descriptor ID="{EB17F81E-0286-4234-B7EE-828619995FFF}" Text="Violence"/>
+  <Descriptor ID="{B7C9B2B7-C529-4D1A-B335-80C55E35907A}" Text="Disrespect"/>
+  <Descriptor ID="{9C972005-1165-4883-9052-BB405E50BC5D}" Text="Sexual content"/>
+  <Descriptor ID="{3D6CA4CF-BEEC-4515-A36C-E6FE592F7156}" Text="Agitation and fear"/>
+ </RatingSystem>  
+</Ratings>

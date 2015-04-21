@@ -1,0 +1,127 @@
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_UPDATEDLG DIALOGEX 0, 0, 303, 124
+STYLE DS_SETFONT | DS_MODALFRAME | DS_3DLOOK | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+EXSTYLE WS_EX_TOPMOST
+CAPTION "D3D11Install"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "Yes",IDYES,191,102,50,14
+    LTEXT           "Do you want to update your system now?",IDC_STATIC,54,68,242,19
+    ICON            "IDI_MAIN_ICON",IDC_STATIC,7,7,20,20
+    CONTROL         "Direct3D 11 is not installed, but is available for this version of Windows through Windows Update (<a href=""http://go.microsoft.com/fwlink/?LinkId=160189"">KB971644</a>).",IDC_SYSLINK1,
+                    "SysLink",WS_TABSTOP,54,30,242,27
+    PUSHBUTTON      "No",IDNO,246,102,50,14
+END
+
+IDD_SPDLG DIALOGEX 0, 0, 311, 168
+STYLE DS_SETFONT | DS_MODALFRAME | DS_3DLOOK | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+EXSTYLE WS_EX_TOPMOST
+CAPTION "D3D11Install"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,254,147,50,14
+    ICON            "IDI_MAIN_ICON",IDC_STATIC,7,8,20,20
+    CONTROL         "For instructions on installing the latest Service Pack see Microsoft Knowledge base article <a href=""http://support.microsoft.com/kb/935791/"">KB935791</a>.",IDC_SYSLINK1,
+                    "SysLink",WS_TABSTOP,59,62,245,23
+    LTEXT           "Direct3D11 is not installed, but is available for this version of Windows.",IDC_STATIC,59,13,245,19
+    CONTROL         "You may also need to install <a href=""http://go.microsoft.com/fwlink/?LinkId=160189"">KB971644</a> after applying the latest Service Pack to complete the installation of Direct3D 11.",IDC_SYSLINK2,
+                    "SysLink",WS_TABSTOP,59,98,236,29
+    GROUPBOX        "Note",IDC_STATIC,53,88,251,47
+    LTEXT           "Please install the latest Service Pack.",IDC_STATIC,59,37,245,16
+END
+
+IDD_NOTFOUNDDLG DIALOGEX 0, 0, 327, 149
+STYLE DS_SETFONT | DS_MODALFRAME | DS_3DLOOK | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+EXSTYLE WS_EX_TOPMOST
+CAPTION "D3D11Install"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,270,128,50,14
+    ICON            "IDI_MAIN_ICON",IDC_STATIC,7,7,20,20
+    CONTROL         "See Microsoft Knowledge base article <a href=""http://go.microsoft.com/fwlink/?LinkId=160189"">KB971644</a> for possible resolution steps.",IDC_SYSLINK1,
+                    "SysLink",WS_TABSTOP,48,74,272,30
+    LTEXT           "System update not found.",IDC_STATIC,48,29,272,33
+END
+
+IDD_DLFAILDLG DIALOGEX 0, 0, 327, 149
+STYLE DS_SETFONT | DS_MODALFRAME | DS_3DLOOK | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+EXSTYLE WS_EX_TOPMOST
+CAPTION "D3D11Install"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,270,128,50,14
+    ICON            "IDI_MAIN_ICON",IDC_STATIC,7,7,20,20
+    CONTROL         "See Microsoft Knowledge base article <a href=""http://go.microsoft.com/fwlink/?LinkId=160189"">KB971644</a> for possible resolution steps.",IDC_SYSLINK1,
+                    "SysLink",WS_TABSTOP,48,74,272,30
+    LTEXT           "Download of system update failed.",IDC_STATIC,48,29,272,33
+END
+
+IDD_INSTALLFAILDLG DIALOGEX 0, 0, 327, 149
+STYLE DS_SETFONT | DS_MODALFRAME | DS_3DLOOK | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+EXSTYLE WS_EX_TOPMOST
+CAPTION "D3D11Install"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,270,128,50,14
+    ICON            "IDI_MAIN_ICON",IDC_STATIC,7,7,20,20
+    CONTROL         "See Microsoft Knowledge base article <a href=""http://go.microsoft.com/fwlink/?LinkId=160189"">KB971644</a> for possible resolution steps.",IDC_SYSLINK1,
+                    "SysLink",WS_TABSTOP,48,74,272,30
+    LTEXT           "Installation of system update failed.",IDC_STATIC,48,29,272,33
+END
+
+IDD_PROGRESS DIALOGEX 0, 0, 316, 134
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "D3D11Install"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "Searching...",IDC_STATUS,64,26,245,20
+    ICON            "IDI_MAIN_ICON",IDC_STATIC,7,7,20,20
+    LTEXT           "This may take several minutes.",IDC_STATIC,64,57,245,33
+    CONTROL         "",IDC_PROGRESSBAR,"msctls_progress32",WS_BORDER,15,88,287,21
+END
+
+IDD_WUSRVERROR DIALOGEX 0, 0, 315, 158
+STYLE DS_SETFONT | DS_MODALFRAME | DS_3DLOOK | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+EXSTYLE WS_EX_TOPMOST
+CAPTION "D3D11Install"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    ICON            "IDI_MAIN_ICON",IDC_STATIC,7,7,20,20
+    CONTROL         "See Microsoft Knowledge base articles <a href=""http://support.microsoft.com/kb/900936/"">KB900936</a> and <a href=""http://support.microsoft.com/kb/919749/"">KB919749</a> for possible resolution steps.",IDC_SYSLINK1,
+                    "SysLink",WS_TABSTOP,63,92,245,30
+    LTEXT           "An error was encountered while attempting to communicate with Windows Update.",IDC_STATIC,63,18,245,33
+    LTEXT           "Please ensure the Windows Update service is enabled and that this machine is connected to the Internet.",IDC_STATIC,63,53,245,33
+    DEFPUSHBUTTON   "Retry",IDRETRY,203,136,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,258,136,50,14
+END
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE 
+BEGIN
+    IDS_APPNAME             "D3D11Install"
+    IDS_REQUIRE_ADMIN       "D3D11Install.exe requires administrator privileges to operate."
+    IDS_FAILED_CHECKSTAT    "Failed calling D3D11InstallHelper::CheckDirect3D11Status.\nHRESULT: %x"
+    IDS_ALREADY_PRESENT     "Direct3D 11 is present on this system. No update required."
+    IDS_NOT_SUPPORTED       "Direct3D 11 is not supported on this version of Windows."
+    IDS_UNKNOWN_CHECK_STATUS 
+                            "Unknown check status returned from D3D11InstallHelper.\nStatus code: %d"
+    IDS_FAILED_DOUPDATE     "Failed calling D3D11InstallHelper::DoUpdateForDirect3D11.\nHRESULT: %x"
+    IDS_SUCCESS             "Direct3D 11 update successfully applied to this system."
+    IDS_SUCCESS_REBOOT      "Direct3D 11 update successfully applied to this system.\nSystem reboot is required to complete update."
+    IDS_UNKNOWN_UPDATE_RESULT 
+                            "Unknown update result returned from D3D11InstallHelper.\nResult code: %d"
+    IDS_SEARCHING           "Searching Windows Update for system update..."
+    IDS_DOWNLOADING         "Downloading system update from Windows Update..."
+    IDS_INSTALLING          "Installing system update..."
+END

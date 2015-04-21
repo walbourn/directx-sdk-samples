@@ -17,8 +17,12 @@
 Bin
 ipch
 Debug
+Debug Win8
+Debug XP
 Profile
 Release
+Release Win8
+Release XP
 x64
 Test
 /wiki

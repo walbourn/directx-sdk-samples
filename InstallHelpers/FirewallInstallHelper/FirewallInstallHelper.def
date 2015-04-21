@@ -1,0 +1,16 @@
+; FirewallInstallHelper.def
+;
+; defines the exported functions which will be available to the MSI engine
+;
+LIBRARY    "FirewallInstallHelper"
+EXPORTS
+    SetMSIFirewallProperties
+    AddToExceptionListUsingMSI
+    RemoveFromExceptionListUsingMSI
+    AddApplicationToExceptionListW
+    AddApplicationToExceptionListA
+    RemoveApplicationFromExceptionListW
+    RemoveApplicationFromExceptionListA
+    CanLaunchMultiplayerGameW
+    CanLaunchMultiplayerGameA
+     
