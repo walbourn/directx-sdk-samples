@@ -51,6 +51,10 @@ CD3DSettingsDlg::CD3DSettingsDlg() :
     m_Levels[4] = D3D_FEATURE_LEVEL_10_1;
     m_Levels[5] = D3D_FEATURE_LEVEL_11_0;
     m_Levels[6] = D3D_FEATURE_LEVEL_11_1;
+#ifdef USE_DIRECT3D11_3
+    m_Levels[7] = D3D_FEATURE_LEVEL_12_0;
+    m_Levels[8] = D3D_FEATURE_LEVEL_12_1;
+#endif
 }
 
 
@@ -1269,6 +1273,20 @@ void CD3DSettingsDlg::AddD3D11FeatureLevel( _In_ D3D_FEATURE_LEVEL fl)
                 pComboBox->AddItem( L"D3D_FEATURE_LEVEL_11_1", ULongToPtr( D3D_FEATURE_LEVEL_11_1 ) ); 
         }
         break;
+#ifdef USE_DIRECT3D11_3
+        case D3D_FEATURE_LEVEL_12_0:
+        {
+            if (!pComboBox->ContainsItem(L"D3D_FEATURE_LEVEL_12_0"))
+                pComboBox->AddItem(L"D3D_FEATURE_LEVEL_12_0", ULongToPtr(D3D_FEATURE_LEVEL_12_0));
+        }
+        break;
+        case D3D_FEATURE_LEVEL_12_1:
+        {
+            if (!pComboBox->ContainsItem(L"D3D_FEATURE_LEVEL_12_1"))
+                pComboBox->AddItem(L"D3D_FEATURE_LEVEL_12_1", ULongToPtr(D3D_FEATURE_LEVEL_12_1));
+        }
+        break;
+#endif
     }
 
 }

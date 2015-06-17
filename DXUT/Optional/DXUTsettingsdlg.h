@@ -51,7 +51,11 @@
 #define DXUTSETTINGSDLG_STATIC_MODE_CHANGE_TIMEOUT      60
 #define DXUTSETTINGSDLG_WINDOWED_GROUP                  0x0100
 
+#ifdef USE_DIRECT3D11_3
+#define TOTAL_FEATURE_LEVELS                            9
+#else
 #define TOTAL_FEATURE_LEVELS                            7
+#endif
 
 //--------------------------------------------------------------------------------------
 // Dialog for selection of device settings 

@@ -3,11 +3,11 @@ DXUT FOR DIRECT3D 11
 
 Copyright (c) Microsoft Corporation. All rights reserved.
 
-April 14, 2015
+June 16, 2015
 
 DXUT is a "GLUT"-like framework for Direct3D 11.x Win32 desktop applications; primarily samples, demos, and prototypes.
 
-The source is written for Visual Studio 2010, 2012, or 2013. It is recommended that you
+The source is written for Visual Studio 2010, 2012, 2013, or 2015. It is recommended that you
 make use of the Windows 8.1 SDK and Windows 7 Service Pack 1 or later.
 
 Details on using the Windows 8.1 SDK with VS 2010 are described on the Visual C++ Team Blog:
@@ -19,8 +19,7 @@ see "Where is the DirectX SDK?" <http://msdn.microsoft.com/en-us/library/ee66327
 All content and source code for this package are subject to the terms of the MIT License.
 <http://opensource.org/licenses/MIT>.
 
-For the latest version of DXUT11, more detailed documentation, discussion forums, bug
-reports and feature requests, please visit the Codeplex site.
+For the latest version of DXUT11, more detailed documentation, etc., please visit the project site.
 
 http://go.microsoft.com/fwlink/?LinkId=320437
 
@@ -56,6 +55,9 @@ This version of DXUT only supports Direct3D 11, and therefore is not compatible 
 ---------------
 RELEASE HISTORY
 ---------------
+
+June 16, 2015 (11.09)
+    Optional support for Direct3D 11.3 (define USE_DIRECT3D11_3 in VS 2015 projects)
 
 April 14, 2015 (11.08)
     Fix for auto-gen of volume textures

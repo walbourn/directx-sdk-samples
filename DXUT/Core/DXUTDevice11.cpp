@@ -232,18 +232,36 @@ HRESULT CD3D11Enumeration::Enumerate( LPDXUTCALLBACKISD3D11DEVICEACCEPTABLE IsD3
         }
     }
 
-    D3D_FEATURE_LEVEL fLvl[] = { D3D_FEATURE_LEVEL_11_1, D3D_FEATURE_LEVEL_11_0, D3D_FEATURE_LEVEL_10_1 };
-
     // Check WARP max feature level
     {
+        static const D3D_FEATURE_LEVEL fLvlWarp[] =
+        {
+#ifdef USE_DIRECT3D11_3
+            D3D_FEATURE_LEVEL_12_1, D3D_FEATURE_LEVEL_12_0,
+#endif
+            D3D_FEATURE_LEVEL_11_1, D3D_FEATURE_LEVEL_11_0, D3D_FEATURE_LEVEL_10_1
+        };
+
         ID3D11Device* pDevice = nullptr;
-        hr = DXUT_Dynamic_D3D11CreateDevice( nullptr, D3D_DRIVER_TYPE_WARP, 0, 0, fLvl, _countof(fLvl),
+        hr = DXUT_Dynamic_D3D11CreateDevice( nullptr, D3D_DRIVER_TYPE_WARP, 0, 0, fLvlWarp, _countof(fLvlWarp),
                                              D3D11_SDK_VERSION, &pDevice, &m_warpFL, nullptr );
         if ( hr == E_INVALIDARG )
         {
+#ifdef USE_DIRECT3D11_3
+            // DirectX 11.1 runtime will not recognize FL 12.x, so try without it
+            hr = DXUT_Dynamic_D3D11CreateDevice(nullptr, D3D_DRIVER_TYPE_WARP, 0, 0, &fLvlWarp[2], _countof(fLvlWarp) - 2,
+                                                D3D11_SDK_VERSION, &pDevice, &m_warpFL, nullptr);
+            if (hr == E_INVALIDARG)
+            {
+                // DirectX 11.0 runtime will not recognize FL 11.1+, so try without it
+                hr = DXUT_Dynamic_D3D11CreateDevice(nullptr, D3D_DRIVER_TYPE_WARP, 0, 0, &fLvlWarp[3], _countof(fLvlWarp) - 3,
+                                                    D3D11_SDK_VERSION, &pDevice, &m_warpFL, nullptr);
+            }
+#else
             // DirectX 11.0 runtime will not recognize FL 11.1, so try without it
-            hr = DXUT_Dynamic_D3D11CreateDevice( nullptr, D3D_DRIVER_TYPE_WARP, 0, 0, &fLvl[1], _countof(fLvl) - 1,
+            hr = DXUT_Dynamic_D3D11CreateDevice( nullptr, D3D_DRIVER_TYPE_WARP, 0, 0, &fLvlWarp[1], _countof(fLvlWarp) - 1,
                                                  D3D11_SDK_VERSION, &pDevice, &m_warpFL, nullptr );
+#endif
         }
 
         if ( SUCCEEDED(hr) )
@@ -256,13 +274,15 @@ HRESULT CD3D11Enumeration::Enumerate( LPDXUTCALLBACKISD3D11DEVICEACCEPTABLE IsD3
 
     // Check REF max feature level
     {
+        static const D3D_FEATURE_LEVEL fLvlRef[] = { D3D_FEATURE_LEVEL_11_1, D3D_FEATURE_LEVEL_11_0, D3D_FEATURE_LEVEL_10_1 };
+
         ID3D11Device* pDevice = nullptr;
-        hr = DXUT_Dynamic_D3D11CreateDevice( nullptr, D3D_DRIVER_TYPE_REFERENCE, 0, 0, fLvl, _countof(fLvl),
+        hr = DXUT_Dynamic_D3D11CreateDevice( nullptr, D3D_DRIVER_TYPE_REFERENCE, 0, 0, fLvlRef, _countof(fLvlRef),
                                              D3D11_SDK_VERSION, &pDevice, &m_refFL, nullptr );
         if ( hr == E_INVALIDARG )
         {
             // DirectX 11.0 runtime will not recognize FL 11.1, so try without it
-            hr = DXUT_Dynamic_D3D11CreateDevice( nullptr, D3D_DRIVER_TYPE_REFERENCE, 0, 0, &fLvl[1], _countof(fLvl) - 1,
+            hr = DXUT_Dynamic_D3D11CreateDevice( nullptr, D3D_DRIVER_TYPE_REFERENCE, 0, 0, &fLvlRef[1], _countof(fLvlRef) - 1,
                                                  D3D11_SDK_VERSION, &pDevice, &m_refFL, nullptr );
         }
 
@@ -474,8 +494,12 @@ HRESULT CD3D11Enumeration::EnumerateDevices( _In_ CD3D11EnumAdapterInfo* pAdapte
         pDeviceInfo->AdapterOrdinal = pAdapterInfo->AdapterOrdinal;
         pDeviceInfo->DeviceType = devTypeArray[iDeviceType];
 
-        D3D_FEATURE_LEVEL FeatureLevels[] =
+        static const D3D_FEATURE_LEVEL FeatureLevels[] =
         {
+#ifdef USE_DIRECT3D11_3
+            D3D_FEATURE_LEVEL_12_1,
+            D3D_FEATURE_LEVEL_12_0,
+#endif
             D3D_FEATURE_LEVEL_11_1,
             D3D_FEATURE_LEVEL_11_0,
             D3D_FEATURE_LEVEL_10_1,
@@ -502,17 +526,34 @@ HRESULT CD3D11Enumeration::EnumerateDevices( _In_ CD3D11EnumAdapterInfo* pAdapte
 
         if ( hr == E_INVALIDARG )
         {
+#ifdef USE_DIRECT3D11_3
+            // DirectX 11.1 runtime will not recognize FL 12.x, so try without it
+            hr = DXUT_Dynamic_D3D11CreateDevice((devTypeArray[iDeviceType] == D3D_DRIVER_TYPE_HARDWARE) ? pAdapterInfo->m_pAdapter : nullptr,
+                                                (devTypeArray[iDeviceType] == D3D_DRIVER_TYPE_HARDWARE) ? D3D_DRIVER_TYPE_UNKNOWN : devTypeArray[iDeviceType],
+                                                (HMODULE)0, 0,
+                                                &FeatureLevels[2], NumFeatureLevels - 2,
+                                                D3D11_SDK_VERSION, &pd3dDevice, &pDeviceInfo->MaxLevel,
+                                                &pd3dDeviceContext);
+
+            if (hr == E_INVALIDARG)
+            {
+                // DirectX 11.0 runtime will not recognize FL 11.1, so try without it
+                hr = DXUT_Dynamic_D3D11CreateDevice((devTypeArray[iDeviceType] == D3D_DRIVER_TYPE_HARDWARE) ? pAdapterInfo->m_pAdapter : nullptr,
+                                                    (devTypeArray[iDeviceType] == D3D_DRIVER_TYPE_HARDWARE) ? D3D_DRIVER_TYPE_UNKNOWN : devTypeArray[iDeviceType],
+                                                    (HMODULE)0, 0,
+                                                    &FeatureLevels[3], NumFeatureLevels - 3,
+                                                    D3D11_SDK_VERSION, &pd3dDevice, &pDeviceInfo->MaxLevel,
+                                                    &pd3dDeviceContext);
+            }
+#else
             // DirectX 11.0 runtime will not recognize FL 11.1, so try without it
             hr = DXUT_Dynamic_D3D11CreateDevice( (devTypeArray[iDeviceType] == D3D_DRIVER_TYPE_HARDWARE) ? pAdapterInfo->m_pAdapter : nullptr,
                                                  (devTypeArray[iDeviceType] == D3D_DRIVER_TYPE_HARDWARE) ? D3D_DRIVER_TYPE_UNKNOWN : devTypeArray[iDeviceType],
-                                                 ( HMODULE )0,
-                                                 0,
-                                                 &FeatureLevels[1],
-                                                 NumFeatureLevels - 1,
-                                                 D3D11_SDK_VERSION,
-                                                 &pd3dDevice,
-                                                 &pDeviceInfo->MaxLevel,
+                                                 ( HMODULE )0, 0,
+                                                 &FeatureLevels[1], NumFeatureLevels - 1,
+                                                 D3D11_SDK_VERSION, &pd3dDevice, &pDeviceInfo->MaxLevel,
                                                  &pd3dDeviceContext );
+#endif
         }
 
         if ( FAILED(hr) )
