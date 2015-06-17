@@ -1,4 +1,5 @@
 *.psess
+*.aps
 *.vsp
 *.log
 *.err
