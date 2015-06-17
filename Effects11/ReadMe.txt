@@ -3,12 +3,12 @@ EFFECTS FOR DIRECT3D 11 (FX11)
 
 Copyright (c) Microsoft Corporation. All rights reserved.
 
-April 14, 2015
+June 17, 2015
 
 Effects for Direct3D 11 (FX11) is a management runtime for authoring HLSL shaders, render
 state, and runtime variables together.
 
-The source is written for Visual Studio 2010, 2012, or 2013. It is recommended that you
+The source is written for Visual Studio 2010, 2012, 2013, or 2015. It is recommended that you
 make use of the Windows 8.1 SDK and Windows 7 Service Pack 1 or later.
 
 Details on using the Windows 8.1 SDK with VS 2010 are described on the Visual C++ Team Blog:
@@ -20,8 +20,7 @@ see "Where is the DirectX SDK?" <http://msdn.microsoft.com/en-us/library/ee66327
 All content and source code for this package are subject to the terms of the MIT License.
 <http://opensource.org/licenses/MIT>.
 
-For the latest version of FX11, more detailed documentation, discussion forums, bug
-reports and feature requests, please visit the Codeplex site.
+For the latest version of FX11, more detailed documentation, etc., please visit the project site.
 
 http://go.microsoft.com/fwlink/p/?LinkId=271568
 
@@ -33,8 +32,10 @@ SAMPLES
 Direct3D Tutorial 11-14
 http://code.msdn.microsoft.com/Effects-Tutorial-Win32-b03b8501
 
-BasicHLSLFX11, DynamicShaderLinkageFX11, FixedFuncEMUFX11
+BasicHLSLFX11, DynamicShaderLinkageFX11, FixedFuncEMUFX11, InstancingFX11
 http://code.msdn.microsoft.com/Effects-11-Win32-Samples-cce82a4d
+
+Note: These samples are also hosted on GitHub - https://github.com/walbourn/directx-sdk-samples
 
 
 ----------
@@ -59,6 +60,12 @@ in a future update.
 ---------------
 RELEASE HISTORY
 ---------------
+
+June 17, 2015 (11.13)
+    Fix for Get/SetFloatVectorArray with an offset
+
+April 14, 2015 (11.12)
+    More updates for VS 2015
 
 November 24, 2014 (11.11)
     Updates for Visual Studio 2015 Technical Preview
