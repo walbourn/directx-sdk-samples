@@ -207,7 +207,7 @@ int WINAPI wWinMain( _In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
     DXUTInit( true, true, nullptr ); // Parse the command line, show msgboxes on error, no extra command line params
     DXUTSetCursorSettings( true, true ); // Show the cursor and clip it when in full screen
     DXUTCreateWindow( L"DynamicShaderLinkageFX11" );
-    DXUTCreateDevice(D3D_FEATURE_LEVEL_9_3, true, 800, 600 );
+    DXUTCreateDevice(D3D_FEATURE_LEVEL_10_0, true, 800, 600 );
     DXUTMainLoop(); // Enter into the DXUT render loop
 
     return DXUTGetExitCode();
@@ -554,7 +554,12 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
     else // Lower feature levels than 11 have no support for Dynamic Shader Linkage - need to use a statically specialized shaders
     {
         LPCSTR pTechniqueName;
-        
+
+        g_pAmbientLightIface = nullptr;
+        g_pDirectionalLightIface = nullptr;
+        g_pEnvironmentLightIface = nullptr;
+        g_pMaterialIface = nullptr;
+
         switch( supportedFeatureLevel )
         {
         case D3D_FEATURE_LEVEL_10_1:
@@ -562,9 +567,6 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
             break;
         case D3D_FEATURE_LEVEL_10_0:
             pTechniqueName = "FeatureLevel10";
-            break;
-        case D3D_FEATURE_LEVEL_9_3:
-            pTechniqueName = "FeatureLevel9_3";
             break;
 
         default:

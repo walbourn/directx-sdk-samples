@@ -24,21 +24,6 @@
 #define StaticDirectLight      g_directionalLight
 #define StaticEnvironmentLight g_environmentLight
 
-technique11 FeatureLevel9_3
-{
-    pass
-    {
-        SetRasterizerState(g_rasterizerState[g_fillMode]);
-        SetVertexShader(CompileShader(vs_4_0_level_9_3,
-                                      VSMain()));
-        SetPixelShader(CompileShader(ps_4_0_level_9_3,
-                                     PSMainUniform(StaticAmbientLight,
-                                                   StaticDirectLight,
-                                                   StaticEnvironmentLight,
-                                                   StaticMaterial)));
-    }
-}
-
 technique11 FeatureLevel10
 {
     pass
