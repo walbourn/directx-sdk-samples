@@ -212,6 +212,9 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
 bool CALLBACK IsD3D11DeviceAcceptable( const CD3D11EnumAdapterInfo *AdapterInfo, UINT Output, const CD3D11EnumDeviceInfo *DeviceInfo,
                                       DXGI_FORMAT BackBufferFormat, bool bWindowed, void* pUserContext )
 {
+    if (BackBufferFormat == DXGI_FORMAT_R8G8B8A8_UNORM_SRGB)
+        return false;
+
     return true;
 }
 
