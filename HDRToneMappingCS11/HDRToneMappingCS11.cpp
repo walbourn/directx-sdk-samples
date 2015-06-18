@@ -421,7 +421,7 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
         SupportCaps & D3D11_FORMAT_SUPPORT_TEXTURE2D )
     {
         ID3D11ShaderResourceView* pCubeRV = nullptr;
-        V_RETURN( DXUTCreateShaderResourceViewFromFile( pd3dDevice, L"Light Probes\\uffizi_cross.dds", &pCubeRV ) );
+        V_RETURN( DXUTCreateShaderResourceViewFromFile( pd3dDevice, L"Light Probes\\uffizi_cross32.dds", &pCubeRV ) );
 
         ID3D11Texture2D* pCubeTexture = nullptr;
         pCubeRV->GetResource( ( ID3D11Resource** )&pCubeTexture );
