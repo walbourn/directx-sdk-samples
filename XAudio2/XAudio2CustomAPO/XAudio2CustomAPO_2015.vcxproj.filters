@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns:atg="http://atg.xbox.com" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="audio.cpp" />
+    <CLInclude Include="audio.h" />
+    <ClCompile Include="MonitorAPO.cpp" />
+    <CLInclude Include="MonitorAPO.h" />
+    <CLInclude Include="SimpleAPO.h" />
+    <ClCompile Include="SimpleAPO.cpp" />
+    <ClCompile Include="XAudio2CustomAPO.cpp" />
+    <ClCompile Include="..\Common\WAVFileReader.cpp" />
+    <ClInclude Include="..\Common\WAVFileReader.h" />
+    <ClInclude Include="SampleAPOBase.h" />
+  </ItemGroup>
+</Project>

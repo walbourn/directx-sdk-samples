@@ -120,7 +120,7 @@ int main()
         return 0;
     }
 
-#if (_WIN32_WINNT < 0x0602 /*_WIN32_WINNT_WIN8*/)
+#if (_WIN32_WINNT < 0x0602 /*_WIN32_WINNT_WIN8*/) || (_WIN32_WINNT >= 0x0A00 /*_WIN32_WINNT_WIN10*/ )
 
     //
     // Play a mono xWMA wave file
@@ -217,7 +217,7 @@ HRESULT PlayWave( IXAudio2* pXaudio2, LPCWSTR szFilename )
         buffer.LoopCount = 1; // We'll just assume we play the loop twice
     }
 
-#if (_WIN32_WINNT < 0x0602 /*_WIN32_WINNT_WIN8*/)
+#if (_WIN32_WINNT < 0x0602 /*_WIN32_WINNT_WIN8*/) || (_WIN32_WINNT >= 0x0A00 /*_WIN32_WINNT_WIN10*/ )
     if ( waveData.seek )
     {
         XAUDIO2_BUFFER_WMA xwmaBuffer = {0};

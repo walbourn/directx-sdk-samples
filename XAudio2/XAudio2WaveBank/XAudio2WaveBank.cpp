@@ -96,7 +96,7 @@ int main()
     //
     WCHAR wavebank[ MAX_PATH ];
 #if defined(USE_XWMA)
-#if (_WIN32_WINNT >= 0x0602 /*_WIN32_WINNT_WIN8*/)
+#if (_WIN32_WINNT >= 0x0602 /*_WIN32_WINNT_WIN8*/) && (_WIN32_WINNT < 0x0A00 /*_WIN32_WINNT_WIN10*/ )
 #error xWMA is not supported by XAudio 2.8 on Windows 8.x
 #endif
 
@@ -249,7 +249,7 @@ HRESULT PlayWaveFromWaveBank( IXAudio2* pXaudio2, WaveBankReader& wb, uint32_t i
     {
         if ( tag == WAVE_FORMAT_WMAUDIO2 || tag == WAVE_FORMAT_WMAUDIO3 )
         {
-#if (_WIN32_WINNT < 0x0602 /*_WIN32_WINNT_WIN8*/)
+#if (_WIN32_WINNT < 0x0602 /*_WIN32_WINNT_WIN8*/) || (_WIN32_WINNT >= 0x0A00 /*_WIN32_WINNT_WIN10*/ )
             XAUDIO2_BUFFER_WMA xwmaBuffer = {0};
             xwmaBuffer.pDecodedPacketCumulativeBytes = seekTable;
             xwmaBuffer.PacketCount = seekTableCount;
