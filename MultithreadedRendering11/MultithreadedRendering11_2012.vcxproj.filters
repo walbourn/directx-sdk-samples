@@ -11,7 +11,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\DXUT\Optional\directx.ico">
+    <None Include="..\DXUT\Optional\directx.ico">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>
