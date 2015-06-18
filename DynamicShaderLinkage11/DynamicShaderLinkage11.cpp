@@ -215,7 +215,7 @@ int WINAPI wWinMain( _In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
     DXUTCreateWindow( L"DynamicShaderLinkage11" );
 
     // For now this sample only shows the Feature Level 11 usage
-    DXUTCreateDevice(D3D_FEATURE_LEVEL_11_0, true, 800, 600 );
+    DXUTCreateDevice(D3D_FEATURE_LEVEL_10_0, true, 800, 600 );
     DXUTMainLoop(); // Enter into the DXUT render loop
 
     return DXUTGetExitCode();
@@ -542,6 +542,8 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
 
         DXUT_SetDebugName( g_pVertexShader, "VSMain0" );
         DXUT_SetDebugName( g_pPixelShader, "PSMain0" );
+
+        g_iNumPSInterfaces = 0;
     }
 
     // Create our vertex input layout
