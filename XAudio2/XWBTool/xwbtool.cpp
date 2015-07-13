@@ -335,7 +335,7 @@ bool ConvertToMiniFormat( const WAVEFORMATEX* wfx, bool hasSeek, MINIWAVEFORMAT&
 
         if ( wfx->nBlockAlign > 255 )
         {
-            wprintf( L"ERROR: Wave banks only support block alignments up to 255 %(%u)\n", wfx->nBlockAlign );
+            wprintf( L"ERROR: Wave banks only support block alignments up to 255 (%u)\n", wfx->nBlockAlign );
             return false;
         }
 
@@ -533,7 +533,7 @@ bool ConvertToMiniFormat( const WAVEFORMATEX* wfx, bool hasSeek, MINIWAVEFORMAT&
 
                 if ( wfx->nBlockAlign > 255 )
                 {
-                    wprintf( L"ERROR: Wave banks only support block alignments up to 255 %(%u)\n", wfx->nBlockAlign );
+                    wprintf( L"ERROR: Wave banks only support block alignments up to 255 (%u)\n", wfx->nBlockAlign );
                     return false;
                 }
 
