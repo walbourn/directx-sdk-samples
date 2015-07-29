@@ -575,6 +575,7 @@ public:
     HRESULT AddData(_In_reads_bytes_(bufferSize) const void *pNewData, _In_ uint32_t bufferSize, _Outptr_ CDataBlock **ppBlock);
 
     // Allocate reserves bufferSize bytes of contiguous memory and returns a pointer to the user
+    _Success_(return != nullptr)
     void*   Allocate(_In_ uint32_t bufferSize, _Outptr_ CDataBlock **ppBlock);
 
     void    EnableAlignment();

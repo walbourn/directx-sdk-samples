@@ -19,7 +19,7 @@
 #include <unordered_map>
 
 using namespace DirectX;
-using namespace Microsoft::WRL;
+using Microsoft::WRL::ComPtr;
 
 //#define VERBOSE_TRACE
 
@@ -31,9 +31,9 @@ namespace
         EngineCallback()
         {
 #if (_WIN32_WINNT >= _WIN32_WINNT_VISTA)
-            mCriticalError = CreateEventEx( nullptr, nullptr, 0, EVENT_MODIFY_STATE | SYNCHRONIZE );
+            mCriticalError.reset( CreateEventEx( nullptr, nullptr, 0, EVENT_MODIFY_STATE | SYNCHRONIZE ) );
 #else
-            mCriticalError = CreateEvent( nullptr, FALSE, FALSE, nullptr );
+            mCriticalError.reset( CreateEvent( nullptr, FALSE, FALSE, nullptr ) );
 #endif
             if ( !mCriticalError )
             {
@@ -43,7 +43,6 @@ namespace
 
         virtual ~EngineCallback()
         {
-            CloseHandle( mCriticalError );
         }
 
         STDMETHOD_(void, OnProcessingPassStart) () override {}
@@ -55,10 +54,10 @@ namespace
             UNREFERENCED_PARAMETER(error);
 #endif
             DebugTrace( "ERROR: AudioEngine encountered critical error (%08X)\n", error );
-            SetEvent( mCriticalError );
+            SetEvent( mCriticalError.get() );
         }
 
-        HANDLE  mCriticalError;
+        ScopedHandle mCriticalError;
     };
 
     struct VoiceCallback : public IXAudio2VoiceCallback
@@ -66,9 +65,9 @@ namespace
         VoiceCallback()
         {
 #if (_WIN32_WINNT >= _WIN32_WINNT_VISTA)
-            mBufferEnd = CreateEventEx( nullptr, nullptr, 0, EVENT_MODIFY_STATE | SYNCHRONIZE );
+            mBufferEnd.reset( CreateEventEx( nullptr, nullptr, 0, EVENT_MODIFY_STATE | SYNCHRONIZE ) );
 #else
-            mBufferEnd = CreateEvent( nullptr, FALSE, FALSE, nullptr );
+            mBufferEnd.reset( CreateEvent( nullptr, FALSE, FALSE, nullptr ) );
 #endif
             if ( !mBufferEnd )
             {
@@ -78,7 +77,6 @@ namespace
 
         virtual ~VoiceCallback()
         {
-            CloseHandle( mBufferEnd ); 
         }
 
         STDMETHOD_(void, OnVoiceProcessingPassStart) (UINT32) override {}
@@ -92,14 +90,14 @@ namespace
             {
                 auto inotify = reinterpret_cast<IVoiceNotify*>( context );
                 inotify->OnBufferEnd();
-                SetEvent( mBufferEnd );
+                SetEvent( mBufferEnd.get() );
             }
         }
 
         STDMETHOD_(void, OnLoopEnd)( void* ) override {}
         STDMETHOD_(void, OnVoiceError)( void*, HRESULT ) override {}
 
-        HANDLE mBufferEnd;
+        ScopedHandle mBufferEnd;
     };
 
     static const XAUDIO2FX_REVERB_I3DL2_PARAMETERS gReverbPresets[] =
@@ -440,7 +438,9 @@ HRESULT AudioEngine::Impl::Reset( const WAVEFORMATEX* wfx, const wchar_t* device
         debug.TraceMask = XAUDIO2_LOG_ERRORS | XAUDIO2_LOG_WARNINGS;
         debug.BreakMask = XAUDIO2_LOG_ERRORS;
         xaudio2->SetDebugConfiguration( &debug, nullptr );
-#if (_WIN32_WINNT >= _WIN32_WINNT_WIN8)
+#if (_WIN32_WINNT >= _WIN32_WINNT_WIN10)
+        DebugTrace("INFO: XAudio 2.9 debugging enabled\n");
+#elif (_WIN32_WINNT >= _WIN32_WINNT_WIN8)
         // To see the trace output, you need to view ETW logs for this application:
         //    Go to Control Panel, Administrative Tools, Event Viewer.
         //    View->Show Analytic and Debug Logs.
@@ -806,7 +806,7 @@ bool AudioEngine::Impl::Update()
     if ( !xaudio2 )
         return false;
 
-    HANDLE events[2] = { mEngineCallback.mCriticalError, mVoiceCallback.mBufferEnd };
+    HANDLE events[2] = { mEngineCallback.mCriticalError.get(), mVoiceCallback.mBufferEnd.get() };
     DWORD result = WaitForMultipleObjectsEx( 2, events, FALSE, 0, FALSE );
     switch( result )
     {
@@ -1236,7 +1236,7 @@ void AudioEngine::Impl::UnregisterNotify( _In_ IVoiceNotify* notify, bool usesOn
         if (setevent)
         {
             // Trigger scan on next call to Update...
-            SetEvent( mVoiceCallback.mBufferEnd );
+            SetEvent( mVoiceCallback.mBufferEnd.get() );
         }
     }
 
@@ -1584,10 +1584,11 @@ std::vector<AudioEngine::RendererDetail> AudioEngine::GetRendererDetails()
 
     using namespace Microsoft::WRL;
     using namespace Microsoft::WRL::Wrappers;
+    using namespace ABI::Windows::Foundation;
     using namespace ABI::Windows::Media::Devices;
 
-    Microsoft::WRL::ComPtr<IMediaDeviceStatics> mdStatics;
-    HRESULT hr = ABI::Windows::Foundation::GetActivationFactory( HStringReference(RuntimeClass_Windows_Media_Devices_MediaDevice).Get(), &mdStatics );
+    ComPtr<IMediaDeviceStatics> mdStatics;
+    HRESULT hr = GetActivationFactory( HStringReference(RuntimeClass_Windows_Media_Devices_MediaDevice).Get(), &mdStatics );
     ThrowIfFailed( hr );
 
     HString id;
@@ -1638,8 +1639,8 @@ std::vector<AudioEngine::RendererDetail> AudioEngine::GetRendererDetails()
     HRESULT hr = initialize;
     ThrowIfFailed( hr );
 
-    Microsoft::WRL::ComPtr<IDeviceInformationStatics> diFactory;
-    hr = ABI::Windows::Foundation::GetActivationFactory( HStringReference(RuntimeClass_Windows_Devices_Enumeration_DeviceInformation).Get(), &diFactory );
+    ComPtr<IDeviceInformationStatics> diFactory;
+    hr = GetActivationFactory( HStringReference(RuntimeClass_Windows_Devices_Enumeration_DeviceInformation).Get(), &diFactory );
     ThrowIfFailed( hr );
 
     Event findCompleted( CreateEventEx( nullptr, nullptr, CREATE_EVENT_MANUAL_RESET, WRITE_OWNER | EVENT_ALL_ACCESS ) );

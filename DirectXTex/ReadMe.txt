@@ -3,7 +3,7 @@ DIRECTX TEXTURE LIBRARY (DirectXTex)
 
 Copyright (c) Microsoft Corporation. All rights reserved.
 
-March 27, 2015
+July 29, 2015
 
 This package contains DirectXTex, a shared source library for reading and writing DDS
 files, and performing various texture content processing operations including
@@ -13,11 +13,8 @@ use of the Windows Image Component (WIC) APIs. It also includes a simple .TGA re
 writer since this image file format is commonly used for texture content processing pipelines,
 but is not currently supported by a built-in WIC codec.
 
-The source is written for Visual Studio 2010, 2012, or 2013. It is recommended that you
-make use of the Windows 8.1 SDK and Windows 7 Service Pack 1 or later.
-
-Details on using the Windows 8.1 SDK with VS 2010 are described on the Visual C++ Team Blog:
-<http://blogs.msdn.com/b/vcblog/archive/2012/11/23/using-the-windows-8-sdk-with-visual-studio-2010-configuring-multiple-projects.aspx>
+The source is written for Visual Studio 2012, 2013, or 2015. It is recommended that
+you make use of the Windows 8.1 SDK and Windows 7 Service Pack 1 or later.
 
 NOTE: DirectXTex is not supported on Windows phone 8.0 because WIC is not available on
 that platform. It is available on Windows phone starting in version 8.1.
@@ -77,6 +74,10 @@ DDSView\
 All content and source code for this package are subject to the terms of the MIT License.
 <http://opensource.org/licenses/MIT>.
 
+Documentation is available at <https://github.com/Microsoft/DirectXTex/wiki>.
+
+For the latest version of DirectXTex, bug reports, etc. please visit the project site.
+
 http://go.microsoft.com/fwlink/?LinkId=248926
 
 
@@ -104,6 +105,17 @@ RELEASE NOTES
 
 ------------------------------------
 RELEASE HISTORY
+
+July 29, 2015
+    Fixed rounding problem with 32-bit RGBA/BGRA format conversions
+    texconv: use CPU parallel compression for BC1-BC5 (-singleproc disables)
+    Updated for VS 2015 and Windows 10 SDK RTM
+    Retired VS 2010 and Windows 8.0 Store projects
+
+June 18, 2015
+    New BC_FLAGS_USE_3SUBSETS option for BC7 compressors; now defaults to skipping 3 subset blocks
+    Fixed bug with MakeTypeless and A8_UNORM
+    Fixed file length validation problem in LoadDDSFromFile
 
 March 27, 2015
     Added projects for Windows apps Technical Preview

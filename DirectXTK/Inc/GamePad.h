@@ -13,10 +13,10 @@
 
 #pragma once
 
-#if !defined(WINAPI_FAMILY) || (WINAPI_FAMILY != WINAPI_FAMILY_APP) || (_WIN32_WINNT < 0x0A00)
+#if (_WIN32_WINNT < 0x0A00 /*_WIN32_WINNT_WIN10*/)
 #ifndef _XBOX_ONE
 #if !defined(WINAPI_FAMILY) || (WINAPI_FAMILY != WINAPI_FAMILY_PHONE_APP)
-#if (_WIN32_WINNT >= 0x0602)
+#if (_WIN32_WINNT >= 0x0602 /*_WIN32_WINNT_WIN8*/ )
 #pragma comment(lib,"xinput.lib")
 #else
 #pragma comment(lib,"xinput9_1_0.lib")
@@ -55,7 +55,7 @@ namespace DirectX
         GamePad& operator= (GamePad&& moveFrom);
         virtual ~GamePad();
 
-#ifdef _XBOX_ONE
+#if (_WIN32_WINNT >= 0x0A00 /*_WIN32_WINNT_WIN10*/ ) || defined(_XBOX_ONE)
         static const int MAX_PLAYER_COUNT = 8;
 #else
         static const int MAX_PLAYER_COUNT = 4;
@@ -227,6 +227,9 @@ namespace DirectX
         // Handle suspending/resuming
         void __cdecl Suspend();
         void __cdecl Resume();
+
+        // Singleton
+        static GamePad& __cdecl Get();
 
     private:
         // Private implementation.

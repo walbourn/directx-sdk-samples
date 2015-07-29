@@ -22,7 +22,7 @@
 #include "BinaryReader.h"
 
 using namespace DirectX;
-using namespace Microsoft::WRL;
+using Microsoft::WRL::ComPtr;
 
 #pragma warning(disable : 4121)
 
@@ -62,11 +62,11 @@ namespace DXUT
     // D3DDECLUSAGE_POSITION / D3DDECLTYPE_FLOAT3
     // (D3DDECLUSAGE_BLENDWEIGHT / D3DDECLTYPE_UBYTE4N
     // D3DDECLUSAGE_BLENDINDICES / D3DDECLTYPE_UBYTE4)?
-    // (D3DDECLUSAGE_NORMAL / D3DDECLTYPE_FLOAT3 or D3DDECLTYPE_FLOAT16_4)?
+    // (D3DDECLUSAGE_NORMAL / D3DDECLTYPE_FLOAT3, D3DDECLTYPE_FLOAT16_4, D3DDECLTYPE_SHORT4N, D3DDECLTYPE_UBYTE4N, or D3DDECLTYPE_DEC3N [not supported])?
     // (D3DDECLUSAGE_COLOR / D3DDECLTYPE_D3DCOLOR)?
     // (D3DDECLUSAGE_TEXCOORD / D3DDECLTYPE_FLOAT1, D3DDECLTYPE_FLOAT2 or D3DDECLTYPE_FLOAT16_2, D3DDECLTYPE_FLOAT3 or D3DDECLTYPE_FLOAT16_4, D3DDECLTYPE_FLOAT4 or D3DDECLTYPE_FLOAT16_4)*
-    // (D3DDECLUSAGE_TANGENT / D3DDECLTYPE_FLOAT3 or D3DDECLTYPE_FLOAT16_4)?
-    // (D3DDECLUSAGE_BINORMAL / D3DDECLTYPE_FLOAT3 or D3DDECLTYPE_FLOAT16_4)?
+    // (D3DDECLUSAGE_TANGENT / same as D3DDECLUSAGE_NORMAL)?
+    // (D3DDECLUSAGE_BINORMAL / same as D3DDECLUSAGE_NORMAL)?
 
     enum D3DDECLUSAGE
     {
@@ -90,7 +90,8 @@ namespace DXUT
                                      // Input is in D3DCOLOR format (ARGB) expanded to (R, G, B, A)
         D3DDECLTYPE_UBYTE4    =  5,  // 4D unsigned byte
         D3DDECLTYPE_UBYTE4N   =  8,  // Each of 4 bytes is normalized by dividing to 255.0
-        D3DDECLTYPE_DEC3N     = 14,  // 3D signed 10 10 10 format normalized and expanded to (v[0]/511.0, v[1]/511.0, v[2]/511.0, 1)
+        D3DDECLTYPE_SHORT4N   = 10,  // 4D signed short normalized (v[0]/32767.0,v[1]/32767.0,v[2]/32767.0,v[3]/32767.0)
+        // Note: There is no equivalent to D3DDECLTYPE_DEC3N (14) as a DXGI_FORMAT
         D3DDECLTYPE_FLOAT16_2 = 15,  // Two 16-bit floating point values, expanded to (value, value, 0, 1)
         D3DDECLTYPE_FLOAT16_4 = 16,  // Four 16-bit floating point values
 
@@ -376,8 +377,7 @@ struct MaterialRecordSDKMESH
 
 
 static void LoadMaterial( _In_ const DXUT::SDKMESH_MATERIAL& mh,
-                          _In_ bool perVertexColor,
-                          _In_ bool enableSkinning,
+                          _In_ bool perVertexColor, _In_ bool enableSkinning, _In_ bool enableDualTexture,
                           _Inout_ IEffectFactory& fxFactory, _Inout_ MaterialRecordSDKMESH& m )
 {
     WCHAR matName[ DXUT::MAX_MATERIAL_NAME ];
@@ -386,10 +386,14 @@ static void LoadMaterial( _In_ const DXUT::SDKMESH_MATERIAL& mh,
     WCHAR txtName[ DXUT::MAX_TEXTURE_NAME ];
     MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, mh.DiffuseTexture, -1, txtName, DXUT::MAX_TEXTURE_NAME );
 
+    WCHAR txtName2[ DXUT::MAX_TEXTURE_NAME ];
+    MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, mh.SpecularTexture, -1, txtName2, DXUT::MAX_TEXTURE_NAME );
+
     EffectFactory::EffectInfo info;
     info.name = matName;
     info.perVertexColor = perVertexColor;
     info.enableSkinning = enableSkinning;
+    info.enableDualTexture = enableDualTexture;
     info.ambientColor = XMFLOAT3( mh.Ambient.x, mh.Ambient.y, mh.Ambient.z );
     info.diffuseColor = XMFLOAT3( mh.Diffuse.x, mh.Diffuse.y, mh.Diffuse.z );
     info.emissiveColor= XMFLOAT3( mh.Emissive.x, mh.Emissive.y, mh.Emissive.z );
@@ -408,6 +412,7 @@ static void LoadMaterial( _In_ const DXUT::SDKMESH_MATERIAL& mh,
     }
 
     info.texture = txtName;
+    info.texture2 = txtName2;
            
     m.effect = fxFactory.CreateEffect( info, nullptr );
     m.alpha = (info.alpha < 1.f);
@@ -418,7 +423,7 @@ static void LoadMaterial( _In_ const DXUT::SDKMESH_MATERIAL& mh,
 // Direct3D 9 Vertex Declaration to DirectInput 11 Input Layout mapping
 
 static void GetInputLayoutDesc( _In_reads_(32) const DXUT::D3DVERTEXELEMENT9 decl[], std::vector<D3D11_INPUT_ELEMENT_DESC>& inputDesc,
-                                bool &perVertexColor, bool& enableSkinning )
+                                bool &perVertexColor, bool& enableSkinning, bool& dualTexture )
 {
     static const D3D11_INPUT_ELEMENT_DESC elements[] =
     {
@@ -435,6 +440,7 @@ static void GetInputLayoutDesc( _In_reads_(32) const DXUT::D3DVERTEXELEMENT9 dec
     using namespace DXUT;
 
     uint32_t offset = 0;
+    uint32_t texcoords = 0;
 
     bool posfound = false;
 
@@ -469,6 +475,20 @@ static void GetInputLayoutDesc( _In_reads_(32) const DXUT::D3DVERTEXELEMENT9 dec
                 inputDesc.push_back( desc );
                 offset += 8;
             }
+            else if ( decl[index].Type == D3DDECLTYPE_SHORT4N )
+            {
+                D3D11_INPUT_ELEMENT_DESC desc = elements[1];
+                desc.Format = DXGI_FORMAT_R16G16B16A16_SNORM;
+                inputDesc.push_back( desc );
+                offset += 8;
+            }
+            else if ( decl[index].Type == D3DDECLTYPE_UBYTE4N )
+            {
+                D3D11_INPUT_ELEMENT_DESC desc = elements[1];
+                desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+                inputDesc.push_back( desc );
+                offset += 4;
+            }
             else
                 break;
         }
@@ -492,6 +512,20 @@ static void GetInputLayoutDesc( _In_reads_(32) const DXUT::D3DVERTEXELEMENT9 dec
                 inputDesc.push_back( desc );
                 offset += 8;
             }
+            else if ( decl[index].Type == D3DDECLTYPE_SHORT4N )
+            {
+                D3D11_INPUT_ELEMENT_DESC desc = elements[3];
+                desc.Format = DXGI_FORMAT_R16G16B16A16_SNORM;
+                inputDesc.push_back( desc );
+                offset += 8;
+            }
+            else if ( decl[index].Type == D3DDECLTYPE_UBYTE4N )
+            {
+                D3D11_INPUT_ELEMENT_DESC desc = elements[3];
+                desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+                inputDesc.push_back( desc );
+                offset += 4;
+            }
             else
                 break;
         }
@@ -508,6 +542,20 @@ static void GetInputLayoutDesc( _In_reads_(32) const DXUT::D3DVERTEXELEMENT9 dec
                 desc.Format = DXGI_FORMAT_R16G16B16A16_FLOAT;
                 inputDesc.push_back( desc );
                 offset += 8;
+            }
+            else if ( decl[index].Type == D3DDECLTYPE_SHORT4N )
+            {
+                D3D11_INPUT_ELEMENT_DESC desc = elements[4];
+                desc.Format = DXGI_FORMAT_R16G16B16A16_SNORM;
+                inputDesc.push_back( desc );
+                offset += 8;
+            }
+            else if ( decl[index].Type == D3DDECLTYPE_UBYTE4N )
+            {
+                D3D11_INPUT_ELEMENT_DESC desc = elements[4];
+                desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+                inputDesc.push_back( desc );
+                offset += 4;
             }
             else
                 break;
@@ -535,6 +583,8 @@ static void GetInputLayoutDesc( _In_reads_(32) const DXUT::D3DVERTEXELEMENT9 dec
             if ( unk )
                 break;
 
+            ++texcoords;
+
             inputDesc.push_back( desc );
         }
         else if ( decl[index].Usage == D3DDECLUSAGE_BLENDINDICES && decl[index].Type == D3DDECLTYPE_UBYTE4 )
@@ -555,6 +605,11 @@ static void GetInputLayoutDesc( _In_reads_(32) const DXUT::D3DVERTEXELEMENT9 dec
 
     if ( !posfound )
         throw std::exception("SV_Position is required");
+
+    if ( texcoords == 2 )
+    {
+        dualTexture = true;
+    }
 }
 
 // Helper for creating a D3D input layout.
@@ -576,7 +631,10 @@ static void CreateInputLayout(_In_ ID3D11Device* device, _In_ IEffect* effect, s
 }
 
 
-//--------------------------------------------------------------------------------------
+//======================================================================================
+// Model Loader
+//======================================================================================
+
 _Use_decl_annotations_
 std::unique_ptr<Model> DirectX::Model::CreateFromSDKMESH( ID3D11Device* d3dDevice, const uint8_t* meshData, size_t dataSize, IEffectFactory& fxFactory, bool ccw, bool pmalpha )
 {
@@ -669,6 +727,9 @@ std::unique_ptr<Model> DirectX::Model::CreateFromSDKMESH( ID3D11Device* d3dDevic
     std::vector<bool> enableSkinning;
     enableSkinning.resize( header->NumVertexBuffers );
 
+    std::vector<bool> enableDualTexture;
+    enableDualTexture.resize( header->NumVertexBuffers );
+
     for( UINT j=0; j < header->NumVertexBuffers; ++j )
     {
         auto& vh = vbArray[j];
@@ -680,9 +741,11 @@ std::unique_ptr<Model> DirectX::Model::CreateFromSDKMESH( ID3D11Device* d3dDevic
         vbDecls[j] = std::make_shared<std::vector<D3D11_INPUT_ELEMENT_DESC>>();
         bool vertColor = false;
         bool skinning = false;
-        GetInputLayoutDesc( vh.Decl, *vbDecls[j].get(), vertColor, skinning );
+        bool dualTexture = false;
+        GetInputLayoutDesc( vh.Decl, *vbDecls[j].get(), vertColor, skinning, dualTexture );
         perVertexColor[j] = vertColor;
         enableSkinning[j] = skinning;
+        enableDualTexture[j] = dualTexture;
 
         auto verts = reinterpret_cast<const uint8_t*>( bufferData + (vh.DataOffset - bufferDataOffset) );
 
@@ -739,7 +802,7 @@ std::unique_ptr<Model> DirectX::Model::CreateFromSDKMESH( ID3D11Device* d3dDevic
 
     std::unique_ptr<Model> model(new Model());
     model->meshes.reserve( header->NumMeshes );
-  
+
     for( UINT meshIndex = 0; meshIndex < header->NumMeshes; ++meshIndex )
     {
         auto& mh = meshArray[ meshIndex ];
@@ -751,7 +814,7 @@ std::unique_ptr<Model> DirectX::Model::CreateFromSDKMESH( ID3D11Device* d3dDevic
             throw std::exception("Invalid mesh found");
 
         // mh.NumVertexBuffers is sometimes not what you'd expect, so we skip validating it
-      
+
         if ( dataSize < mh.SubsetOffset
              || (dataSize < mh.SubsetOffset + mh.NumSubsets*sizeof(UINT) ) )
             throw std::exception("End of file");
@@ -817,8 +880,9 @@ std::unique_ptr<Model> DirectX::Model::CreateFromSDKMESH( ID3D11Device* d3dDevic
 
             if ( !mat.effect )
             {
+                size_t vi = mh.VertexBuffers[0];
                 LoadMaterial( materialArray[ subset.MaterialID ],
-                              perVertexColor[ mh.VertexBuffers[0] ], enableSkinning[ mh.VertexBuffers[0] ],
+                              perVertexColor[vi], enableSkinning[vi], enableDualTexture[vi],
                               fxFactory, mat );
             }
 
@@ -830,6 +894,7 @@ std::unique_ptr<Model> DirectX::Model::CreateFromSDKMESH( ID3D11Device* d3dDevic
 
             part->indexCount = static_cast<uint32_t>( subset.IndexCount );
             part->startIndex = static_cast<uint32_t>( subset.IndexStart );
+            part->vertexOffset = static_cast<uint32_t>( subset.VertexStart );
             part->vertexStride = static_cast<uint32_t>( vbArray[ mh.VertexBuffers[0] ].StrideBytes );
             part->indexFormat = ( ibArray[ mh.IndexBuffer ].IndexType == DXUT::IT_32BIT ) ? DXGI_FORMAT_R32_UINT : DXGI_FORMAT_R16_UINT;
             part->primitiveType = primType; 

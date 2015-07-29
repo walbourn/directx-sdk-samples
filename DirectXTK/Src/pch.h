@@ -21,6 +21,10 @@
 #define NOMINMAX
 #endif
 
+#ifndef _WIN32_WINNT_WIN10
+#define _WIN32_WINNT_WIN10 0x0A00
+#endif
+
 // VS 2010/2012 do not support =default =delete
 #ifndef DIRECTX_CTOR_DEFAULT
 #if defined(_MSC_VER) && (_MSC_VER < 1800)
@@ -37,6 +41,10 @@
 #define DCOMMON_H_INCLUDED
 #else
 #include <d3d11_1.h>
+#endif
+
+#if defined(WINAPI_FAMILY) && (WINAPI_FAMILY == WINAPI_FAMILY_APP)
+#include <Windows.UI.Core.h>
 #endif
 
 #include <DirectXMath.h>

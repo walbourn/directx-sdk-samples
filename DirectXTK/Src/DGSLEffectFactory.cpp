@@ -27,7 +27,7 @@
 #include "BinaryReader.h"
 
 using namespace DirectX;
-using namespace Microsoft::WRL;
+using Microsoft::WRL::ComPtr;
 
 
 // Internal DGSLEffectFactory implementation class. Only one of these helpers is allocated
@@ -55,8 +55,8 @@ private:
     ComPtr<ID3D11Device> device;
 
     typedef std::map< std::wstring, std::shared_ptr<IEffect> > EffectCache;
-    typedef std::map< std::wstring, Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> > TextureCache;
-    typedef std::map< std::wstring, Microsoft::WRL::ComPtr<ID3D11PixelShader> > ShaderCache;
+    typedef std::map< std::wstring, ComPtr<ID3D11ShaderResourceView> > TextureCache;
+    typedef std::map< std::wstring, ComPtr<ID3D11PixelShader> > ShaderCache;
 
     EffectCache  mEffectCache;
     EffectCache  mEffectCacheSkinning;
@@ -76,6 +76,11 @@ SharedResourcePool<ID3D11Device*, DGSLEffectFactory::Impl> DGSLEffectFactory::Im
 _Use_decl_annotations_
 std::shared_ptr<IEffect> DGSLEffectFactory::Impl::CreateEffect( DGSLEffectFactory* factory, const DGSLEffectFactory::EffectInfo& info, ID3D11DeviceContext* deviceContext )
 {
+    if ( info.enableDualTexture )
+    {
+        throw std::exception( "DGSLEffect does not support multiple texcoords" );
+    }
+
     if ( mSharing && info.name && *info.name )
     {
         if ( info.enableSkinning )
@@ -129,7 +134,7 @@ std::shared_ptr<IEffect> DGSLEffectFactory::Impl::CreateEffect( DGSLEffectFactor
 
     if ( info.texture && *info.texture )
     {
-        Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> srv;
+        ComPtr<ID3D11ShaderResourceView> srv;
 
         factory->CreateTexture( info.texture, deviceContext, srv.GetAddressOf() );
 
@@ -222,7 +227,7 @@ std::shared_ptr<IEffect> DGSLEffectFactory::Impl::CreateDGSLEffect( DGSLEffectFa
             // DGSL shaders are not compatible with Feature Level 9.x, use fallback shader
             wcscat_s( root, L".cso" );
 
-            Microsoft::WRL::ComPtr<ID3D11PixelShader> ps;
+            ComPtr<ID3D11PixelShader> ps;
             factory->CreatePixelShader( root, ps.GetAddressOf() );
 
             effect = std::make_shared<DGSLEffect>( device.Get(), ps.Get(), info.enableSkinning );
@@ -230,7 +235,7 @@ std::shared_ptr<IEffect> DGSLEffectFactory::Impl::CreateDGSLEffect( DGSLEffectFa
         else
         {
             // Create DGSL shader and use it for the effect
-            Microsoft::WRL::ComPtr<ID3D11PixelShader> ps;
+            ComPtr<ID3D11PixelShader> ps;
             factory->CreatePixelShader( info.pixelShader, ps.GetAddressOf() );
 
             effect = std::make_shared<DGSLEffect>( device.Get(), ps.Get(), info.enableSkinning );
@@ -277,7 +282,7 @@ std::shared_ptr<IEffect> DGSLEffectFactory::Impl::CreateDGSLEffect( DGSLEffectFa
 
     if ( info.texture && *info.texture )
     {
-        Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> srv;
+        ComPtr<ID3D11ShaderResourceView> srv;
 
         factory->CreateTexture( info.texture, deviceContext, srv.GetAddressOf() );
 
@@ -285,15 +290,25 @@ std::shared_ptr<IEffect> DGSLEffectFactory::Impl::CreateDGSLEffect( DGSLEffectFa
         effect->SetTextureEnabled(true);
     }
 
-    for( int j = 0; j < 7; ++j )
+    if ( info.texture2 && *info.texture2 )
+    {
+        ComPtr<ID3D11ShaderResourceView> srv;
+
+        factory->CreateTexture( info.texture2, deviceContext, srv.GetAddressOf() );
+
+        effect->SetTexture2( srv.Get() );
+        effect->SetTextureEnabled(true);
+    }
+
+    for( int j = 0; j < 6; ++j )
     {
         if ( info.textures[j] && *info.textures[j] )
         {
-            Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> srv;
+            ComPtr<ID3D11ShaderResourceView> srv;
 
             factory->CreateTexture( info.textures[j], deviceContext, srv.GetAddressOf() );
 
-            effect->SetTexture( j+1, srv.Get() );
+            effect->SetTexture( j+2, srv.Get() );
             effect->SetTextureEnabled(true);
         }
     }
