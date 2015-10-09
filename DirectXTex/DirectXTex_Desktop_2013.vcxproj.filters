@@ -6,10 +6,10 @@
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe</Extensions>
     </Filter>
     <Filter Include="Header Files">
-      <UniqueIdentifier>{7f21cc55-74ac-4dcb-b968-f629d039d573}</UniqueIdentifier>
+      <UniqueIdentifier>{1b82e2dc-aea9-4897-8c7e-7ff2aa1ea8c8}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source Files">
-      <UniqueIdentifier>{af4f6a6d-b10d-4b3c-813d-d6652b824f77}</UniqueIdentifier>
+      <UniqueIdentifier>{d342dfd3-2538-4c06-98aa-9f8f79a9abee}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
