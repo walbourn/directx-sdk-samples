@@ -13,6 +13,8 @@
 #include <string>
 #include <vector>
 
+#include <wrl\client.h>
+
 #if (_WIN32_WINNT >= 0x0602 /*_WIN32_WINNT_WIN8*/)
 #include <xaudio2.h>
 #pragma comment(lib,"xaudio2.lib")
@@ -25,13 +27,7 @@
 #include <C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Include\xaudio2.h>
 #endif
 
-//--------------------------------------------------------------------------------------
-// Helper macros
-//--------------------------------------------------------------------------------------
-#ifndef SAFE_RELEASE
-#define SAFE_RELEASE(p)      { if(p) { (p)->Release(); (p)=nullptr; } }
-#endif
-
+using Microsoft::WRL::ComPtr;
 
 //--------------------------------------------------------------------------------------
 // Forward declaration
@@ -55,13 +51,27 @@ int main()
     //
     CoInitializeEx( nullptr, COINIT_MULTITHREADED );
 
-    IXAudio2* pXAudio2 = nullptr;
+#if ( _WIN32_WINNT < 0x0602 /*_WIN32_WINNT_WIN8*/)
+    // Workaround for XAudio 2.7 known issue
+#ifdef _DEBUG
+    HMODULE mXAudioDLL = LoadLibraryExW(L"XAudioD2_7.DLL", nullptr, 0x00000800 /* LOAD_LIBRARY_SEARCH_SYSTEM32 */);
+#else
+    HMODULE mXAudioDLL = LoadLibraryExW(L"XAudio2_7.DLL", nullptr, 0x00000800 /* LOAD_LIBRARY_SEARCH_SYSTEM32 */);
+#endif
+    if (!mXAudioDLL)
+    {
+        wprintf(L"Failed to find XAudio 2.7 DLL");
+        CoUninitialize();
+        return 0;
+    }
+#endif
 
     UINT32 flags = 0;
 #if (_WIN32_WINNT < 0x0602 /*_WIN32_WINNT_WIN8*/) && defined(_DEBUG)
     flags |= XAUDIO2_DEBUG_ENGINE;
 #endif
-    HRESULT hr = XAudio2Create( &pXAudio2, flags );
+    ComPtr<IXAudio2> pXAudio2;
+    HRESULT hr = XAudio2Create( pXAudio2.GetAddressOf(), flags );
     if( FAILED( hr ) )
     {
         wprintf( L"Failed to init XAudio2 engine: %#X\n", hr );
@@ -85,7 +95,7 @@ int main()
     // Enumerate and display audio devices on the system
     //
     std::vector<AudioDevice> list;
-    hr = EnumerateAudio( pXAudio2, list );
+    hr = EnumerateAudio( pXAudio2.Get(), list );
     if( FAILED( hr ) )
     {
         wprintf( L"Failed to enumerate audio devices: %#X\n", hr );
@@ -135,7 +145,7 @@ int main()
 #endif
     {
         wprintf( L"Failed creating mastering voice: %#X\n", hr );
-        SAFE_RELEASE( pXAudio2 );
+        pXAudio2.Reset();
         CoUninitialize();
         return 0;
     }
@@ -151,7 +161,12 @@ int main()
     // All XAudio2 interfaces are released when the engine is destroyed, but being tidy
     pMasteringVoice->DestroyVoice();
 
-    SAFE_RELEASE( pXAudio2 );
+#if ( _WIN32_WINNT < 0x0602 /*_WIN32_WINNT_WIN8*/)
+    if (mXAudioDLL)
+        FreeLibrary(mXAudioDLL);
+#endif
+
+    pXAudio2.Reset();
     CoUninitialize();
 }
 

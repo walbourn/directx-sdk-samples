@@ -42,6 +42,9 @@ struct AUDIO_STATE
     bool bInitialized;
 
     // XAudio2
+#if ( _WIN32_WINNT < 0x0602 /*_WIN32_WINNT_WIN8*/)
+    HMODULE mXAudioDLL;
+#endif
     IXAudio2* pXAudio2;
     IXAudio2MasteringVoice* pMasteringVoice;
     IXAudio2SourceVoice* pSourceVoice;

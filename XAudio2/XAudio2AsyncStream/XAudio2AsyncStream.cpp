@@ -13,6 +13,8 @@
 #include <stdio.h>
 #include <assert.h>
 
+#include <wrl\client.h>
+
 #include "WaveBankReader.h"
 
 #if (_WIN32_WINNT >= 0x0602 /*_WIN32_WINNT_WIN8*/)
@@ -24,20 +26,13 @@
 #endif
 
 using namespace DirectX;
+using Microsoft::WRL::ComPtr;
 
 //--------------------------------------------------------------------------------------
 #define STREAMING_BUFFER_SIZE 65536
 #define MAX_BUFFER_COUNT 3
 
 static_assert( (STREAMING_BUFFER_SIZE % 2048) == 0, "Streaming size must be 2K aligned to use for async I/O" );
-
-//--------------------------------------------------------------------------------------
-// Helper macros
-//--------------------------------------------------------------------------------------
-#ifndef SAFE_RELEASE
-#define SAFE_RELEASE(p)      { if(p) { (p)->Release(); (p)=nullptr; } }
-#endif
-
 
 //--------------------------------------------------------------------------------------
 // Callback structure
@@ -100,13 +95,28 @@ int main()
     //
     CoInitializeEx( nullptr, COINIT_MULTITHREADED );
 
-    IXAudio2* pXAudio2 = nullptr;
+#if ( _WIN32_WINNT < 0x0602 /*_WIN32_WINNT_WIN8*/)
+    // Workaround for XAudio 2.7 known issue
+#ifdef _DEBUG
+    HMODULE mXAudioDLL = LoadLibraryExW(L"XAudioD2_7.DLL", nullptr, 0x00000800 /* LOAD_LIBRARY_SEARCH_SYSTEM32 */);
+#else
+    HMODULE mXAudioDLL = LoadLibraryExW(L"XAudio2_7.DLL", nullptr, 0x00000800 /* LOAD_LIBRARY_SEARCH_SYSTEM32 */);
+#endif
+    if (!mXAudioDLL)
+    {
+        wprintf(L"Failed to find XAudio 2.7 DLL");
+        CoUninitialize();
+        return 0;
+    }
+#endif
 
     UINT32 flags = 0;
- #if (_WIN32_WINNT < 0x0602 /*_WIN32_WINNT_WIN8*/) && defined(_DEBUG)
+#if (_WIN32_WINNT < 0x0602 /*_WIN32_WINNT_WIN8*/) && defined(_DEBUG)
     flags |= XAUDIO2_DEBUG_ENGINE;
- #endif
-    HRESULT hr = XAudio2Create( &pXAudio2, flags );
+#endif
+
+    ComPtr<IXAudio2> pXAudio2;
+    HRESULT hr = XAudio2Create( pXAudio2.GetAddressOf(), flags );
     if( FAILED( hr ) )
     {
         wprintf( L"Failed to init XAudio2 engine: %#X\n", hr );
@@ -134,7 +144,7 @@ int main()
     if( FAILED( hr = pXAudio2->CreateMasteringVoice( &pMasteringVoice ) ) )
     {
         wprintf( L"Failed creating mastering voice: %#X\n", hr );
-        SAFE_RELEASE( pXAudio2 );
+        pXAudio2.Reset();
         CoUninitialize();
         return 0;
     }
@@ -147,7 +157,7 @@ int main()
     if( FAILED( hr = FindMediaFileCch( wavebank, MAX_PATH, L"Media\\Banks\\wavebank.xwb" ) ) )
     {
         wprintf( L"Failed to find media file (%#X)\n", hr );
-        SAFE_RELEASE( pXAudio2 );
+        pXAudio2.Reset();
         CoUninitialize();
         return 0;
     }
@@ -163,7 +173,7 @@ int main()
     if( FAILED( hr = wb.Open( wavebank ) ) )
     {
         wprintf( L"Failed to wavebank data (%#X)\n", hr );
-        SAFE_RELEASE( pXAudio2 );
+        pXAudio2.Reset();
         CoUninitialize();
         return 0;
     }
@@ -173,7 +183,7 @@ int main()
     if ( !wb.IsStreamingBank() )
     {
         wprintf( L"This sample plays back streaming wave banks.\nSee XAudio2WaveBank for playing in-memory wave banks" );
-        SAFE_RELEASE( pXAudio2 );
+        pXAudio2.Reset();
         CoUninitialize();
         return 0;
     }
@@ -412,7 +422,13 @@ int main()
     // All XAudio2 interfaces are released when the engine is destroyed, but being tidy
     pMasteringVoice->DestroyVoice();
 
-    SAFE_RELEASE( pXAudio2 );
+    pXAudio2.Reset();
+
+#if ( _WIN32_WINNT < 0x0602 /*_WIN32_WINNT_WIN8*/)
+    if (mXAudioDLL)
+        FreeLibrary(mXAudioDLL);
+#endif
+
     CoUninitialize();
 }
 

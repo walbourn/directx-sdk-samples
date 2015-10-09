@@ -10,6 +10,8 @@
 #include <windows.h>
 #include <stdio.h>
 
+#include <wrl\client.h>
+
 #include "WAVFileReader.h"
 
 #if (_WIN32_WINNT >= 0x0602 /*_WIN32_WINNT_WIN8*/)
@@ -20,13 +22,7 @@
 #include <C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Include\xaudio2.h>
 #endif
 
-//--------------------------------------------------------------------------------------
-// Helper macros
-//--------------------------------------------------------------------------------------
-#ifndef SAFE_RELEASE
-#define SAFE_RELEASE(p)      { if(p) { (p)->Release(); (p)=nullptr; } }
-#endif
-
+using Microsoft::WRL::ComPtr;;
 
 //--------------------------------------------------------------------------------------
 // Forward declaration
@@ -45,13 +41,27 @@ int main()
     //
     CoInitializeEx( nullptr, COINIT_MULTITHREADED );
 
-    IXAudio2* pXAudio2 = nullptr;
+#if ( _WIN32_WINNT < 0x0602 /*_WIN32_WINNT_WIN8*/)
+    // Workaround for XAudio 2.7 known issue
+#ifdef _DEBUG
+    HMODULE mXAudioDLL = LoadLibraryExW(L"XAudioD2_7.DLL", nullptr, 0x00000800 /* LOAD_LIBRARY_SEARCH_SYSTEM32 */);
+#else
+    HMODULE mXAudioDLL = LoadLibraryExW(L"XAudio2_7.DLL", nullptr, 0x00000800 /* LOAD_LIBRARY_SEARCH_SYSTEM32 */);
+#endif
+    if (!mXAudioDLL)
+    {
+        wprintf(L"Failed to find XAudio 2.7 DLL");
+        CoUninitialize();
+        return 0;
+    }
+#endif
 
     UINT32 flags = 0;
 #if (_WIN32_WINNT < 0x0602 /*_WIN32_WINNT_WIN8*/) && defined(_DEBUG)
     flags |= XAUDIO2_DEBUG_ENGINE;
 #endif
-    HRESULT hr = XAudio2Create( &pXAudio2, flags );
+    ComPtr<IXAudio2> pXAudio2;
+    HRESULT hr = XAudio2Create( pXAudio2.GetAddressOf(), flags );
     if( FAILED( hr ) )
     {
         wprintf( L"Failed to init XAudio2 engine: %#X\n", hr );
@@ -79,7 +89,7 @@ int main()
     if( FAILED( hr = pXAudio2->CreateMasteringVoice( &pMasteringVoice ) ) )
     {
         wprintf( L"Failed creating mastering voice: %#X\n", hr );
-        SAFE_RELEASE( pXAudio2 );
+        pXAudio2.Reset();
         CoUninitialize();
         return 0;
     }
@@ -88,10 +98,10 @@ int main()
     // Play a PCM wave file
     //
     wprintf( L"Playing mono WAV PCM file..." );
-    if( FAILED( hr = PlayWave( pXAudio2, L"Media\\Wavs\\MusicMono.wav" ) ) )
+    if( FAILED( hr = PlayWave( pXAudio2.Get(), L"Media\\Wavs\\MusicMono.wav" ) ) )
     {
         wprintf( L"Failed creating source voice: %#X\n", hr );
-        SAFE_RELEASE( pXAudio2 );
+        pXAudio2.Reset();
         CoUninitialize();
         return 0;
     }
@@ -100,10 +110,10 @@ int main()
     // Play an ADPCM wave file
     //
     wprintf( L"\nPlaying mono WAV ADPCM file (loops twice)..." );
-    if( FAILED( hr = PlayWave( pXAudio2, L"Media\\Wavs\\MusicMono_adpcm.wav" ) ) )
+    if( FAILED( hr = PlayWave( pXAudio2.Get(), L"Media\\Wavs\\MusicMono_adpcm.wav" ) ) )
     {
         wprintf( L"Failed creating source voice: %#X\n", hr );
-        SAFE_RELEASE( pXAudio2 );
+        pXAudio2.Reset();
         CoUninitialize();
         return 0;
     }
@@ -112,10 +122,10 @@ int main()
     // Play a 5.1 PCM wave extensible file
     //
     wprintf( L"\nPlaying 5.1 WAV PCM file..." );
-    if( FAILED( hr = PlayWave( pXAudio2, L"Media\\Wavs\\MusicSurround.wav" ) ) )
+    if( FAILED( hr = PlayWave( pXAudio2.Get(), L"Media\\Wavs\\MusicSurround.wav" ) ) )
     {
         wprintf( L"Failed creating source voice: %#X\n", hr );
-        SAFE_RELEASE( pXAudio2 );
+        pXAudio2.Reset();
         CoUninitialize();
         return 0;
     }
@@ -127,10 +137,10 @@ int main()
     //
 
     wprintf( L"\nPlaying mono xWMA file..." );
-    if( FAILED( hr = PlayWave( pXAudio2, L"Media\\Wavs\\MusicMono_xwma.wav" ) ) )
+    if( FAILED( hr = PlayWave( pXAudio2.Get(), L"Media\\Wavs\\MusicMono_xwma.wav" ) ) )
     {
         wprintf( L"Failed creating source voice: %#X\n", hr );
-        SAFE_RELEASE( pXAudio2 );
+        pXAudio2.Reset();
         CoUninitialize();
         return 0;
     }
@@ -140,10 +150,10 @@ int main()
     //
 
     wprintf( L"\nPlaying 5.1 xWMA file..." );
-    if( FAILED( hr = PlayWave( pXAudio2, L"Media\\Wavs\\MusicSurround_xwma.wav" ) ) )
+    if( FAILED( hr = PlayWave( pXAudio2.Get(), L"Media\\Wavs\\MusicSurround_xwma.wav" ) ) )
     {
         wprintf( L"Failed creating source voice: %#X\n", hr );
-        SAFE_RELEASE( pXAudio2 );
+        pXAudio2.Reset();
         CoUninitialize();
         return 0;
     }
@@ -158,7 +168,13 @@ int main()
     // All XAudio2 interfaces are released when the engine is destroyed, but being tidy
     pMasteringVoice->DestroyVoice();
 
-    SAFE_RELEASE( pXAudio2 );
+    pXAudio2.Reset();
+
+#if ( _WIN32_WINNT < 0x0602 /*_WIN32_WINNT_WIN8*/)
+    if (mXAudioDLL)
+        FreeLibrary(mXAudioDLL);
+#endif
+
     CoUninitialize();
 }
 

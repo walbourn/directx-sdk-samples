@@ -17,7 +17,7 @@
 #include <assert.h>
 #include <mutex>
 
-#include <wrl.h> // for Microsoft::WRL::ComPtr
+#include <wrl\client.h>
 
 #include <objbase.h>
 #include <memory>
@@ -55,14 +55,6 @@ using Microsoft::WRL::ComPtr;
 
 //--------------------------------------------------------------------------------------
 #define MAX_BUFFER_COUNT 3
-
-
-//--------------------------------------------------------------------------------------
-// Helper macros
-//--------------------------------------------------------------------------------------
-#ifndef SAFE_RELEASE
-#define SAFE_RELEASE(p)      { if(p) { (p)->Release(); (p)=nullptr; } }
-#endif
 
 
 //--------------------------------------------------------------------------------------
@@ -221,13 +213,27 @@ int main()
     //
     CoInitializeEx( nullptr, COINIT_MULTITHREADED );
 
-    IXAudio2* pXAudio2 = nullptr;
+#if ( _WIN32_WINNT < 0x0602 /*_WIN32_WINNT_WIN8*/)
+    // Workaround for XAudio 2.7 known issue
+#ifdef _DEBUG
+    HMODULE mXAudioDLL = LoadLibraryExW(L"XAudioD2_7.DLL", nullptr, 0x00000800 /* LOAD_LIBRARY_SEARCH_SYSTEM32 */);
+#else
+    HMODULE mXAudioDLL = LoadLibraryExW(L"XAudio2_7.DLL", nullptr, 0x00000800 /* LOAD_LIBRARY_SEARCH_SYSTEM32 */);
+#endif
+    if (!mXAudioDLL)
+    {
+        wprintf(L"Failed to find XAudio 2.7 DLL");
+        CoUninitialize();
+        return 0;
+    }
+#endif
 
     UINT32 flags = 0;
  #if (_WIN32_WINNT < 0x0602 /*_WIN32_WINNT_WIN8*/) && defined(_DEBUG)
     flags |= XAUDIO2_DEBUG_ENGINE;
  #endif
-    HRESULT hr = XAudio2Create( &pXAudio2, flags );
+    ComPtr<IXAudio2> pXAudio2;
+    HRESULT hr = XAudio2Create( pXAudio2.GetAddressOf(), flags );
     if( FAILED( hr ) )
     {
         wprintf( L"Failed to init XAudio2 engine: %#X\n", hr );
@@ -255,7 +261,7 @@ int main()
     if( FAILED( hr = pXAudio2->CreateMasteringVoice( &pMasteringVoice ) ) )
     {
         wprintf( L"Failed creating mastering voice: %#X\n", hr );
-        SAFE_RELEASE( pXAudio2 );
+        pXAudio2.Reset();
         CoUninitialize();
         return 0;
     }
@@ -268,7 +274,7 @@ int main()
     if( FAILED( hr = FindMediaFileCch( mediaFile, MAX_PATH, L"Media\\Wavs\\becky.wma" ) ) )
     {
         wprintf( L"Failed to find media file (%#X)\n", hr );
-        SAFE_RELEASE( pXAudio2 );
+        pXAudio2.Reset();
         CoUninitialize();
         return 0;
     }
@@ -280,7 +286,7 @@ int main()
     if ( FAILED(hr) )
     {
         wprintf( L"Failed to initialize Media Foundation (%#X)\n", hr );
-        SAFE_RELEASE( pXAudio2 );
+        pXAudio2.Reset();
         CoUninitialize();
         return 0;
     }
@@ -295,7 +301,7 @@ int main()
     if( FAILED(hr) )
     {
         wprintf( L"Failed to create media reader (%#X)\n", hr );
-        SAFE_RELEASE( pXAudio2 );
+        pXAudio2.Reset();
         CoUninitialize();
         return 0;
     }
@@ -310,7 +316,7 @@ int main()
     if( FAILED( hr ) )
     {
         wprintf( L"Error %#X creating source voice\n", hr );
-        SAFE_RELEASE( pXAudio2 );
+        pXAudio2.Reset();
         CoUninitialize();
         return 0;
     }
@@ -434,7 +440,13 @@ int main()
     reader = nullptr;
     MFShutdown();
 
-    SAFE_RELEASE( pXAudio2 );
+    pXAudio2.Reset();
+
+#if ( _WIN32_WINNT < 0x0602 /*_WIN32_WINNT_WIN8*/)
+    if (mXAudioDLL)
+        FreeLibrary(mXAudioDLL);
+#endif
+
     CoUninitialize();
 }
 

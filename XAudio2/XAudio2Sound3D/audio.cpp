@@ -85,6 +85,17 @@ HRESULT InitAudio()
     //
     CoInitializeEx( nullptr, COINIT_MULTITHREADED );
 
+#if ( _WIN32_WINNT < 0x0602 /*_WIN32_WINNT_WIN8*/)
+    // Workaround for XAudio 2.7 known issue
+#ifdef _DEBUG
+    g_audioState.mXAudioDLL = LoadLibraryExW(L"XAudioD2_7.DLL", nullptr, 0x00000800 /* LOAD_LIBRARY_SEARCH_SYSTEM32 */);
+#else
+    g_audioState.mXAudioDLL = LoadLibraryExW(L"XAudio2_7.DLL", nullptr, 0x00000800 /* LOAD_LIBRARY_SEARCH_SYSTEM32 */);
+#endif
+    if (!g_audioState.mXAudioDLL)
+        return HRESULT_FROM_WIN32(ERROR_NOT_FOUND);
+#endif
+
     UINT32 flags = 0;
  #if (_WIN32_WINNT < 0x0602 /*_WIN32_WINNT_WIN8*/) && defined(_DEBUG)
     flags |= XAUDIO2_DEBUG_ENGINE;
@@ -554,6 +565,14 @@ VOID CleanupAudio()
     SAFE_RELEASE( g_audioState.pReverbEffect );
 
     g_audioState.waveData.reset();
+
+#if ( _WIN32_WINNT < 0x0602 /*_WIN32_WINNT_WIN8*/)
+    if (g_audioState.mXAudioDLL)
+    {
+        FreeLibrary(g_audioState.mXAudioDLL);
+        g_audioState.mXAudioDLL = nullptr;
+    }
+#endif
 
     CoUninitialize();
 
