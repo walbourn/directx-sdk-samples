@@ -213,7 +213,7 @@ public:
         hr = window->add_PointerReleased(cb.Get(), &mPointerReleasedToken);
         ThrowIfFailed(hr);
 
-        hr = window->add_PointerMoved(Callback<PointerHandler>(PointerMoved).Get(), &mPointerMovedToken);
+        hr = window->add_PointerMoved(cb.Get(), &mPointerMovedToken);
         ThrowIfFailed(hr);
 
         hr = window->add_PointerWheelChanged(Callback<PointerHandler>(PointerWheel).Get(), &mPointerWheelToken);
@@ -325,34 +325,6 @@ private:
 
             s_mouse->mState.x = static_cast<int>( pos.X * dpi / 96.f + 0.5f );
             s_mouse->mState.y = static_cast<int>( pos.Y * dpi / 96.f + 0.5f );
-        }
-
-        return S_OK;
-    }
-
-    static HRESULT PointerMoved( IInspectable *, ABI::Windows::UI::Core::IPointerEventArgs* args )
-    {
-        using namespace ABI::Windows::Foundation;
-        using namespace ABI::Windows::UI::Input;
-        using namespace ABI::Windows::Devices::Input;
-
-        if (!s_mouse)
-            return S_OK;
-
-        if (s_mouse->mMode == MODE_ABSOLUTE)
-        {
-            ComPtr<IPointerPoint> currentPoint;
-            HRESULT hr = args->get_CurrentPoint(currentPoint.GetAddressOf());
-            ThrowIfFailed(hr);
-       
-            Point pos;
-            hr = currentPoint->get_Position(&pos);
-            ThrowIfFailed(hr);
-
-            float dpi = s_mouse->mDPI;
-
-            s_mouse->mState.x = static_cast<int>(pos.X * dpi / 96.f + 0.5f);
-            s_mouse->mState.y = static_cast<int>(pos.Y * dpi / 96.f + 0.5f);
         }
 
         return S_OK;
@@ -687,8 +659,8 @@ private:
         lr.x = rect.right;
         lr.y = rect.bottom;
 
-        ClientToScreen(mWindow, &ul);
-        ClientToScreen(mWindow, &lr);
+        MapWindowPoints(mWindow, nullptr, &ul, 1);
+        MapWindowPoints(mWindow, nullptr, &lr, 1);
 
         rect.left = ul.x;
         rect.top = ul.y;
@@ -736,7 +708,7 @@ void Mouse::ProcessMessage(UINT message, WPARAM wParam, LPARAM lParam)
             POINT point;
             point.x = pImpl->mLastX;
             point.y = pImpl->mLastY;
-            if (ClientToScreen(pImpl->mWindow, &point))
+            if (MapWindowPoints(pImpl->mWindow, nullptr, &point, 1))
             {
                 SetCursorPos(point.x, point.y);
             }
