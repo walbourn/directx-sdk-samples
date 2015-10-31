@@ -42,6 +42,7 @@ STDAPI CheckDirect3D11Status( UINT *pStatus )
     // OS Version check tells us most of what we need to know
     OSVERSIONINFOEX osinfo;
     osinfo.dwOSVersionInfoSize = sizeof(osinfo);
+    #pragma warning(suppress:4996)
     if ( !GetVersionEx( (OSVERSIONINFO*)&osinfo ) )
     {
         HRESULT hr = HRESULT_FROM_WIN32( GetLastError() );
@@ -323,6 +324,7 @@ STDAPI DoUpdateForDirect3D11( DWORD dwFlags, D3D11UPDATEPROGRESSCB pfnProgress,
     // Verify we have Windows Vista/Server 2008 SP2 already installed
     OSVERSIONINFOEX osinfo;
     osinfo.dwOSVersionInfoSize = sizeof(osinfo);
+    #pragma warning(suppress:4996)
     if ( !GetVersionEx( (OSVERSIONINFO*)&osinfo ) )
     {
         HRESULT hr = HRESULT_FROM_WIN32( GetLastError() );

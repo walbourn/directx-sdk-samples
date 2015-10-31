@@ -1,0 +1,27 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="GDFData.cpp" />
+    <ClCompile Include="GDFParse.cpp" />
+    <ClCompile Include="GDFTrace.cpp" />
+    <ClCompile Include="RatingsDB.cpp" />
+    <ClCompile Include="WICImage.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="GDFData.h" />
+    <ClInclude Include="GDFParse.h" />
+    <ClInclude Include="RatingsDB.h" />
+    <ClInclude Include="WICImage.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{49beefbc-04db-4920-80ad-1631cd143214}</UniqueIdentifier>
+      <Extensions>ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="GDFTrace.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+</Project>

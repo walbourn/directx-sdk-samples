@@ -60,6 +60,7 @@ HRESULT WINAPI Dynamic_D3D11CreateDevice( IDXGIAdapter* pAdapter,
                 OSVERSIONINFOEX osv;
                 memset( &osv, 0, sizeof(osv) );
                 osv.dwOSVersionInfoSize = sizeof(osv);
+                #pragma warning(suppress:4996)
                 GetVersionEx( (LPOSVERSIONINFO)&osv );
 
                 if ( ( osv.dwMajorVersion > 6 )
