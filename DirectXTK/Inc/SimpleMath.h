@@ -13,6 +13,12 @@
 
 #pragma once
 
+#if defined(_XBOX_ONE) && defined(_TITLE)
+#include <d3d11_x.h>
+#else
+#include <d3d11_1.h>
+#endif
+
 #include <functional>
 #include <memory.h>
 
@@ -44,7 +50,7 @@ struct Vector2 : public XMFLOAT2
 
     operator XMVECTOR() const { return XMLoadFloat2( this ); }
 
-    // Comparision operators
+    // Comparison operators
     bool operator == ( const Vector2& V ) const;
     bool operator != ( const Vector2& V ) const;
 
@@ -57,7 +63,7 @@ struct Vector2 : public XMFLOAT2
     Vector2& operator*= (float S);
     Vector2& operator/= (float S);
 
-    // Urnary operators
+    // Unary operators
     Vector2 operator+ () const { return *this; }
     Vector2 operator- () const { return Vector2(-x, -y); }
 
@@ -150,7 +156,7 @@ struct Vector3 : public XMFLOAT3
 
     operator XMVECTOR() const { return XMLoadFloat3( this ); }
 
-    // Comparision operators
+    // Comparison operators
     bool operator == ( const Vector3& V ) const;
     bool operator != ( const Vector3& V ) const;
 
@@ -163,7 +169,7 @@ struct Vector3 : public XMFLOAT3
     Vector3& operator*= (float S);
     Vector3& operator/= (float S);
 
-    // Urnary operators
+    // Unary operators
     Vector3 operator+ () const { return *this; }
     Vector3 operator- () const;
 
@@ -263,7 +269,7 @@ struct Vector4 : public XMFLOAT4
 
     operator XMVECTOR() const { return XMLoadFloat4( this ); }
 
-    // Comparision operators
+    // Comparison operators
     bool operator == ( const Vector4& V ) const;
     bool operator != ( const Vector4& V ) const;
 
@@ -276,7 +282,7 @@ struct Vector4 : public XMFLOAT4
     Vector4& operator*= (float S);
     Vector4& operator/= (float S);
 
-    // Urnary operators
+    // Unary operators
     Vector4 operator+ () const { return *this; }
     Vector4 operator- () const;
 
@@ -389,8 +395,8 @@ struct Matrix : public XMFLOAT4X4
 
     operator XMMATRIX() const { return XMLoadFloat4x4( this ); }
 
-    // Comparision operators
-     bool operator == ( const Matrix& M ) const;
+    // Comparison operators
+    bool operator == ( const Matrix& M ) const;
     bool operator != ( const Matrix& M ) const;
 
     // Assignment operators
@@ -407,7 +413,7 @@ struct Matrix : public XMFLOAT4X4
     Matrix& operator/= (const Matrix& M);
         // Element-wise divide
 
-    // Urnary operators
+    // Unary operators
     Matrix operator+ () const { return *this; }
     Matrix operator- () const;
 
@@ -517,7 +523,7 @@ struct Plane : public XMFLOAT4
 
     operator XMVECTOR() const { return XMLoadFloat4( this ); }
 
-    // Comparision operators
+    // Comparison operators
     bool operator == ( const Plane& p ) const;
     bool operator != ( const Plane& p ) const;
 
@@ -563,7 +569,7 @@ struct Quaternion : public XMFLOAT4
 
     operator XMVECTOR() const { return XMLoadFloat4( this ); }
 
-    // Comparision operators
+    // Comparison operators
     bool operator == ( const Quaternion& q ) const;
     bool operator != ( const Quaternion& q ) const;
 
@@ -576,7 +582,7 @@ struct Quaternion : public XMFLOAT4
     Quaternion& operator*= (float S);
     Quaternion& operator/= (const Quaternion& q);
 
-    // Urnary operators
+    // Unary operators
     Quaternion operator+ () const { return *this; }
     Quaternion operator- () const;
 
@@ -642,20 +648,22 @@ struct Color : public XMFLOAT4
     operator XMVECTOR() const { return XMLoadFloat4( this ); }
     operator const float*() const { return reinterpret_cast<const float*>(this); }
 
-    // Comparision operators
+    // Comparison operators
     bool operator == ( const Color& c ) const;
     bool operator != ( const Color& c ) const;
 
     // Assignment operators
     Color& operator= (const Color& c) { x = c.x; y = c.y; z = c.z; w = c.w; return *this; }
     Color& operator= (const XMFLOAT4& c) { x = c.x; y = c.y; z = c.z; w = c.w; return *this; }
+    Color& operator= (const DirectX::PackedVector::XMCOLOR& Packed);
+    Color& operator= (const DirectX::PackedVector::XMUBYTEN4& Packed);
     Color& operator+= (const Color& c);
     Color& operator-= (const Color& c);
     Color& operator*= (const Color& c);
     Color& operator*= (float S);
     Color& operator/= (const Color& c);
 
-    // Urnary operators
+    // Unary operators
     Color operator+ () const { return *this; }
     Color operator- () const;
 
@@ -721,7 +729,7 @@ public:
     Ray() : position(0,0,0), direction(0,0,1) {}
     Ray( const Vector3& pos, const Vector3& dir ) : position(pos), direction(dir) {}
 
-    // Comparision operators
+    // Comparison operators
     bool operator == ( const Ray& r ) const;
     bool operator != ( const Ray& r ) const;
 
@@ -730,6 +738,59 @@ public:
     bool Intersects( const BoundingBox& box, _Out_ float& Dist ) const;
     bool Intersects( const Vector3& tri0, const Vector3& tri1, const Vector3& tri2, _Out_ float& Dist ) const;
     bool Intersects( const Plane& plane, _Out_ float& Dist ) const;
+};
+
+//------------------------------------------------------------------------------
+// Viewport
+class Viewport
+{
+public:
+    float x;
+    float y;
+    float width;
+    float height;
+    float minDepth;
+    float maxDepth;
+
+    Viewport() :
+        x(0.f), y(0.f), width(0.f), height(0.f), minDepth(0.f), maxDepth(1.f) {}
+    Viewport( float ix, float iy, float iw, float ih, float iminz = 0.f, float imaxz = 1.f ) :
+        x(ix), y(iy), width(iw), height(ih), minDepth(iminz), maxDepth(imaxz) {}
+    explicit Viewport(const RECT& rct) :
+        x(float(rct.left)), y(float(rct.top)),
+        width(float(rct.right - rct.left)),
+        height(float(rct.bottom - rct.top)),
+        minDepth(0.f), maxDepth(1.f) {}
+    explicit Viewport(const D3D11_VIEWPORT& vp) :
+        x(vp.TopLeftX), y(vp.TopLeftY),
+        width(vp.Width), height(vp.Height),
+        minDepth(vp.MinDepth), maxDepth(vp.MaxDepth) {}
+
+    // Direct3D 11 interop
+    operator D3D11_VIEWPORT() { return *reinterpret_cast<D3D11_VIEWPORT*>(this); }
+    const D3D11_VIEWPORT* Get11() const { return reinterpret_cast<const D3D11_VIEWPORT*>(this); }
+
+    // Comparison operators
+    bool operator == ( const Viewport& vp ) const;
+    bool operator != ( const Viewport& vp ) const;
+
+    // Assignment operators
+    Viewport& operator= (const Viewport& vp);
+    Viewport& operator= (const RECT& rct);
+    Viewport& operator= (const D3D11_VIEWPORT& vp);
+
+    // Viewport operations
+    float AspectRatio() const;
+
+    Vector3 Project(const Vector3& p, const Matrix& proj, const Matrix& view, const Matrix& world ) const;
+    void Project(const Vector3& p, const Matrix& proj, const Matrix& view, const Matrix& world, Vector3& result ) const;
+
+    Vector3 Unproject(const Vector3& p, const Matrix& proj, const Matrix& view, const Matrix& world ) const;
+    void Unproject(const Vector3& p, const Matrix& proj, const Matrix& view, const Matrix& world, Vector3& result ) const;
+
+    // Static methods
+    static RECT __cdecl ComputeDisplayArea(DXGI_SCALING scaling, UINT backBufferWidth, UINT backBufferHeight, int outputWidth, int outputHeight);
+    static RECT __cdecl ComputeTitleSafeArea(UINT backBufferWidth, UINT backBufferHeight);
 };
 
 #include "SimpleMath.inl"
@@ -841,6 +902,23 @@ namespace std
             if (R1.direction.x != R2.direction.x) return R1.direction.x < R2.direction.x;
             if (R1.direction.y != R2.direction.y) return R1.direction.y < R2.direction.y;
             if (R1.direction.z != R2.direction.z) return R1.direction.z < R2.direction.z;
+
+            return false;
+        }
+    };
+
+    template<> struct less<DirectX::SimpleMath::Viewport>
+    {
+        bool operator()(const DirectX::SimpleMath::Viewport& vp1, const DirectX::SimpleMath::Viewport& vp2) const
+        {
+            if (vp1.x != vp2.x) return (vp1.x < vp2.x);
+            if (vp1.y != vp2.y) return (vp1.y < vp2.y);
+
+            if (vp1.width != vp2.width) return (vp1.width < vp2.width);
+            if (vp1.height != vp2.height) return (vp1.height < vp2.height);
+
+            if (vp1.minDepth != vp2.minDepth) return (vp1.minDepth < vp2.minDepth);
+            if (vp1.maxDepth != vp2.maxDepth) return (vp1.maxDepth < vp2.maxDepth);
 
             return false;
         }

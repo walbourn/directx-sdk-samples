@@ -3275,9 +3275,9 @@ const WCHAR* WINAPI DXGetErrorStringW( _In_ HRESULT hr )
 // xapo.h error codes
 // -------------------------------------------------------------
         CHK_ERRA(XAPO_E_FORMAT_UNSUPPORTED)
-    }
 
-    return L"Unknown";
+        default: return L"Unknown error.";
+    }
 }
 
 //--------------------------------------------------------------------------------------
@@ -3289,11 +3289,11 @@ const WCHAR* WINAPI DXGetErrorStringW( _In_ HRESULT hr )
 
 #define  CHK_ERRA(hrchk) \
         case hrchk: \
-             wcscpy_s( desc, count, L#hrchk );
+             wcscpy_s( desc, count, L#hrchk ); break;
 
 #define  CHK_ERR(hrchk, strOut) \
         case hrchk: \
-             wcscpy_s( desc, count, L##strOut );
+             wcscpy_s( desc, count, L##strOut ); break;
 
 
 //--------------------------------------------------------------------------------------
@@ -3602,6 +3602,8 @@ void WINAPI DXGetErrorDescriptionW( _In_ HRESULT hr, _Out_cap_(count) WCHAR* des
 // xapo.h error codes
 // -------------------------------------------------------------
         CHK_ERR(XAPO_E_FORMAT_UNSUPPORTED, "Requested audio format unsupported.")
+
+        default: wcscpy_s( desc, count, L"Unknown error." ); break;
     }
 }
 
