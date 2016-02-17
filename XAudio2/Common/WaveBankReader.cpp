@@ -736,7 +736,6 @@ HRESULT WaveBankReader::Impl::Open( const wchar_t* szFileName )
         CREATEFILE2_EXTENDED_PARAMETERS params = { sizeof(params), 0 };
         params.dwFileAttributes = FILE_ATTRIBUTE_NORMAL;
         params.dwFileFlags = FILE_FLAG_OVERLAPPED | FILE_FLAG_NO_BUFFERING;
-        params.dwSecurityQosFlags = SECURITY_IMPERSONATION;
         m_async = CreateFile2( szFileName,
                                GENERIC_READ,
                                FILE_SHARE_READ,
