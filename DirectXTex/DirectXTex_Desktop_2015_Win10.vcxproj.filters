@@ -8,10 +8,10 @@
       <UniqueIdentifier>{9b7fcbc5-2533-4b88-b75b-d4803e55fa7c}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source Files\Shaders">
-      <UniqueIdentifier>{eb989628-e889-44bf-837a-05c9f09b258e}</UniqueIdentifier>
+      <UniqueIdentifier>{d665bb3f-6d2a-415d-83f5-abd5c813962b}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source Files\Shaders\Compiled">
-      <UniqueIdentifier>{a674c059-ed12-4d51-b5b3-44c34ce565da}</UniqueIdentifier>
+      <UniqueIdentifier>{b8e74ae5-5bcf-404a-b18b-df14ecd31b2d}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -105,10 +105,10 @@
     <None Include="Shaders\CompileShaders.cmd">
       <Filter>Source Files\Shaders</Filter>
     </None>
-    <None Include="Shaders\BC6HEncode.hlsl">
+    <None Include="Shaders\BC7Encode.hlsl">
       <Filter>Source Files\Shaders</Filter>
     </None>
-    <None Include="Shaders\BC7Encode.hlsl">
+    <None Include="Shaders\BC6HEncode.hlsl">
       <Filter>Source Files\Shaders</Filter>
     </None>
     <None Include="Shaders\Compiled\BC6HEncode_EncodeBlockCS.inc">
