@@ -222,7 +222,7 @@ HRESULT CGPUBC6HEncoder::GPU_Encode( ID3D11Device* pDevice, ID3D11DeviceContext*
         }
 
         ID3D11ShaderResourceView* pSRVs[] = { pSRV, nullptr };
-        RunComputeShader( pContext, m_pTryModeG10CS, pSRVs, 2, pCBCS, pErrBestModeUAV[0], uThreadGroupCount / 4, 1, 1 );
+        RunComputeShader( pContext, m_pTryModeG10CS, pSRVs, 2, pCBCS, pErrBestModeUAV[0], __max(uThreadGroupCount / 4, 1), 1, 1 );
 
         for ( INT modeID = 0; modeID < 10; ++modeID )
 		{
@@ -242,11 +242,11 @@ HRESULT CGPUBC6HEncoder::GPU_Encode( ID3D11Device* pDevice, ID3D11DeviceContext*
 			}
 
 			pSRVs[1] = pErrBestModeSRV[modeID & 1];
-			RunComputeShader( pContext, m_pTryModeLE10CS, pSRVs, 2, pCBCS, pErrBestModeUAV[!(modeID & 1)], uThreadGroupCount / 2, 1, 1 );
+			RunComputeShader( pContext, m_pTryModeLE10CS, pSRVs, 2, pCBCS, pErrBestModeUAV[!(modeID & 1)], __max(uThreadGroupCount / 2, 1), 1, 1 );
 		}
 
         pSRVs[1] = pErrBestModeSRV[0];
-        RunComputeShader( pContext, m_pEncodeBlockCS, pSRVs, 2, pCBCS, pUAV, uThreadGroupCount / 2, 1, 1 );
+        RunComputeShader( pContext, m_pEncodeBlockCS, pSRVs, 2, pCBCS, pUAV, __max(uThreadGroupCount / 2, 1), 1, 1 );
 
         start_block_id += n;
         num_blocks -= n;
