@@ -16,6 +16,7 @@
 *.tlog
 *.lastbuildstate
 *.ilk
+*.VC.db
 Bin
 ipch
 Debug
