@@ -13,27 +13,13 @@
 // http://go.microsoft.com/fwlink/?LinkId=248929
 //-------------------------------------------------------------------------------------
 
-#ifdef _MSC_VER
 #pragma once
-#endif
 
-#pragma warning(push)
-#pragma warning(disable : 4005)
 #include <stdint.h>
-#pragma warning(pop)
-
 #include <objbase.h>
 #include <memory>
 #include <mmreg.h>
 
-#if defined(_MSC_VER) && (_MSC_VER<1610) && !defined(_In_reads_)
-#define _In_reads_(exp)
-#define _In_reads_bytes_(exp)
-#endif
-
-#ifndef _Use_decl_annotations_
-#define _Use_decl_annotations_
-#endif
 
 namespace DirectX
 {
@@ -41,6 +27,10 @@ namespace DirectX
     {
     public:
         WaveBankReader();
+
+        WaveBankReader(WaveBankReader const&) = delete;
+        WaveBankReader& operator= (WaveBankReader const&) = delete;
+
         ~WaveBankReader();
 
         HRESULT Open( _In_z_ const wchar_t* szFileName );
@@ -82,9 +72,5 @@ namespace DirectX
         class Impl;
 
         std::unique_ptr<Impl> pImpl;
-
-        // Prevent copying.
-        WaveBankReader(WaveBankReader const&);
-        WaveBankReader& operator= (WaveBankReader const&);
     };
 }

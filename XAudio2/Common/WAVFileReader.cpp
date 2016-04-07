@@ -18,10 +18,6 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
-#ifndef _WIN32_WINNT_WIN8
-#define _WIN32_WINNT_WIN8 0x0602
-#endif
-
 #include <assert.h>
 
 //--------------------------------------------------------------------------------------
@@ -224,7 +220,7 @@ static HRESULT WaveFindFormatAndData( _In_reads_bytes_(wavDataSize) const uint8_
             switch( wfx->wFormatTag )
             {
             case WAVE_FORMAT_WMAUDIO2:
-            case WAVE_FORMAT_WMAUDIO3: // xWMA is supported by XAudio 2.7 and by Xbox One
+            case WAVE_FORMAT_WMAUDIO3:
                 dpds = true;
                 break;
 

@@ -21,9 +21,6 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
-#ifndef _WIN32_WINNT_WIN8
-#define _WIN32_WINNT_WIN8 0x0602
-#endif
 
 //--------------------------------------------------------------------------------------
 namespace
@@ -334,7 +331,7 @@ struct ENTRYCOMPACT
                 }
             }
             return 0;
-        
+
         default: 
             return uint32_t( ( uint64_t( length ) * 8 )
                              / uint64_t( data.CompactFormat.BitsPerSample() * data.CompactFormat.nChannels ) );
@@ -386,7 +383,6 @@ class WaveBankReader::Impl
 public:
     Impl() :
         m_async( INVALID_HANDLE_VALUE ),
-        m_event( INVALID_HANDLE_VALUE ),
         m_prepared(false)
     {
         memset( &m_header, 0, sizeof(HEADER) );
@@ -421,7 +417,7 @@ public:
     }
 
     HANDLE                              m_async;
-    HANDLE                              m_event;
+    ScopedHandle                        m_event;
     OVERLAPPED                          m_request;
     bool                                m_prepared;
 
@@ -445,19 +441,18 @@ HRESULT WaveBankReader::Impl::Open( const wchar_t* szFileName )
     m_prepared = false;
 
 #if (_WIN32_WINNT >= _WIN32_WINNT_VISTA)
-    m_event = CreateEventEx( nullptr, nullptr, CREATE_EVENT_MANUAL_RESET, EVENT_MODIFY_STATE | SYNCHRONIZE );
+    m_event.reset( CreateEventEx( nullptr, nullptr, CREATE_EVENT_MANUAL_RESET, EVENT_MODIFY_STATE | SYNCHRONIZE ) );
 #else
-    m_event = CreateEvent( nullptr, TRUE, FALSE, nullptr );
+    m_event.reset( CreateEvent( nullptr, TRUE, FALSE, nullptr ) );
 #endif
 
     if ( !m_event )
     {
-        m_event = INVALID_HANDLE_VALUE;
         return HRESULT_FROM_WIN32( GetLastError() );
     }
 
 #if (_WIN32_WINNT >= _WIN32_WINNT_WIN8)
-    CREATEFILE2_EXTENDED_PARAMETERS params = { sizeof(params), 0 };
+    CREATEFILE2_EXTENDED_PARAMETERS params = { sizeof(CREATEFILE2_EXTENDED_PARAMETERS), 0 };
     params.dwFileAttributes = FILE_ATTRIBUTE_NORMAL;
     params.dwFileFlags = FILE_FLAG_OVERLAPPED | FILE_FLAG_SEQUENTIAL_SCAN;
     ScopedHandle hFile( safe_handle( CreateFile2( szFileName,
@@ -483,7 +478,7 @@ HRESULT WaveBankReader::Impl::Open( const wchar_t* szFileName )
     // Read and verify header
     OVERLAPPED request;
     memset( &request, 0, sizeof(request) );
-    request.hEvent = m_event;
+    request.hEvent = m_event.get();
 
     bool wait = false;
     if( !ReadFile( hFile.get(), &m_header, sizeof( m_header ), nullptr, &request ) )
@@ -499,7 +494,7 @@ HRESULT WaveBankReader::Impl::Open( const wchar_t* szFileName )
     BOOL result = GetOverlappedResultEx( hFile.get(), &request, &bytes, INFINITE, FALSE );
 #else
     if ( wait  )
-        (void)WaitForSingleObject( m_event, INFINITE );
+        (void)WaitForSingleObject( m_event.get(), INFINITE );
 
     BOOL result = GetOverlappedResult( hFile.get(), &request, &bytes, FALSE );
 #endif
@@ -530,7 +525,7 @@ HRESULT WaveBankReader::Impl::Open( const wchar_t* szFileName )
     // Load bank data
     memset( &request, 0, sizeof(request) );
     request.Offset = m_header.Segments[HEADER::SEGIDX_BANKDATA].dwOffset;
-    request.hEvent = m_event;
+    request.hEvent = m_event.get();
 
     wait = false;
     if( !ReadFile( hFile.get(), &m_data, sizeof( m_data ), nullptr, &request ) )
@@ -545,7 +540,7 @@ HRESULT WaveBankReader::Impl::Open( const wchar_t* szFileName )
     result = GetOverlappedResultEx( hFile.get(), &request, &bytes, INFINITE, FALSE );
 #else
     if ( wait )
-        (void)WaitForSingleObject( m_event, INFINITE );
+        (void)WaitForSingleObject( m_event.get(), INFINITE );
 
     result = GetOverlappedResult( hFile.get(), &request, &bytes, FALSE );
 #endif
@@ -567,7 +562,7 @@ HRESULT WaveBankReader::Impl::Open( const wchar_t* szFileName )
             return E_FAIL;
         }
 
-        if (  m_header.Segments[HEADER::SEGIDX_ENTRYWAVEDATA].dwLength > MAX_COMPACT_DATA_SEGMENT_SIZE )
+        if (  m_header.Segments[HEADER::SEGIDX_ENTRYWAVEDATA].dwLength > ( MAX_COMPACT_DATA_SEGMENT_SIZE * m_data.dwAlignment ) )
         {
             // Data segment is too large to be valid compact wavebank
             return E_FAIL;
@@ -587,16 +582,6 @@ HRESULT WaveBankReader::Impl::Open( const wchar_t* szFileName )
         return E_FAIL;
     }
 
-    if ( m_data.dwFlags & BANKDATA::TYPE_STREAMING )
-    {
-        if ( m_data.dwAlignment < ALIGNMENT_DVD )
-            return E_FAIL;
-    }
-    else if ( m_data.dwAlignment < ALIGNMENT_MIN )
-    {
-        return E_FAIL;
-    }
-
     // Load names
     DWORD namesBytes = m_header.Segments[HEADER::SEGIDX_ENTRYNAMES].dwLength;
     if ( namesBytes > 0 )
@@ -609,7 +594,7 @@ HRESULT WaveBankReader::Impl::Open( const wchar_t* szFileName )
 
             memset( &request, 0, sizeof(request) );
             request.Offset = m_header.Segments[HEADER::SEGIDX_ENTRYNAMES].dwOffset;
-            request.hEvent = m_event;
+            request.hEvent = m_event.get();
 
             wait = false;
             if ( !ReadFile( hFile.get(), temp.get(), namesBytes, nullptr, &request ) )
@@ -624,7 +609,7 @@ HRESULT WaveBankReader::Impl::Open( const wchar_t* szFileName )
             result = GetOverlappedResultEx( hFile.get(), &request, &bytes, INFINITE, FALSE );
 #else
             if ( wait )
-                (void)WaitForSingleObject( m_event, INFINITE );
+                (void)WaitForSingleObject( m_event.get(), INFINITE );
 
             result = GetOverlappedResult( hFile.get(), &request, &bytes, FALSE );
 #endif
@@ -639,7 +624,7 @@ HRESULT WaveBankReader::Impl::Open( const wchar_t* szFileName )
                 DWORD n = m_data.dwEntryNameElementSize * j;
 
                 char name[ 64 ] = {0};
-                strncpy_s( name, &temp.get()[ n ], 64 );
+                strncpy_s( name, &temp[ n ], 64 );
 
                 m_names[ name ] = j;
             }
@@ -660,7 +645,7 @@ HRESULT WaveBankReader::Impl::Open( const wchar_t* szFileName )
 
     memset( &request, 0, sizeof(request) );
     request.Offset = m_header.Segments[HEADER::SEGIDX_ENTRYMETADATA].dwOffset;
-    request.hEvent = m_event;
+    request.hEvent = m_event.get();
 
     wait = false;
     if ( !ReadFile( hFile.get(), m_entries.get(), metadataBytes, nullptr, &request ) )
@@ -675,7 +660,7 @@ HRESULT WaveBankReader::Impl::Open( const wchar_t* szFileName )
     result = GetOverlappedResultEx( hFile.get(), &request, &bytes, INFINITE, FALSE );
 #else
     if ( wait )
-        (void)WaitForSingleObject( m_event, INFINITE );
+        (void)WaitForSingleObject( m_event.get(), INFINITE );
 
     result = GetOverlappedResult( hFile.get(), &request, &bytes, FALSE );
 #endif
@@ -695,7 +680,7 @@ HRESULT WaveBankReader::Impl::Open( const wchar_t* szFileName )
 
         memset( &request, 0, sizeof(OVERLAPPED) );
         request.Offset = m_header.Segments[HEADER::SEGIDX_SEEKTABLES].dwOffset;
-        request.hEvent = m_event;
+        request.hEvent = m_event.get();
 
         wait = false;
         if ( !ReadFile( hFile.get(), m_seekData.get(), seekLen, nullptr, &request ) )
@@ -710,7 +695,7 @@ HRESULT WaveBankReader::Impl::Open( const wchar_t* szFileName )
         result = GetOverlappedResultEx( hFile.get(), &request, &bytes, INFINITE, FALSE );
 #else
         if ( wait )
-            (void)WaitForSingleObject( m_event, INFINITE );
+            (void)WaitForSingleObject( m_event.get(), INFINITE );
 
         result = GetOverlappedResult( hFile.get(), &request, &bytes, FALSE );
 #endif
@@ -733,14 +718,14 @@ HRESULT WaveBankReader::Impl::Open( const wchar_t* szFileName )
         hFile.reset();
 
 #if (_WIN32_WINNT >= _WIN32_WINNT_WIN8)
-        CREATEFILE2_EXTENDED_PARAMETERS params = { sizeof(params), 0 };
-        params.dwFileAttributes = FILE_ATTRIBUTE_NORMAL;
-        params.dwFileFlags = FILE_FLAG_OVERLAPPED | FILE_FLAG_NO_BUFFERING;
+        CREATEFILE2_EXTENDED_PARAMETERS params2 = { sizeof(CREATEFILE2_EXTENDED_PARAMETERS), 0 };
+        params2.dwFileAttributes = FILE_ATTRIBUTE_NORMAL;
+        params2.dwFileFlags = FILE_FLAG_OVERLAPPED | FILE_FLAG_NO_BUFFERING;
         m_async = CreateFile2( szFileName,
                                GENERIC_READ,
                                FILE_SHARE_READ,
                                OPEN_EXISTING,
-                               &params );
+                               &params2 );
 #else
         m_async = CreateFileW( szFileName,
                                GENERIC_READ,
@@ -767,7 +752,7 @@ HRESULT WaveBankReader::Impl::Open( const wchar_t* szFileName )
 
         memset( &m_request, 0, sizeof(OVERLAPPED) );
         m_request.Offset = m_header.Segments[HEADER::SEGIDX_ENTRYWAVEDATA].dwOffset;
-        m_request.hEvent = m_event;
+        m_request.hEvent = m_event.get();
 
         if ( !ReadFile( hFile.get(), m_waveData.get(), waveLen, nullptr, &m_request ) )
         {
@@ -807,11 +792,7 @@ void WaveBankReader::Impl::Close()
         CloseHandle( m_async );
         m_async = INVALID_HANDLE_VALUE;
     }
-    if ( m_event != INVALID_HANDLE_VALUE )
-    {
-        CloseHandle( m_event );
-        m_event = INVALID_HANDLE_VALUE;
-    }
+    m_event.reset();
 }
 
 
@@ -855,7 +836,7 @@ HRESULT WaveBankReader::Impl::GetFormat( uint32_t index, WAVEFORMATEX* pFormat, 
             }
             break;
 
-        case MINIWAVEFORMAT::TAG_WMA: // xWMA is supported by XAudio 2.7 and by Xbox One
+        case MINIWAVEFORMAT::TAG_WMA:
             if ( maxsize < sizeof(WAVEFORMATEX) )
                 return HRESULT_FROM_WIN32( ERROR_MORE_DATA );
 
@@ -886,10 +867,14 @@ HRESULT WaveBankReader::Impl::GetWaveData( uint32_t index, const uint8_t** pData
     if ( !pData )
         return E_INVALIDARG;
 
-    if ( index >= m_data.dwEntryCount || !m_entries || !m_waveData )
+    if ( index >= m_data.dwEntryCount || !m_entries )
     {
         return E_FAIL;
     }
+
+    const uint8_t* waveData = m_waveData.get();
+    if ( !waveData )
+        return E_FAIL;
 
     if ( m_data.dwFlags & BANKDATA::TYPE_STREAMING )
     {
@@ -913,7 +898,7 @@ HRESULT WaveBankReader::Impl::GetWaveData( uint32_t index, const uint8_t** pData
             return HRESULT_FROM_WIN32( ERROR_HANDLE_EOF );
         }
 
-        *pData = &m_waveData.get()[ dwOffset ];
+        *pData = &waveData[ dwOffset ];
         dataSize = dwLength;
     }
     else
@@ -925,7 +910,7 @@ HRESULT WaveBankReader::Impl::GetWaveData( uint32_t index, const uint8_t** pData
             return HRESULT_FROM_WIN32( ERROR_HANDLE_EOF );
         }
    
-        *pData = &m_waveData.get()[ entry.PlayRegion.dwOffset ];
+        *pData = &waveData[ entry.PlayRegion.dwOffset ];
         dataSize = entry.PlayRegion.dwLength;
     }
 
