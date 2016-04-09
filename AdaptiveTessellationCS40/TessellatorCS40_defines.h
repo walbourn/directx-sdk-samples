@@ -5,6 +5,5 @@
 //
 // Copyright (c) Microsoft Corporation. All rights reserved.
 //--------------------------------------------------------------------------------------
-#pragma once
 
 #define MAX_FACTOR 16

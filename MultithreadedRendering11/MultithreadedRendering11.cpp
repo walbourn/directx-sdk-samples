@@ -719,8 +719,8 @@ HRESULT InitializeShadows( ID3D11Device* pd3dDevice )
 
         // The shadow map, along with depth-stencil and texture view
         D3D11_TEXTURE2D_DESC ShadowDesc = {
-            ( int) g_fShadowResolutionX[iShadow],   // UINT Width;
-            ( int) g_fShadowResolutionY[iShadow],   // UINT Height;
+            UINT(g_fShadowResolutionX[iShadow]),    // UINT Width;
+            UINT(g_fShadowResolutionY[iShadow]),    // UINT Height;
             1,                                      // UINT MipLevels;
             1,                                      // UINT ArraySize;
             DXGI_FORMAT_R32_TYPELESS,               // DXGI_FORMAT Format;

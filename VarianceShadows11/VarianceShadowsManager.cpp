@@ -535,10 +535,10 @@ HRESULT VarianceShadowsManager::ReleaseAndAllocateNewShadowResources( ID3D11Devi
         SAFE_RELEASE( m_pTemporaryShadowDepthBufferDSV );
 
         D3D11_TEXTURE2D_DESC dtd = {
-            m_CopyOfCascadeConfig.m_iBufferSize,//UINT Width;
-            m_CopyOfCascadeConfig.m_iBufferSize,//UINT Height;
+            UINT(m_CopyOfCascadeConfig.m_iBufferSize),//UINT Width;
+            UINT(m_CopyOfCascadeConfig.m_iBufferSize),//UINT Height;
             1,//UINT MipLevels;
-            m_CopyOfCascadeConfig.m_nCascadeLevels,//UINT ArraySize;
+            UINT(m_CopyOfCascadeConfig.m_nCascadeLevels),//UINT ArraySize;
             m_CopyOfCascadeConfig.m_ShadowBufferFormat,//DXGI_FORMAT Format;
             1,//DXGI_SAMPLE_DESC SampleDesc;
             0,

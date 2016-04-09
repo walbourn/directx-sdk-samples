@@ -440,7 +440,9 @@ ID3D11Buffer* CreateAndCopyToDebugBuf( ID3D11Device* pDevice, ID3D11DeviceContex
     desc.Usage = D3D11_USAGE_STAGING;
     desc.BindFlags = 0;
     desc.MiscFlags = 0;
-    pDevice->CreateBuffer(&desc, nullptr, &debugbuf);
+    if (FAILED(pDevice->CreateBuffer(&desc, nullptr, &debugbuf)))
+        return nullptr;
+
     DXUT_SetDebugName( debugbuf, "Debug" );
 
     pd3dImmediateContext->CopyResource( debugbuf, pBuffer );
@@ -724,7 +726,7 @@ void CTessellator::PerEdgeTessellation( CXMMATRIX matWVP,
 
     // Tessellate vertex
     {
-        INT cbCS[4] = {*num_tessed_vertices, 0, 0, 0};
+        INT cbCS[4] = { static_cast<INT>(*num_tessed_vertices), 0, 0, 0};
         ID3D11ShaderResourceView* aRViews[2] = { m_pScatterVertexBufSRV, m_pEdgeFactorBufSRV };
         RunComputeShader( m_pd3dImmediateContext,
                           s_pTessVerticesCSs[m_PartitioningMode],
@@ -755,7 +757,7 @@ void CTessellator::PerEdgeTessellation( CXMMATRIX matWVP,
 
     // Tessellate indices
     {
-        INT cbCS[4] = {*num_tessed_indices, 0, 0, 0};
+        INT cbCS[4] = { static_cast<INT>(*num_tessed_indices), 0, 0, 0};
         ID3D11ShaderResourceView* aRViews[3] = { m_pScatterIndexBufSRV, m_pEdgeFactorBufSRV, m_pScanBuf0SRV };
         RunComputeShader( m_pd3dImmediateContext,
             s_pTessIndicesCSs[m_PartitioningMode],

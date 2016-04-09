@@ -32,11 +32,11 @@
 #endif
 
 #if (_WIN32_WINNT >= 0x0A00) && !defined(USE_DIRECT3D11_3)
-#define DIRECT3D11_3
+#define USE_DIRECT3D11_3
 #endif
 
 #if (_WIN32_WINNT >= 0x0603) && !defined(USE_DIRECT3D11_2)
-#define DIRECT3D11_2
+#define USE_DIRECT3D11_2
 #endif
 
 #if defined(USE_DIRECT3D11_3) && !defined(USE_DIRECT3D11_2)

@@ -245,7 +245,7 @@ void InitApp()
     SHADOW_TEXTURE_FORMAT sbt = (SHADOW_TEXTURE_FORMAT) PtrToUlong( g_DepthBufferFormatCombo->GetSelectedData() );
     g_CascadeConfig.m_ShadowBufferFormat = sbt;
 
-    WCHAR desc[256];
+    WCHAR desc[256] = { 0 };
     swprintf_s( desc, L"Texture Size: %d ", g_CascadeConfig.m_iBufferSize ); 
 
     g_HUD.AddStatic( IDC_BUFFER_SIZETEXT, desc, 0, iY+26, 30, 10);
@@ -273,7 +273,7 @@ void InitApp()
     g_HUD.AddCheckBox( IDC_TOGGLE_DERIVATIVE_OFFSET, L"DDX, DDY offset", 0, iY+=26, 170, 23, bValue );
 
 
-    WCHAR dta[60];
+    WCHAR dta[60] = { 0 };
     
     g_HUD.AddComboBox( IDC_SELECTED_SCENE, 0, iY+=26, 170, 23, VK_F8, false, &g_SceneSelectCombo );
     g_SceneSelectCombo->AddItem( L"Power Plant", ULongToPtr( POWER_PLANT_SCENE ) );
@@ -324,7 +324,7 @@ void InitApp()
     
     INT sp = 12;
     iY+=20;
-    WCHAR label[16];
+    WCHAR label[16] = { 0 };
     // Color the cascade labels similar to the visualization.
     D3DCOLOR tcolors[] = 
     { 
@@ -522,7 +522,7 @@ void CALLBACK OnGUIEvent( UINT nEvent, INT nControlID, CDXUTControl* pControl, v
 
             g_HUD.GetSlider( IDC_CASCADELEVEL1 + g_CascadeConfig.m_nCascadeLevels - 1 )->SetValue( 
                 g_CascadedShadow.m_iCascadePartitionsZeroToOne[g_CascadeConfig.m_nCascadeLevels - 1] );
-            WCHAR label[16];
+            WCHAR label[16] = { 0 };
             swprintf_s( label, L"L%d: %d", g_CascadeConfig.m_nCascadeLevels,
                 g_CascadedShadow.m_iCascadePartitionsZeroToOne[g_CascadeConfig.m_nCascadeLevels - 1]  );
             g_HUD.GetStatic( IDC_CASCADELEVEL1TEXT + g_CascadeConfig.m_nCascadeLevels - 1 )->SetText( label );
@@ -543,7 +543,7 @@ void CALLBACK OnGUIEvent( UINT nEvent, INT nControlID, CDXUTControl* pControl, v
             INT PCFSize = g_HUD.GetSlider( IDC_PCF_SIZE )->GetValue();
             PCFSize *= 2;
             PCFSize -=1;
-            WCHAR desc[256];
+            WCHAR desc[256] = { 0 };
             swprintf_s( desc, L"PCF Blur: %d ", PCFSize ); 
             g_HUD.GetStatic( IDC_PCF_SIZETEXT )->SetText( desc );
             g_CascadedShadow.m_iPCFBlurSize = PCFSize;
@@ -553,7 +553,7 @@ void CALLBACK OnGUIEvent( UINT nEvent, INT nControlID, CDXUTControl* pControl, v
         {
             INT offset = g_HUD.GetSlider( IDC_PCF_OFFSET_SIZE )->GetValue();
             FLOAT useoffset = ( FLOAT )offset * 0.001f;
-            WCHAR desc[256];
+            WCHAR desc[256] = { 0 };
             swprintf_s( desc, L" Offset: %0.03f", useoffset); 
             g_HUD.GetStatic( IDC_PCF_OFFSET_SIZETEXT )->SetText( desc );
             g_CascadedShadow.m_fPCFOffset= useoffset;
@@ -571,7 +571,7 @@ void CALLBACK OnGUIEvent( UINT nEvent, INT nControlID, CDXUTControl* pControl, v
         {
             INT val = g_HUD.GetSlider( IDC_BLEND_MAPS_SLIDER )->GetValue();
             g_CascadedShadow.m_fBlurBetweenCascadesAmount = (float)val * 0.005f;
-            WCHAR dta[256];
+            WCHAR dta[256] = { 0 };
             swprintf_s( dta, L"Cascade Blur %0.03f", g_CascadedShadow.m_fBlurBetweenCascadesAmount );
             g_HUD.GetCheckBox( IDC_BLEND_BETWEEN_MAPS_CHECK )->SetText( dta );
         }
@@ -595,7 +595,7 @@ void CALLBACK OnGUIEvent( UINT nEvent, INT nControlID, CDXUTControl* pControl, v
                 value = max;
                 g_HUD.GetSlider( IDC_BUFFER_SIZE )->SetValue( value / 32 );
             }
-            WCHAR desc[256];
+            WCHAR desc[256] = { 0 };
             swprintf_s( desc, L"Texture Size: %d ", value ); 
             g_HUD.GetStatic( IDC_BUFFER_SIZETEXT )->SetText( desc );
 
@@ -654,7 +654,7 @@ void CALLBACK OnGUIEvent( UINT nEvent, INT nControlID, CDXUTControl* pControl, v
             INT max = 8192 / g_CascadeConfig.m_nCascadeLevels;
             if( value > max ) 
             {
-                WCHAR desc[256];
+                WCHAR desc[256] = { 0 };
                 value = max;
 
                 swprintf_s( desc, L"Texture Size: %d ", value ); 
@@ -665,7 +665,7 @@ void CALLBACK OnGUIEvent( UINT nEvent, INT nControlID, CDXUTControl* pControl, v
             
             // update the selected camera based on these changes.
             INT selected = g_CameraSelectCombo->GetSelectedIndex();
-            WCHAR dta[60];
+            WCHAR dta[60] = { 0 };
             g_CameraSelectCombo->RemoveAllItems();
             swprintf_s( dta, L"Eye Camera %d", EYE_CAMERA + 1 );
             g_CameraSelectCombo->AddItem(dta, ULongToPtr( EYE_CAMERA ) );     

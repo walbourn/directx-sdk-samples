@@ -1270,7 +1270,7 @@ HRESULT MeasureLuminanceCS11( ID3D11DeviceContext* pd3dImmediateContext, const D
     // First CS pass, reduce the render target texture into a 1D buffer
     {
         ID3D11ShaderResourceView* aRViews[ 1 ] = { g_pTexRenderRV11 };
-        CB_CS cbCS = { dimx, dimy, pBackBufferDesc->Width, pBackBufferDesc->Height };
+        CB_CS cbCS = { UINT(dimx), UINT(dimy), pBackBufferDesc->Width, pBackBufferDesc->Height };
         RunComputeShader( pd3dImmediateContext, 
                           g_pReduceTo1DCS, 
                           1, aRViews,
@@ -1300,7 +1300,7 @@ HRESULT MeasureLuminanceCS11( ID3D11DeviceContext* pd3dImmediateContext, const D
                 for (;;)
                 {
                     ID3D11ShaderResourceView* aRViews[ 1 ] = { g_pReductionRV0 };
-                    CB_CS cbCS = { nNumToReduce, dim, 0, 0 };
+                    CB_CS cbCS = { UINT(nNumToReduce), UINT(dim), 0, 0 };
                     RunComputeShader( pd3dImmediateContext,
                                       g_pReduceToSingleCS,
                                       1, aRViews,

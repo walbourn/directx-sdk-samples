@@ -246,19 +246,16 @@ HRESULT CascadedShadowsManager::Init ( ID3D11Device* pd3dDevice,
         &m_pVertexLayoutMesh ) );
     DXUT_SetDebugName( m_pVertexLayoutMesh, "CascadedShadowsManager" );
         
-    D3D11_RASTERIZER_DESC drd = 
-    {
-        D3D11_FILL_SOLID,//D3D11_FILL_MODE FillMode;
-        D3D11_CULL_NONE,//D3D11_CULL_MODE CullMode;
-        FALSE,//BOOL FrontCounterClockwise;
-        0,//INT DepthBias;
-        0.0,//FLOAT DepthBiasClamp;
-        0.0,//FLOAT SlopeScaledDepthBias;
-        TRUE,//BOOL DepthClipEnable;
-        FALSE,//BOOL ScissorEnable;
-        TRUE,//BOOL MultisampleEnable;
-        FALSE//BOOL AntialiasedLineEnable;   
-    };
+    CD3D11_RASTERIZER_DESC drd(D3D11_FILL_SOLID,
+        D3D11_CULL_NONE,
+        FALSE,
+        0,
+        0.f,
+        0.f,
+        TRUE,
+        FALSE,
+        TRUE,
+        FALSE);
 
     pd3dDevice->CreateRasterizerState( &drd, &m_prsScene );
     DXUT_SetDebugName( m_prsScene, "CSM Scene" );
@@ -358,19 +355,16 @@ HRESULT CascadedShadowsManager::ReleaseAndAllocateNewShadowResources( ID3D11Devi
         V_RETURN( pd3dDevice->CreateSamplerState( &SamDesc, &m_pSamLinear ) );
         DXUT_SetDebugName( m_pSamLinear, "CSM Linear" );
 
-        D3D11_SAMPLER_DESC SamDescShad = 
-        {
-            D3D11_FILTER_COMPARISON_MIN_MAG_LINEAR_MIP_POINT,// D3D11_FILTER Filter;
-            D3D11_TEXTURE_ADDRESS_BORDER, //D3D11_TEXTURE_ADDRESS_MODE AddressU;
-            D3D11_TEXTURE_ADDRESS_BORDER, //D3D11_TEXTURE_ADDRESS_MODE AddressV;
-            D3D11_TEXTURE_ADDRESS_BORDER, //D3D11_TEXTURE_ADDRESS_MODE AddressW;
-            0,//FLOAT MipLODBias;
-            0,//UINT MaxAnisotropy;
-            D3D11_COMPARISON_LESS , //D3D11_COMPARISON_FUNC ComparisonFunc;
-            0.0,0.0,0.0,0.0,//FLOAT BorderColor[ 4 ];
-            0,//FLOAT MinLOD;
-            0//FLOAT MaxLOD;   
-        };
+        CD3D11_SAMPLER_DESC SamDescShad(D3D11_FILTER_COMPARISON_MIN_MAG_LINEAR_MIP_POINT,
+            D3D11_TEXTURE_ADDRESS_BORDER,
+            D3D11_TEXTURE_ADDRESS_BORDER,
+            D3D11_TEXTURE_ADDRESS_BORDER,
+            0.f,
+            0,
+            D3D11_COMPARISON_LESS,
+            Colors::Black,
+            0,
+            0);
 
         V_RETURN( pd3dDevice->CreateSamplerState( &SamDescShad, &m_pSamShadowPCF ) );
         DXUT_SetDebugName( m_pSamShadowPCF, "CSM Shadow PCF" );
@@ -432,42 +426,21 @@ HRESULT CascadedShadowsManager::ReleaseAndAllocateNewShadowResources( ID3D11Devi
             break;
         }
 
-        D3D11_TEXTURE2D_DESC dtd = 
-        {
-            m_CopyOfCascadeConfig.m_iBufferSize * m_CopyOfCascadeConfig.m_nCascadeLevels,//UINT Width;
-            m_CopyOfCascadeConfig.m_iBufferSize,//UINT Height;
-            1,//UINT MipLevels;
-            1,//UINT ArraySize;
-            texturefmt,//DXGI_FORMAT Format;
-            1,//DXGI_SAMPLE_DESC SampleDesc;
-            0,
-            D3D11_USAGE_DEFAULT,//D3D11_USAGE Usage;
-            D3D11_BIND_DEPTH_STENCIL|D3D11_BIND_SHADER_RESOURCE,//UINT BindFlags;
-            0,//UINT CPUAccessFlags;
-            0//UINT MiscFlags;    
-        };
+        CD3D11_TEXTURE2D_DESC dtd(texturefmt,
+                                  static_cast<INT>(m_CopyOfCascadeConfig.m_iBufferSize * m_CopyOfCascadeConfig.m_nCascadeLevels),
+                                  static_cast<INT>(m_CopyOfCascadeConfig.m_iBufferSize),
+                                  1,
+                                  1,
+                                  D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE);
 
         V_RETURN( pd3dDevice->CreateTexture2D( &dtd, nullptr, &m_pCascadedShadowMapTexture  ) );
         DXUT_SetDebugName( m_pCascadedShadowMapTexture, "CSM ShadowMap" );
 
-        D3D11_DEPTH_STENCIL_VIEW_DESC  dsvd = 
-        {
-            DSVfmt,
-            D3D11_DSV_DIMENSION_TEXTURE2D,
-            0
-        };
+        CD3D11_DEPTH_STENCIL_VIEW_DESC dsvd(D3D11_DSV_DIMENSION_TEXTURE2D, DSVfmt);
         V_RETURN( pd3dDevice->CreateDepthStencilView( m_pCascadedShadowMapTexture, &dsvd, &m_pCascadedShadowMapDSV ) ); 
         DXUT_SetDebugName( m_pCascadedShadowMapDSV, "CSM ShadowMap DSV" );
 
-        D3D11_SHADER_RESOURCE_VIEW_DESC dsrvd = 
-        {
-            SRVfmt,
-            D3D11_SRV_DIMENSION_TEXTURE2D,
-            0,
-            0
-        };
-        dsrvd.Texture2D.MipLevels = 1;
-
+        CD3D11_SHADER_RESOURCE_VIEW_DESC dsrvd(D3D11_SRV_DIMENSION_TEXTURE2D, SRVfmt, 0, 1);
         V_RETURN( pd3dDevice->CreateShaderResourceView( m_pCascadedShadowMapTexture, &dsrvd, &m_pCascadedShadowMapSRV ) );
         DXUT_SetDebugName( m_pCascadedShadowMapSRV, "CSM ShadowMap SRV" );
     }

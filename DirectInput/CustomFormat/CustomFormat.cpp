@@ -56,15 +56,15 @@ struct MouseState
 
 DIOBJECTDATAFORMAT g_aObjectFormats[] =
 {
-    { &GUID_XAxis, FIELD_OFFSET( MouseState, lAxisX ),    // X axis
+    { &GUID_XAxis, static_cast<DWORD>( FIELD_OFFSET( MouseState, lAxisX ) ),// X axis
         DIDFT_AXIS | DIDFT_ANYINSTANCE, 0 },
     { &GUID_YAxis, FIELD_OFFSET( MouseState, lAxisY ),    // Y axis
         DIDFT_AXIS | DIDFT_ANYINSTANCE, 0 },
-    { 0, FIELD_OFFSET( MouseState, abButtons[0] ),        // Button 0
+    { 0, static_cast<DWORD>(FIELD_OFFSET( MouseState, abButtons[0] ) ),     // Button 0
         DIDFT_BUTTON | DIDFT_ANYINSTANCE, 0 },
-    { 0, FIELD_OFFSET( MouseState, abButtons[1] ),        // Button 1 (optional)
+    { 0, static_cast<DWORD>( FIELD_OFFSET( MouseState, abButtons[1] ) ),    // Button 1 (optional)
         DIDFT_BUTTON | DIDFT_ANYINSTANCE | DIDFT_OPTIONAL, 0 },
-    { 0, FIELD_OFFSET( MouseState, abButtons[2] ),        // Button 2 (optional)
+    { 0, static_cast<DWORD>( FIELD_OFFSET( MouseState, abButtons[2] ) ),    // Button 2 (optional)
         DIDFT_BUTTON | DIDFT_ANYINSTANCE | DIDFT_OPTIONAL, 0 }
 };
 #define numMouseObjects (sizeof(g_aObjectFormats) / sizeof(DIOBJECTDATAFORMAT))
