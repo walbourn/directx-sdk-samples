@@ -959,10 +959,10 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
     g_pTxtHelper = new CDXUTTextHelper( pd3dDevice, pd3dImmediateContext, &g_DialogResourceManager, 15 );
 
     // Create other render resources here
-    g_States.reset( new CommonStates( pd3dDevice ) );
-    g_Batch.reset( new PrimitiveBatch<VertexPositionColor>( pd3dImmediateContext ) );
+    g_States = std::make_unique<CommonStates>( pd3dDevice );
+    g_Batch = std::make_unique<PrimitiveBatch<VertexPositionColor>>( pd3dImmediateContext );
 
-    g_BatchEffect.reset( new BasicEffect( pd3dDevice ) );
+    g_BatchEffect = std::make_unique<BasicEffect>( pd3dDevice );
     g_BatchEffect->SetVertexColorEnabled(true);
 
     {
