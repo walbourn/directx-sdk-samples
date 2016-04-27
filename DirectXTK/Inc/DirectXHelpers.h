@@ -25,12 +25,12 @@
 #endif
 #endif
 
-#include <exception>
+#ifndef IID_GRAPHICS_PPV_ARGS
+#define IID_GRAPHICS_PPV_ARGS(x) IID_PPV_ARGS(x)
+#endif
 
-#pragma warning(push)
-#pragma warning(disable : 4005)
+#include <exception>
 #include <stdint.h>
-#pragma warning(pop)
 
 //
 // The core Direct3D headers provide the following helper C++ classes

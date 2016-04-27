@@ -3,12 +3,13 @@ DXUT FOR DIRECT3D 11
 
 Copyright (c) Microsoft Corporation. All rights reserved.
 
-November 30, 2015
+April 26, 2016
 
-DXUT is a "GLUT"-like framework for Direct3D 11.x Win32 desktop applications; primarily samples, demos, and prototypes.
+DXUT is a "GLUT"-like framework for Direct3D 11.x Win32 desktop applications; primarily
+samples, demos, and prototypes.
 
-The source is written for Visual Studio 2012, 2013, or 2015. It is recommended that you
-make use of the Windows 8.1 SDK and Windows 7 Service Pack 1 or later.
+The source is written for Visual Studio 2013 or 2015. It is recommended that you
+make use of VS 2013 Update 5, VS 2015 Update 2, and Windows 7 Service Pack 1 or later.
 
 These components are designed to work without requiring any content from the DirectX SDK. For details,
 see "Where is the DirectX SDK?" <http://msdn.microsoft.com/en-us/library/ee663275.aspx>.
@@ -26,15 +27,10 @@ SAMPLES
 -------
 
 Direct3D Tutorial08 - 10
-http://code.msdn.microsoft.com/DXUT-Tutorial-Win32-Sample-fe15e440
-
 BasicHLSL11, EmptyProject11, SimpleSample11
-http://code.msdn.microsoft.com/Basic-DXUT-Win32-Samples-e59c0682
-
 DXUT+DirectXTK Simple Sample
-http://code.msdn.microsoft.com/DXUTDirectXTK-Simple-Win32-9cf797e9
 
-Note: These samples are also hosted on GitHub - https://github.com/walbourn/directx-sdk-samples
+These are hosted on GitHub <https://github.com/walbourn/directx-sdk-samples>
 
 
 ----------
@@ -42,11 +38,11 @@ DISCLAIMER
 ----------
 
 DXUT is being provided as a porting aid for older code that makes use of the legacy DirectX SDK, the deprecated D3DX9/D3DX11
-library, and the DXUT11 framework. It is a cleaned up version of the original DXUT11 that will build with the Windows 8.x SDK
+library, and the DXUT11 framework. It is a cleaned up version of the original DXUT11 that will build with the Windows 8.1 SDK
 and does not make use of any legacy DirectX SDK or DirectSetup deployed components.
 
-The DXUT framework is for use in Win32 desktop applications. It not usable for Windows Store apps on Windows 8.x or Windows RT.
-It does not support Windows phone or Xbox One.
+The DXUT framework is for use in Win32 desktop applications. It not usable for Universal Windows Platform apps, Windows Store apps,
+Xbox One apps, or Windows phone.
  
 This version of DXUT only supports Direct3D 11, and therefore is not compatible with Windows XP or early versions of Windows Vista.
 
@@ -54,6 +50,11 @@ This version of DXUT only supports Direct3D 11, and therefore is not compatible 
 ---------------
 RELEASE HISTORY
 ---------------
+
+April 26, 2016 (11.12)
+    Updated DDSTextureLoader, WICTextureLoader, and ScreenGrab
+    Retired VS 2012 projects and obsolete adapter code
+    Minor code and project file cleanup
 
 November 30, 2015 (11.11)
     Updated DDSTextureLoader, ScreenGrab, DXERR

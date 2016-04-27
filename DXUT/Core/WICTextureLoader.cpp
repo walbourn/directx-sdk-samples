@@ -32,12 +32,7 @@
 #include <dxgiformat.h>
 #include <assert.h>
 
-// VS 2010's stdint.h conflicts with intsafe.h
-#pragma warning(push)
-#pragma warning(disable : 4005)
 #include <wincodec.h>
-#include <intsafe.h>
-#pragma warning(pop)
 
 #include <wrl\client.h>
 
@@ -45,7 +40,7 @@
 
 #include "WICTextureLoader.h"
 
-#if defined(_DEBUG) || defined(PROFILE)
+#if !defined(NO_D3D11_DEBUG_NAME) && ( defined(_DEBUG) || defined(PROFILE) )
 #pragma comment(lib,"dxguid.lib")
 #endif
 
@@ -56,7 +51,7 @@ using Microsoft::WRL::ComPtr;
 template<UINT TNameLength>
 inline void SetDebugObjectName(_In_ ID3D11DeviceChild* resource, _In_ const char (&name)[TNameLength])
 {
-#if defined(_DEBUG) || defined(PROFILE)
+#if !defined(NO_D3D11_DEBUG_NAME) && ( defined(_DEBUG) || defined(PROFILE) )
     resource->SetPrivateData(WKPDID_D3DDebugObjectName, TNameLength - 1, name);
 #else
     UNREFERENCED_PARAMETER(resource);
@@ -198,8 +193,7 @@ static IWICImagingFactory* _GetWIC()
             CLSID_WICImagingFactory1,
             nullptr,
             CLSCTX_INPROC_SERVER,
-            __uuidof(IWICImagingFactory),
-            (LPVOID*)&s_Factory
+            IID_PPV_ARGS(&s_Factory)
             );
 
         if ( FAILED(hr) )
@@ -213,8 +207,7 @@ static IWICImagingFactory* _GetWIC()
         CLSID_WICImagingFactory,
         nullptr,
         CLSCTX_INPROC_SERVER,
-        __uuidof(IWICImagingFactory),
-        (LPVOID*)&s_Factory
+        IID_PPV_ARGS(&s_Factory)
         );
 
     if ( FAILED(hr) )
@@ -895,7 +888,7 @@ HRESULT DirectX::CreateWICTextureFromFileEx( ID3D11Device* d3dDevice,
                                usage, bindFlags, cpuAccessFlags, miscFlags, forceSRGB,
                                texture, textureView );
 
-#if defined(_DEBUG) || defined(PROFILE)
+#if !defined(NO_D3D11_DEBUG_NAME) && ( defined(_DEBUG) || defined(PROFILE) )
     if ( SUCCEEDED(hr) )
     {
         if (texture != 0 || textureView != 0)

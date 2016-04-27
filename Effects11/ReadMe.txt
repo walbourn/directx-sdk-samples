@@ -3,16 +3,13 @@ EFFECTS FOR DIRECT3D 11 (FX11)
 
 Copyright (c) Microsoft Corporation. All rights reserved.
 
-November 30, 2015
+April 26, 2016
 
 Effects for Direct3D 11 (FX11) is a management runtime for authoring HLSL shaders, render
 state, and runtime variables together.
 
-The source is written for Visual Studio 2010, 2012, 2013, or 2015. It is recommended that you
-make use of the Windows 8.1 SDK and Windows 7 Service Pack 1 or later.
-
-Details on using the Windows 8.1 SDK with VS 2010 are described on the Visual C++ Team Blog:
-<http://blogs.msdn.com/b/vcblog/archive/2012/11/23/using-the-windows-8-sdk-with-visual-studio-2010-configuring-multiple-projects.aspx>
+The source is written for Visual Studio 2013 or 2015. It is recommended that you
+make use of VS 2013 Update 5, VS 2015 Update 2, and Windows 7 Service Pack 1 or later.
 
 These components are designed to work without requiring any content from the DirectX SDK. For details,
 see "Where is the DirectX SDK?" <http://msdn.microsoft.com/en-us/library/ee663275.aspx>.
@@ -30,12 +27,9 @@ SAMPLES
 -------
 
 Direct3D Tutorial 11-14
-http://code.msdn.microsoft.com/Effects-Tutorial-Win32-b03b8501
-
 BasicHLSLFX11, DynamicShaderLinkageFX11, FixedFuncEMUFX11, InstancingFX11
-http://code.msdn.microsoft.com/Effects-11-Win32-Samples-cce82a4d
 
-Note: These samples are also hosted on GitHub - https://github.com/walbourn/directx-sdk-samples
+These samples are hosted on GitHub <https://github.com/walbourn/directx-sdk-samples>
 
 
 ----------
@@ -52,7 +46,7 @@ to provide shader reflection functionality, and this API is not deployable for W
 or Windows phone 8.0.
 
 The fx_5_0 profile support in the HLSL compiler is deprecated, and does not fully support DirectX 11.1 HLSL features
-such as minimum precision types. It is supported in the Windows 8.x SDK version of the HLSL compiler (FXC.EXE) and
+such as minimum precision types. It is supported in the Windows 8.1 SDK version of the HLSL compiler (FXC.EXE) and
 D3DCompile API (#46), is supported but generates a deprecation warning with D3DCompile API (#47), and could be removed
 in a future update.
 
@@ -60,6 +54,10 @@ in a future update.
 ---------------
 RELEASE HISTORY
 ---------------
+
+April 26, 2016 (11.16)
+    Retired VS 2012 projects
+    Minor code and project file cleanup
 
 November 30, 2015 (11.15)
     Updated for VS 2015 Update 1 and Windows 10 SDK (10586)

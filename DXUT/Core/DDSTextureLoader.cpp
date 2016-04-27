@@ -25,7 +25,7 @@
 
 #include "DDSTextureLoader.h"
 
-#if defined(_DEBUG) || defined(PROFILE)
+#if !defined(NO_D3D11_DEBUG_NAME) && ( defined(_DEBUG) || defined(PROFILE) )
 #pragma comment(lib,"dxguid.lib")
 #endif
 
@@ -687,8 +687,6 @@ static DXGI_FORMAT GetDXGIFormat( const DDS_PIXELFORMAT& ddpf )
             // No DXGI format maps to ISBITMASK(0x3ff00000, 0x000ffc00, 0x000003ff, 0xc0000000) aka D3DFMT_A2W10V10U10
         }
     }
-
-
     else if (ddpf.flags & DDS_FOURCC)
     {
         if (MAKEFOURCC( 'D', 'X', 'T', '1' ) == ddpf.fourCC)
@@ -1782,7 +1780,7 @@ HRESULT DirectX::CreateDDSTextureFromFileEx( ID3D11Device* d3dDevice,
 
     if ( SUCCEEDED(hr) )
     {
-#if defined(_DEBUG) || defined(PROFILE)
+#if !defined(NO_D3D11_DEBUG_NAME) && ( defined(_DEBUG) || defined(PROFILE) )
         if (texture != 0 || textureView != 0)
         {
             CHAR strFileA[MAX_PATH];

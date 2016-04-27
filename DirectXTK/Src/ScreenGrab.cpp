@@ -29,14 +29,11 @@
 
 #if !defined(WINAPI_FAMILY) || (WINAPI_FAMILY != WINAPI_FAMILY_PHONE_APP) || (_WIN32_WINNT > _WIN32_WINNT_WIN8)
 
-// VS 2010's stdint.h conflicts with intsafe.h
-#pragma warning(push)
-#pragma warning(disable : 4005)
 #include <wincodec.h>
-#pragma warning(pop)
 #endif
 
 #include "ScreenGrab.h"
+#include "DirectXHelpers.h"
 
 #include "dds.h"
 #include "PlatformHelpers.h"
@@ -50,6 +47,10 @@ namespace
     {
     public:
         auto_delete_file(HANDLE hFile) : m_handle(hFile) {}
+
+        auto_delete_file(const auto_delete_file&) = delete;
+        auto_delete_file& operator=(const auto_delete_file&) = delete;
+
         ~auto_delete_file()
         {
             if (m_handle)
@@ -64,9 +65,6 @@ namespace
 
     private:
         HANDLE m_handle;
-
-        auto_delete_file(const auto_delete_file&) DIRECTX_CTOR_DELETE;
-        auto_delete_file& operator=(const auto_delete_file&) DIRECTX_CTOR_DELETE;
     };
 
 #if !defined(WINAPI_FAMILY) || (WINAPI_FAMILY != WINAPI_FAMILY_PHONE_APP) || (_WIN32_WINNT > _WIN32_WINNT_WIN8)
@@ -75,6 +73,10 @@ namespace
     {
     public:
         auto_delete_file_wic(ComPtr<IWICStream>& hFile, LPCWSTR szFile) : m_handle(hFile), m_filename(szFile) {}
+
+        auto_delete_file_wic(const auto_delete_file_wic&) = delete;
+        auto_delete_file_wic& operator=(const auto_delete_file_wic&) = delete;
+
         ~auto_delete_file_wic()
         {
             if (m_filename)
@@ -89,9 +91,6 @@ namespace
     private:
         LPCWSTR m_filename;
         ComPtr<IWICStream>& m_handle;
-
-        auto_delete_file_wic(const auto_delete_file_wic&) DIRECTX_CTOR_DELETE;
-        auto_delete_file_wic& operator=(const auto_delete_file_wic&) DIRECTX_CTOR_DELETE;
     };
 
 #endif
@@ -489,11 +488,7 @@ static HRESULT CaptureTexture( _In_ ID3D11DeviceContext* pContext,
         return HRESULT_FROM_WIN32( ERROR_NOT_SUPPORTED );
 
     ComPtr<ID3D11Texture2D> pTexture;
-#if defined(_XBOX_ONE) && defined(_TITLE)
     HRESULT hr = pSource->QueryInterface(IID_GRAPHICS_PPV_ARGS(pTexture.GetAddressOf()));
-#else
-    HRESULT hr = pSource->QueryInterface(IID_PPV_ARGS(pTexture.GetAddressOf()));
-#endif
     if ( FAILED(hr) )
         return hr;
 
