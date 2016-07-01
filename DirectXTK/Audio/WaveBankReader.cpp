@@ -504,12 +504,7 @@ HRESULT WaveBankReader::Impl::Open( const wchar_t* szFileName )
 
     m_prepared = false;
 
-#if (_WIN32_WINNT >= _WIN32_WINNT_VISTA)
     m_event.reset( CreateEventEx( nullptr, nullptr, CREATE_EVENT_MANUAL_RESET, EVENT_MODIFY_STATE | SYNCHRONIZE ) );
-#else
-    m_event.reset( CreateEvent( nullptr, TRUE, FALSE, nullptr ) );
-#endif
-
     if ( !m_event )
     {
         return HRESULT_FROM_WIN32( GetLastError() );
@@ -540,8 +535,7 @@ HRESULT WaveBankReader::Impl::Open( const wchar_t* szFileName )
     }
 
     // Read and verify header
-    OVERLAPPED request;
-    memset( &request, 0, sizeof(request) );
+    OVERLAPPED request = {};
     request.hEvent = m_event.get();
 
     bool wait = false;
@@ -701,7 +695,7 @@ HRESULT WaveBankReader::Impl::Open( const wchar_t* szFileName )
             {
                 DWORD n = m_data.dwEntryNameElementSize * j;
 
-                char name[ 64 ] = {0};
+                char name[ 64 ] = {};
                 strncpy_s( name, &temp[ n ], 64 );
 
                 m_names[ name ] = j;

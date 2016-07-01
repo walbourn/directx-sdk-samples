@@ -56,11 +56,7 @@ public:
             throw std::invalid_argument( "DynamicSoundEffectInstance" );
         }
 
-#if (_WIN32_WINNT >= _WIN32_WINNT_VISTA)
         mBufferEvent.reset( CreateEventEx( nullptr, nullptr, 0, EVENT_MODIFY_STATE | SYNCHRONIZE ) );
-#else
-        mBufferEvent.reset( CreateEvent( nullptr, FALSE, FALSE, nullptr ) );
-#endif
         if ( !mBufferEvent )
         {
             throw std::exception( "CreateEvent" );
@@ -179,9 +175,7 @@ void DynamicSoundEffectInstance::Impl::SubmitBuffer( const uint8_t* pAudioData, 
         throw std::out_of_range( "SubmitBuffer" );
 #endif
 
-    XAUDIO2_BUFFER buffer;
-    memset( &buffer, 0, sizeof(buffer) );
-
+    XAUDIO2_BUFFER buffer = {};
     buffer.AudioBytes = static_cast<UINT32>( audioBytes );
     buffer.pAudioData = pAudioData;
 

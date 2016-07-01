@@ -59,8 +59,11 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include <stdint.h>
 
 #include <wrl.h>
+
+#include <wincodec.h>

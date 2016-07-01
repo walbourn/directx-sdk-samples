@@ -17,10 +17,7 @@
 #include "SharedResourcePool.h"
 
 #include "DDSTextureLoader.h"
-
-#if !defined(WINAPI_FAMILY) || (WINAPI_FAMILY != WINAPI_FAMILY_PHONE_APP) || (_WIN32_WINNT > _WIN32_WINNT_WIN8)
 #include "WICTextureLoader.h"
-#endif
 
 using namespace DirectX;
 using Microsoft::WRL::ComPtr;
@@ -36,14 +33,14 @@ public:
     { *mPath = 0; }
 
     std::shared_ptr<IEffect> CreateEffect( _In_ IEffectFactory* factory, _In_ const IEffectFactory::EffectInfo& info, _In_opt_ ID3D11DeviceContext* deviceContext );
-    void CreateTexture( _In_z_ const WCHAR* texture, _In_opt_ ID3D11DeviceContext* deviceContext, _Outptr_ ID3D11ShaderResourceView** textureView );
+    void CreateTexture( _In_z_ const wchar_t* texture, _In_opt_ ID3D11DeviceContext* deviceContext, _Outptr_ ID3D11ShaderResourceView** textureView );
 
     void ReleaseCache();
     void SetSharing( bool enabled ) { mSharing = enabled; }
 
     static SharedResourcePool<ID3D11Device*, Impl> instancePool;
 
-    WCHAR mPath[MAX_PATH];
+    wchar_t mPath[MAX_PATH];
 
 private:
     ComPtr<ID3D11Device> device;
@@ -245,7 +242,7 @@ std::shared_ptr<IEffect> EffectFactory::Impl::CreateEffect( IEffectFactory* fact
 }
 
 _Use_decl_annotations_
-void EffectFactory::Impl::CreateTexture( const WCHAR* name, ID3D11DeviceContext* deviceContext, ID3D11ShaderResourceView** textureView )
+void EffectFactory::Impl::CreateTexture( const wchar_t* name, ID3D11DeviceContext* deviceContext, ID3D11ShaderResourceView** textureView )
 {
     if ( !name || !textureView )
         throw std::exception("invalid arguments");
@@ -264,12 +261,23 @@ void EffectFactory::Impl::CreateTexture( const WCHAR* name, ID3D11DeviceContext*
     }
     else
     {
-        WCHAR fullName[MAX_PATH]={0};
+        wchar_t fullName[MAX_PATH] = {};
         wcscpy_s( fullName, mPath );
         wcscat_s( fullName, name );
 
-#if !defined(WINAPI_FAMILY) || (WINAPI_FAMILY != WINAPI_FAMILY_PHONE_APP) || (_WIN32_WINNT > _WIN32_WINNT_WIN8)
-        WCHAR ext[_MAX_EXT];
+        WIN32_FILE_ATTRIBUTE_DATA fileAttr = {};
+        if ( !GetFileAttributesExW(fullName, GetFileExInfoStandard, &fileAttr) )
+        {
+            // Try Current Working Directory (CWD)
+            wcscpy_s( fullName, name );
+            if ( !GetFileAttributesExW(fullName, GetFileExInfoStandard, &fileAttr) )
+            {
+                DebugTrace( "EffectFactory could not find texture file '%ls'\n", name );
+                throw std::exception( "CreateTexture" );
+            }
+        }
+
+        wchar_t ext[_MAX_EXT];
         _wsplitpath_s( name, nullptr, 0, nullptr, 0, nullptr, 0, ext, _MAX_EXT );
 
         if ( _wcsicmp( ext, L".dds" ) == 0 )
@@ -302,15 +310,6 @@ void EffectFactory::Impl::CreateTexture( const WCHAR* name, ID3D11DeviceContext*
                 throw std::exception( "CreateWICTextureFromFile" );
             }
         }
-#else
-        UNREFERENCED_PARAMETER( deviceContext );
-        HRESULT hr = CreateDDSTextureFromFile( device.Get(), fullName, nullptr, textureView );
-        if ( FAILED(hr) )
-        {
-            DebugTrace( "CreateDDSTextureFromFile failed (%08X) for '%ls'\n", hr, fullName );
-            throw std::exception( "CreateDDSTextureFromFile" );
-        }
-#endif
 
         if ( mSharing && *name && it == mTextureCache.end() )
         {   
@@ -363,7 +362,7 @@ std::shared_ptr<IEffect> EffectFactory::CreateEffect( const EffectInfo& info, ID
 }
 
 _Use_decl_annotations_
-void EffectFactory::CreateTexture( const WCHAR* name, ID3D11DeviceContext* deviceContext, ID3D11ShaderResourceView** textureView )
+void EffectFactory::CreateTexture( const wchar_t* name, ID3D11DeviceContext* deviceContext, ID3D11ShaderResourceView** textureView )
 {
     return pImpl->CreateTexture( name, deviceContext, textureView );
 }
@@ -378,7 +377,7 @@ void EffectFactory::SetSharing( bool enabled )
     pImpl->SetSharing( enabled );
 }
 
-void EffectFactory::SetDirectory( _In_opt_z_ const WCHAR* path )
+void EffectFactory::SetDirectory( _In_opt_z_ const wchar_t* path )
 {
     if ( path && *path != 0 )
     {

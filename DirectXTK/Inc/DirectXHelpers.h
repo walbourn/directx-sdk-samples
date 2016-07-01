@@ -56,7 +56,7 @@
 
 namespace DirectX
 {
-    // simliar to std::lock_guard for exception-safe Direct3D 11 resource locking
+    // simliar to std::lock_guard for exception-safe Direct3D resource locking
     class MapGuard : public D3D11_MAPPED_SUBRESOURCE
     {
     public:
@@ -113,7 +113,7 @@ namespace DirectX
     {
         #if !defined(NO_D3D11_DEBUG_NAME) && ( defined(_DEBUG) || defined(PROFILE) )
             #if defined(_XBOX_ONE) && defined(_TITLE)
-                WCHAR wname[MAX_PATH];
+                wchar_t wname[MAX_PATH];
                 int result = MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, name, TNameLength, wname, MAX_PATH );
                 if ( result > 0 )
                 {

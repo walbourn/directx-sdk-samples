@@ -73,7 +73,7 @@ private:
 #if defined(_XBOX_ONE) && defined(_TITLE)
 static void CreateBuffer(_In_ ID3D11DeviceX* device, size_t bufferSize, D3D11_BIND_FLAG bindFlag, _Out_ ID3D11Buffer** pBuffer)
 {
-    D3D11_BUFFER_DESC desc = { 0 };
+    D3D11_BUFFER_DESC desc = {};
 
     desc.ByteWidth = (UINT)bufferSize;
     desc.BindFlags = bindFlag;
@@ -89,7 +89,7 @@ static void CreateBuffer(_In_ ID3D11DeviceX* device, size_t bufferSize, D3D11_BI
 #else
 static void CreateBuffer(_In_ ID3D11Device* device, size_t bufferSize, D3D11_BIND_FLAG bindFlag, _Out_ ID3D11Buffer** pBuffer)
 {
-    D3D11_BUFFER_DESC desc = { 0 };
+    D3D11_BUFFER_DESC desc = {};
 
     desc.ByteWidth = (UINT)bufferSize;
     desc.BindFlags = bindFlag;
@@ -160,7 +160,9 @@ void PrimitiveBatchBase::Impl::Begin()
     if (mInBeginEndPair)
         throw std::exception("Cannot nest Begin calls");
 
-#if !defined(_XBOX_ONE) || !defined(_TITLE)
+#if defined(_XBOX_ONE) && defined(_TITLE)
+    mDeviceContext->IASetIndexBuffer(nullptr, DXGI_FORMAT_UNKNOWN, 0);
+#else
     // Bind the index buffer.
     if (mMaxIndices > 0)
     {
@@ -235,7 +237,8 @@ static void LockBuffer(_In_ ID3D11DeviceContext* deviceContext, _In_ ID3D11Buffe
 
 
 // Adds new geometry to the batch.
-void PrimitiveBatchBase::Impl::Draw(D3D11_PRIMITIVE_TOPOLOGY topology, bool isIndexed, _In_opt_count_(indexCount) uint16_t const* indices, size_t indexCount, size_t vertexCount, _Out_ void** pMappedVertices)
+_Use_decl_annotations_
+void PrimitiveBatchBase::Impl::Draw(D3D11_PRIMITIVE_TOPOLOGY topology, bool isIndexed, uint16_t const* indices, size_t indexCount, size_t vertexCount, void** pMappedVertices)
 {
     if (isIndexed && !indices)
         throw std::exception("Indices cannot be null");
@@ -261,12 +264,6 @@ void PrimitiveBatchBase::Impl::Draw(D3D11_PRIMITIVE_TOPOLOGY topology, bool isIn
         FlushBatch();
     }
 
-    if (wrapIndexBuffer)
-        mCurrentIndex = 0;
-
-    if (wrapVertexBuffer)
-        mCurrentVertex = 0;
-
 #if defined(_XBOX_ONE) && defined(_TITLE)
     if (mCurrentTopology == D3D11_PRIMITIVE_TOPOLOGY_UNDEFINED)
     {
@@ -281,6 +278,7 @@ void PrimitiveBatchBase::Impl::Draw(D3D11_PRIMITIVE_TOPOLOGY topology, bool isIn
 
         mCurrentTopology = topology;
         mCurrentlyIndexed = isIndexed;
+        mCurrentIndex = mCurrentVertex = 0;
     }
 
     // Copy over the index data.
@@ -291,7 +289,7 @@ void PrimitiveBatchBase::Impl::Draw(D3D11_PRIMITIVE_TOPOLOGY topology, bool isIn
 
         for (size_t i = 0; i < indexCount; i++)
         {
-            outputIndices[i] = (uint16_t)(indices[i] + mCurrentVertex - mBaseVertex);
+            outputIndices[i] = (uint16_t)(indices[i] + mCurrentVertex);
         }
 
         mCurrentIndex += indexCount;
@@ -303,6 +301,12 @@ void PrimitiveBatchBase::Impl::Draw(D3D11_PRIMITIVE_TOPOLOGY topology, bool isIn
 
     mCurrentVertex += vertexCount;
 #else
+    if (wrapIndexBuffer)
+        mCurrentIndex = 0;
+
+    if (wrapVertexBuffer)
+        mCurrentVertex = 0;
+
     // If we are not already in a batch, lock the buffers.
     if (mCurrentTopology == D3D11_PRIMITIVE_TOPOLOGY_UNDEFINED)
     {
@@ -354,14 +358,14 @@ void PrimitiveBatchBase::Impl::FlushBatch()
         mDeviceContext->IASetPlacementIndexBuffer(mIndexBuffer.Get(), grfxMemoryIB, DXGI_FORMAT_R16_UINT);
         mDeviceContext->IASetPlacementVertexBuffer(0, mVertexBuffer.Get(), grfxMemoryVB, (UINT)mVertexSize);
 
-        mDeviceContext->DrawIndexed((UINT)(mCurrentIndex - mBaseIndex), (UINT)mBaseIndex, (UINT)mBaseVertex);
+        mDeviceContext->DrawIndexed((UINT)mCurrentIndex, 0, 0);
     }
     else
     {
         // Draw non-indexed geometry.
         mDeviceContext->IASetPlacementVertexBuffer(0, mVertexBuffer.Get(), grfxMemoryVB, (UINT)mVertexSize);
 
-        mDeviceContext->Draw((UINT)(mCurrentVertex - mBaseVertex), (UINT)mBaseVertex);
+        mDeviceContext->Draw((UINT)mCurrentVertex, 0);
     }
 
     grfxMemoryIB = grfxMemoryVB = nullptr;

@@ -66,8 +66,16 @@ namespace DirectX
             bool rightStick;
             bool leftShoulder;
             bool rightShoulder;
-            bool back;
-            bool start;
+            union
+            {
+                bool back;
+                bool view;
+            };
+            union
+            {
+                bool start;
+                bool menu;
+            };
         };
 
         struct DPad
@@ -116,9 +124,9 @@ namespace DirectX
             bool __cdecl IsRightShoulderPressed() const { return buttons.rightShoulder; }
 
             bool __cdecl IsBackPressed() const { return buttons.back; }
-            bool __cdecl IsViewPressed() const { return buttons.back; }
+            bool __cdecl IsViewPressed() const { return buttons.view; }
             bool __cdecl IsStartPressed() const { return buttons.start; }
-            bool __cdecl IsMenuPressed() const { return buttons.start; }
+            bool __cdecl IsMenuPressed() const { return buttons.menu; }
 
             bool __cdecl IsDPadDownPressed() const { return dpad.down; };
             bool __cdecl IsDPadUpPressed() const { return dpad.up; };
@@ -202,11 +210,26 @@ namespace DirectX
             ButtonState dpadLeft;
             ButtonState dpadRight;
 
+            ButtonState leftStickUp;
+            ButtonState leftStickDown;
+            ButtonState leftStickLeft;
+            ButtonState leftStickRight;
+
+            ButtonState rightStickUp;
+            ButtonState rightStickDown;
+            ButtonState rightStickLeft;
+            ButtonState rightStickRight;
+
+            ButtonState leftTrigger;
+            ButtonState rightTrigger;
+
             ButtonStateTracker() { Reset(); }
 
             void __cdecl Update( const State& state );
 
             void __cdecl Reset();
+
+            State __cdecl GetLastState() const { return lastState; }
 
         private:
             State lastState;

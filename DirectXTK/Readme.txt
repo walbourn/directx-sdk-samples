@@ -1,10 +1,10 @@
---------------------------------
-DirectXTK - the DirectX Tool Kit
---------------------------------
+-----------------------------------------------
+DirectXTK - the DirectX Tool Kit for DirectX 11
+-----------------------------------------------
 
 Copyright (c) Microsoft Corporation. All rights reserved.
 
-April 26, 2016
+June 30, 2016
 
 This package contains the "DirectX Tool Kit", a collection of helper classes for 
 writing Direct3D 11 C++ code for Universal Windows Platform (UWP) apps for Windows 10,
@@ -13,7 +13,7 @@ Windows 8.x Win32 desktop applications, Windows 7 applications, and
 Windows Vista Direct3D 11.0 applications.
 
 This code is designed to build with Visual Studio 2013 or 2015. It is recommended that you
-make use of VS 2013 Update 5, VS 2015 Update 2, and Windows 7 Service Pack 1 or later.
+make use of VS 2013 Update 5 or VS 2015 Update 3 and Windows 7 Service Pack 1 or later.
 
 These components are designed to work without requiring any content from the DirectX SDK. For details,
 see "Where is the DirectX SDK?" <http://msdn.microsoft.com/en-us/library/ee663275.aspx>.
@@ -69,10 +69,29 @@ Note: Xbox One exclusive apps developers using the Xbox One XDK need to generate
       FXC compiler from the Xbox One XDK. While they will continue to work if outdated,
       a mismatch will cause runtime compilation overhead that would otherwise be avoided.
 
+This project has adopted the Microsoft Open Source Code of Conduct. For more information see the
+Code of Conduct FAQ or contact opencode@microsoft.com with any additional questions or comments.
+
+https://opensource.microsoft.com/codeofconduct/
+
 
 ---------------
 RELEASE HISTORY
 ---------------
+
+June 30, 2016
+    MesaureDrawString added to SpriteFont; bad fix to MeasureString reverted
+    GamePad tracker updated to track emulated buttons (i.e. leftStickUp)
+    EffectFactory SetDirectory now checks current working directory (CWD) as well
+    *breaking change* must include <d3d11.h> before including <SimpleMath.h>
+    Code refactor for sharing some files with DirectX 12 version
+    Minor code cleanup
+
+May 31, 2016
+    Added VertexPosition and VertexPositionDualTexture to VertexTypes
+    Xbox One platform fix for PrimitiveBatch
+    CompileShader script updated to build external pdbs
+    Code cleanup
 
 April 26, 2016
     Added Rectangle class to SimpleMath
