@@ -4,7 +4,7 @@ DirectXTK - the DirectX Tool Kit for DirectX 11
 
 Copyright (c) Microsoft Corporation. All rights reserved.
 
-June 30, 2016
+July 18, 2016
 
 This package contains the "DirectX Tool Kit", a collection of helper classes for 
 writing Direct3D 11 C++ code for Universal Windows Platform (UWP) apps for Windows 10,
@@ -79,8 +79,15 @@ https://opensource.microsoft.com/codeofconduct/
 RELEASE HISTORY
 ---------------
 
+July 18, 2016
+    NormalMapEffect for normal-map with optional specular map rendering
+    EnvironmentMapEffect now supports per-pixel lighting
+    Effects updated with SetMatrices and SetColorAndAlpha methods
+    SimpleMath: improved interop with DirectXMath constants
+    Minor code cleanup
+
 June 30, 2016
-    MesaureDrawString added to SpriteFont; bad fix to MeasureString reverted
+    MeasureDrawString added to SpriteFont; bad fix to MeasureString reverted
     GamePad tracker updated to track emulated buttons (i.e. leftStickUp)
     EffectFactory SetDirectory now checks current working directory (CWD) as well
     *breaking change* must include <d3d11.h> before including <SimpleMath.h>

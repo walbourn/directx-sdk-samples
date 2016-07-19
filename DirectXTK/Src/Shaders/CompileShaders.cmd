@@ -83,11 +83,16 @@ call :CompileShader%1 EnvironmentMapEffect vs VSEnvMap
 call :CompileShader%1 EnvironmentMapEffect vs VSEnvMapFresnel
 call :CompileShader%1 EnvironmentMapEffect vs VSEnvMapOneLight
 call :CompileShader%1 EnvironmentMapEffect vs VSEnvMapOneLightFresnel
+call :CompileShader%1 EnvironmentMapEffect vs VSEnvMapPixelLighting
 
 call :CompileShader%1 EnvironmentMapEffect ps PSEnvMap
 call :CompileShader%1 EnvironmentMapEffect ps PSEnvMapNoFog
 call :CompileShader%1 EnvironmentMapEffect ps PSEnvMapSpecular
 call :CompileShader%1 EnvironmentMapEffect ps PSEnvMapSpecularNoFog
+call :CompileShader%1 EnvironmentMapEffect ps PSEnvMapPixelLighting
+call :CompileShader%1 EnvironmentMapEffect ps PSEnvMapPixelLightingNoFog
+call :CompileShader%1 EnvironmentMapEffect ps PSEnvMapPixelLightingFresnel
+call :CompileShader%1 EnvironmentMapEffect ps PSEnvMapPixelLightingFresnelNoFog
 
 call :CompileShader%1 SkinnedEffect vs VSSkinnedVertexLightingOneBone
 call :CompileShader%1 SkinnedEffect vs VSSkinnedVertexLightingTwoBones
@@ -104,6 +109,14 @@ call :CompileShader%1 SkinnedEffect vs VSSkinnedPixelLightingFourBones
 call :CompileShader%1 SkinnedEffect ps PSSkinnedVertexLighting
 call :CompileShader%1 SkinnedEffect ps PSSkinnedVertexLightingNoFog
 call :CompileShader%1 SkinnedEffect ps PSSkinnedPixelLighting
+
+call :CompileShader%1 NormalMapEffect vs VSNormalPixelLightingTx
+call :CompileShader%1 NormalMapEffect vs VSNormalPixelLightingTxVc
+
+call :CompileShader%1 NormalMapEffect ps PSNormalPixelLightingTx
+call :CompileShader%1 NormalMapEffect ps PSNormalPixelLightingTxNoFog
+call :CompileShader%1 NormalMapEffect ps PSNormalPixelLightingTxNoSpec
+call :CompileShader%1 NormalMapEffect ps PSNormalPixelLightingTxNoFogSpec
 
 call :CompileShader%1 SpriteEffect vs SpriteVertexShader
 call :CompileShader%1 SpriteEffect ps SpritePixelShader
