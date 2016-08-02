@@ -3,7 +3,7 @@ DXUT FOR DIRECT3D 11
 
 Copyright (c) Microsoft Corporation. All rights reserved.
 
-April 26, 2016
+August 2, 2016
 
 DXUT is a "GLUT"-like framework for Direct3D 11.x Win32 desktop applications; primarily
 samples, demos, and prototypes.
@@ -20,6 +20,11 @@ All content and source code for this package are subject to the terms of the MIT
 For the latest version of DXUT11, more detailed documentation, etc., please visit the project site.
 
 http://go.microsoft.com/fwlink/?LinkId=320437
+
+This project has adopted the Microsoft Open Source Code of Conduct. For more information see the
+Code of Conduct FAQ or contact opencode@microsoft.com with any additional questions or comments.
+
+https://opensource.microsoft.com/codeofconduct/
 
 
 -------
@@ -50,6 +55,9 @@ This version of DXUT only supports Direct3D 11, and therefore is not compatible 
 ---------------
 RELEASE HISTORY
 ---------------
+
+August 2, 2016 (11.13)
+    Updated for VS 2015 Update 3 and Windows 10 SDK (14393)
 
 April 26, 2016 (11.12)
     Updated DDSTextureLoader, WICTextureLoader, and ScreenGrab
