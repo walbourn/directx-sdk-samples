@@ -31,6 +31,7 @@
     <ProjectGuid>{06738B2D-079E-4349-B895-F627ED1B5963}</ProjectGuid>
     <RootNamespace>FixedFuncEMUFX11</RootNamespace>
     <Keyword>Win32Proj</Keyword>
+    <WindowsTargetPlatformVersion>10.0.14393.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">

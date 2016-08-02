@@ -31,7 +31,7 @@
     <ProjectGuid>{D3D11101-96D0-4629-88B8-122C0256058C}</ProjectGuid>
     <RootNamespace>DynamicShaderLinkageFX11</RootNamespace>
     <Keyword>Win32Proj</Keyword>
-    <WindowsTargetPlatformVersion>10.0.10586.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.14393.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -397,17 +397,15 @@
     <ResourceCompile Include="DynamicShaderLinkageFX11.rc" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\DXUT\Core\DXUT_2015.vcxproj">
+    <ProjectReference Include="..\DXUT\Core\DXUT_2015_Win10.vcxproj">
       <Project>{85344b7f-5aa0-4e12-a065-d1333d11f6ca}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\DXUT\Optional\DXUTOpt_2015.vcxproj">
+    <ProjectReference Include="..\DXUT\Optional\DXUTOpt_2015_Win10.vcxproj">
       <Project>{61b333c2-c4f7-4cc1-a9bf-83f6d95588eb}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\Effects11\Effects11_2015.vcxproj">
+    <ProjectReference Include="..\Effects11\Effects11_2015_Win10.vcxproj">
       <Project>{df460eab-570d-4b50-9089-2e2fc801bf38}</Project>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />

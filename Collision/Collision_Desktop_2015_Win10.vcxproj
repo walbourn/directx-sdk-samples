@@ -31,6 +31,7 @@
     <ProjectGuid>{AB182E14-E51A-40AB-985E-0C8C885871A5}</ProjectGuid>
     <RootNamespace>Collision</RootNamespace>
     <Keyword>Win32Proj</Keyword>
+    <WindowsTargetPlatformVersion>10.0.14393.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -388,7 +389,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\DirectXTK\DirectXTK_Desktop_2015.vcxproj">
+    <ProjectReference Include="..\DirectXTK\DirectXTK_Desktop_2015_Win10.vcxproj">
       <Project>{e0b52ae7-e160-4d32-bf3f-910b785e5a8e}</Project>
     </ProjectReference>
     <ProjectReference Include="..\DXUT\Core\DXUT_DirectXTK_2015_Win10.vcxproj">
