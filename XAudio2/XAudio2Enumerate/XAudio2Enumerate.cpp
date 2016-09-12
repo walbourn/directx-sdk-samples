@@ -49,7 +49,12 @@ int main()
     //
     // Initialize XAudio2
     //
-    CoInitializeEx( nullptr, COINIT_MULTITHREADED );
+    HRESULT hr = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
+    if (FAILED(hr))
+    {
+        wprintf(L"Failed to init COM: %#X\n", hr);
+        return 0;
+    }
 
 #if ( _WIN32_WINNT < 0x0602 /*_WIN32_WINNT_WIN8*/)
     // Workaround for XAudio 2.7 known issue
@@ -71,7 +76,7 @@ int main()
     flags |= XAUDIO2_DEBUG_ENGINE;
 #endif
     ComPtr<IXAudio2> pXAudio2;
-    HRESULT hr = XAudio2Create( pXAudio2.GetAddressOf(), flags );
+    hr = XAudio2Create( pXAudio2.GetAddressOf(), flags );
     if( FAILED( hr ) )
     {
         wprintf( L"Failed to init XAudio2 engine: %#X\n", hr );

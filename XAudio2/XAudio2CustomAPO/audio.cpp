@@ -26,7 +26,9 @@ HRESULT InitAudio()
     //
     // Initialize XAudio2
     //
-    CoInitializeEx( nullptr, COINIT_MULTITHREADED );
+    HRESULT hr = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
+    if( FAILED( hr ) )
+        return hr;
 
 #if ( _WIN32_WINNT < 0x0602 /*_WIN32_WINNT_WIN8*/)
     // Workaround for XAudio 2.7 known issue
@@ -43,7 +45,7 @@ HRESULT InitAudio()
  #if (_WIN32_WINNT < 0x0602 /*_WIN32_WINNT_WIN8*/) && defined(_DEBUG)
     flags |= XAUDIO2_DEBUG_ENGINE;
  #endif
-    HRESULT hr = XAudio2Create( &g_audioState.pXAudio2, flags );
+    hr = XAudio2Create( &g_audioState.pXAudio2, flags );
     if( FAILED( hr  ) )
         return hr;
 
