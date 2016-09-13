@@ -55,6 +55,10 @@ namespace
 
     inline HANDLE safe_handle(HANDLE h) { return (h == INVALID_HANDLE_VALUE) ? 0 : h; }
 
+    struct find_closer { void operator()(HANDLE h) { assert(h != INVALID_HANDLE_VALUE); if (h) FindClose(h); } };
+
+    typedef public std::unique_ptr<void, find_closer> ScopedFindHandle;
+
 #define BLOCKALIGNPAD(a, b) \
     ((((a) + ((b) - 1)) / (b)) * (b))
 
@@ -653,7 +657,8 @@ namespace
 
 enum OPTIONS
 {
-    OPT_STREAMING = 1,
+    OPT_RECURSIVE = 1,
+    OPT_STREAMING,
     OPT_OUTPUTFILE,
     OPT_OUTPUTHEADER,
     OPT_NOOVERWRITE,
@@ -685,6 +690,16 @@ struct WaveFile
     std::unique_ptr<uint8_t[]> waveData;
 
     WaveFile() : conv(0) { memset(&data, 0, sizeof(data)); }
+
+    // VS 2013 does not perform impliclit creation of move construtors nor does it support =default,
+    // so we explictly add one here
+    WaveFile(WaveFile&& moveFrom) :
+        data(std::move(moveFrom.data)),
+        conv(std::move(moveFrom.conv)),
+        miniFmt(std::move(moveFrom.miniFmt)),
+        waveData(std::move(moveFrom.waveData))
+    {
+    }
 };
 
 namespace
@@ -708,6 +723,7 @@ namespace
 
 SValue g_pOptions[] =
 {
+    { L"r",         OPT_RECURSIVE },
     { L"s",         OPT_STREAMING },
     { L"o",         OPT_OUTPUTFILE },
     { L"h",         OPT_OUTPUTHEADER },
@@ -753,6 +769,81 @@ namespace
         return L"";
     }
 
+
+    void SearchForFiles(const wchar_t* path, std::list<SConversion>& files, bool recursive)
+    {
+        // Process files
+        WIN32_FIND_DATA findData = {};
+        ScopedFindHandle hFile(safe_handle(FindFirstFileExW(path,
+            FindExInfoBasic, &findData,
+            FindExSearchNameMatch, nullptr,
+            FIND_FIRST_EX_LARGE_FETCH)));
+        if (hFile)
+        {
+            for (;;)
+            {
+                if (!(findData.dwFileAttributes & (FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_SYSTEM | FILE_ATTRIBUTE_DIRECTORY)))
+                {
+                    wchar_t drive[_MAX_DRIVE] = {};
+                    wchar_t dir[_MAX_DIR] = {};
+                    _wsplitpath_s(path, drive, _MAX_DRIVE, dir, _MAX_DIR, nullptr, 0, nullptr, 0);
+
+                    SConversion conv;
+                    _wmakepath_s(conv.szSrc, drive, dir, findData.cFileName, nullptr);
+                    files.push_back(conv);
+                }
+
+                if (!FindNextFile(hFile.get(), &findData))
+                    break;
+            }
+        }
+
+        // Process directories
+        if (recursive)
+        {
+            wchar_t searchDir[MAX_PATH] = {};
+            {
+                wchar_t drive[_MAX_DRIVE] = {};
+                wchar_t dir[_MAX_DIR] = {};
+                _wsplitpath_s(path, drive, _MAX_DRIVE, dir, _MAX_DIR, nullptr, 0, nullptr, 0);
+                _wmakepath_s(searchDir, drive, dir, L"*", nullptr);
+            }
+
+            hFile.reset(safe_handle(FindFirstFileExW(searchDir,
+                FindExInfoBasic, &findData,
+                FindExSearchLimitToDirectories, nullptr,
+                FIND_FIRST_EX_LARGE_FETCH)));
+            if (!hFile)
+                return;
+
+            for (;;)
+            {
+                if (findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+                {
+                    if (findData.cFileName[0] != L'.')
+                    {
+                        wchar_t subdir[MAX_PATH] = {};
+
+                        {
+                            wchar_t drive[_MAX_DRIVE] = {};
+                            wchar_t dir[_MAX_DIR] = {};
+                            wchar_t fname[_MAX_FNAME] = {};
+                            wchar_t ext[_MAX_FNAME] = {};
+                            _wsplitpath_s(path, drive, dir, fname, ext);
+                            wcscat_s(dir, findData.cFileName);
+                            _wmakepath_s(subdir, drive, dir, fname, ext);
+                        }
+
+                        SearchForFiles(subdir, files, recursive);
+                    }
+                }
+
+                if (!FindNextFile(hFile.get(), &findData))
+                    break;
+            }
+        }
+    }
+
     void PrintLogo()
     {
         wprintf(L"Microsoft (R) XACT-style Wave Bank Tool \n");
@@ -766,6 +857,7 @@ namespace
 
         wprintf(L"Usage: xwbtool <options> <wav-files>\n");
         wprintf(L"\n");
+        wprintf(L"   -r                  wildcard filename search is recursive\n");
         wprintf(L"   -s                  creates a streaming wave bank,\n");
         wprintf(L"                       otherwise an in-memory bank is created\n");
         wprintf(L"   -o <filename>       output filename\n");
@@ -879,9 +971,11 @@ int __cdecl wmain(_In_ int argc, _In_z_count_(argc) wchar_t* argv[])
 
             dwOptions |= 1 << dwOption;
 
-            if ((OPT_NOLOGO != dwOption) && (OPT_STREAMING != dwOption) && (OPT_NOOVERWRITE != dwOption)
-                && (OPT_COMPACT != dwOption) && (OPT_NOCOMPACT != dwOption) && (OPT_FRIENDLY_NAMES != dwOption))
+            // Handle options with additional value parameter
+            switch (dwOption)
             {
+            case OPT_OUTPUTFILE:
+            case OPT_OUTPUTHEADER:
                 if (!*pValue)
                 {
                     if ((iArg + 1 >= argc))
@@ -893,6 +987,7 @@ int __cdecl wmain(_In_ int argc, _In_z_count_(argc) wchar_t* argv[])
                     iArg++;
                     pValue = argv[iArg];
                 }
+                break;
             }
 
             switch (dwOption)
@@ -920,6 +1015,16 @@ int __cdecl wmain(_In_ int argc, _In_z_count_(argc) wchar_t* argv[])
                     return 1;
                 }
                 break;
+            }
+        }
+        else if (wcspbrk(pArg, L"?*") != nullptr)
+        {
+            size_t count = conversion.size();
+            SearchForFiles(pArg, conversion, (dwOptions & (1 << OPT_RECURSIVE)) != 0);
+            if (conversion.size() <= count)
+            {
+                wprintf(L"No matching files found for %ls\n", pArg);
+                return 1;
             }
         }
         else
@@ -1166,7 +1271,7 @@ int __cdecl wmain(_In_ int argc, _In_z_count_(argc) wchar_t* argv[])
     // Create wave bank
     assert(*szOutputFile != 0);
 
-    wprintf(L"writing %ls%ls wavebank %ls\n", (compact) ? L"compact " : L"", (dwOptions & (1 << OPT_STREAMING)) ? L"streaming" : L"in-memory", szOutputFile);
+    wprintf(L"writing %ls%ls wavebank %ls w/ %Iu entries\n", (compact) ? L"compact " : L"", (dwOptions & (1 << OPT_STREAMING)) ? L"streaming" : L"in-memory", szOutputFile, waves.size());
     fflush(stdout);
 
     if (dwOptions & (1 << OPT_NOOVERWRITE))
