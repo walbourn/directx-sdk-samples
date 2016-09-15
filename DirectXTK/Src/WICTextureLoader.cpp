@@ -158,56 +158,49 @@ namespace DirectX
 
     IWICImagingFactory* _GetWIC()
     {
-        static IWICImagingFactory* s_Factory = nullptr;
+        static INIT_ONCE s_initOnce = INIT_ONCE_STATIC_INIT;
 
-        if (s_Factory)
-            return s_Factory;
-
-#if(_WIN32_WINNT >= _WIN32_WINNT_WIN8) || defined(_WIN7_PLATFORM_UPDATE)
-        HRESULT hr = CoCreateInstance(
-            CLSID_WICImagingFactory2,
-            nullptr,
-            CLSCTX_INPROC_SERVER,
-            __uuidof(IWICImagingFactory2),
-            (LPVOID*)&s_Factory
-        );
-
-        if (SUCCEEDED(hr))
-        {
-            // WIC2 is available on Windows 8 and Windows 7 SP1 with KB 2670838 installed
-            g_WIC2 = true;
-        }
-        else
-        {
-            hr = CoCreateInstance(
-                CLSID_WICImagingFactory1,
-                nullptr,
-                CLSCTX_INPROC_SERVER,
-                IID_PPV_ARGS(&s_Factory)
-            );
-
-            if (FAILED(hr))
+        IWICImagingFactory* factory = nullptr;
+        InitOnceExecuteOnce(&s_initOnce,
+            [](PINIT_ONCE, PVOID, PVOID *factory) -> BOOL
             {
-                s_Factory = nullptr;
-                return nullptr;
-            }
-        }
-#else
-        HRESULT hr = CoCreateInstance(
-            CLSID_WICImagingFactory,
-            nullptr,
-            CLSCTX_INPROC_SERVER,
-            IID_PPV_ARGS(&s_Factory)
-        );
+            #if (_WIN32_WINNT >= _WIN32_WINNT_WIN8) || defined(_WIN7_PLATFORM_UPDATE)
+                HRESULT hr = CoCreateInstance(
+                    CLSID_WICImagingFactory2,
+                    nullptr,
+                    CLSCTX_INPROC_SERVER,
+                    __uuidof(IWICImagingFactory2),
+                    factory
+                    );
 
-        if (FAILED(hr))
-        {
-            s_Factory = nullptr;
-            return nullptr;
-        }
-#endif
+                if ( SUCCEEDED(hr) )
+                {
+                    // WIC2 is available on Windows 10, Windows 8.x, and Windows 7 SP1 with KB 2670838 installed
+                    g_WIC2 = true;
+                    return TRUE;
+                }
+                else
+                {
+                    hr = CoCreateInstance(
+                        CLSID_WICImagingFactory1,
+                        nullptr,
+                        CLSCTX_INPROC_SERVER,
+                        __uuidof(IWICImagingFactory),
+                        factory
+                        );
+                    return SUCCEEDED(hr) ? TRUE : FALSE;
+                }
+            #else
+                return SUCCEEDED( CoCreateInstance(
+                    CLSID_WICImagingFactory,
+                    nullptr,
+                    CLSCTX_INPROC_SERVER,
+                    __uuidof(IWICImagingFactory),
+                    factory) ) ? TRUE : FALSE;
+            #endif
+            }, nullptr, reinterpret_cast<LPVOID*>(&factory));
 
-        return s_Factory;
+        return factory;
     }
 
 } // namespace DirectX
@@ -744,10 +737,8 @@ HRESULT DirectX::CreateWICTextureFromMemoryEx( ID3D11Device* d3dDevice,
     if ( !wicDataSize )
         return E_FAIL;
 
-#ifdef _M_AMD64
-    if ( wicDataSize > 0xFFFFFFFF )
+    if ( wicDataSize > UINT32_MAX )
         return HRESULT_FROM_WIN32( ERROR_FILE_TOO_LARGE );
-#endif
 
     auto pWIC = _GetWIC();
     if ( !pWIC )
@@ -831,10 +822,8 @@ HRESULT DirectX::CreateWICTextureFromMemoryEx( ID3D11Device* d3dDevice,
     if ( !wicDataSize )
         return E_FAIL;
 
-#ifdef _M_AMD64
-    if ( wicDataSize > 0xFFFFFFFF )
+    if ( wicDataSize > UINT32_MAX )
         return HRESULT_FROM_WIN32( ERROR_FILE_TOO_LARGE );
-#endif
 
     auto pWIC = _GetWIC();
     if ( !pWIC )
