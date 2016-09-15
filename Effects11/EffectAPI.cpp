@@ -111,10 +111,8 @@ HRESULT WINAPI D3DX11CreateEffectFromMemory(LPCVOID pData, SIZE_T DataLength, UI
     if ( !pData || !DataLength || !pDevice || !ppEffect )
         return E_INVALIDARG;
 
-#ifdef _M_X64
-    if ( DataLength > 0xFFFFFFFF )
+    if ( DataLength > UINT32_MAX )
         return E_INVALIDARG;
-#endif
 
     HRESULT hr = S_OK;
 
@@ -288,13 +286,11 @@ HRESULT D3DX11CompileEffectFromFile( LPCWSTR pFileName,
 
 #endif // D3D_COMPILER_VERSION
 
-#ifdef _M_X64
-    if ( blob->GetBufferSize() > 0xFFFFFFFF )
+    if ( blob->GetBufferSize() > UINT32_MAX)
     {
         SAFE_RELEASE( blob );
         return E_FAIL;
     }
-#endif // _M_X64
 
     hr = S_OK;
 
