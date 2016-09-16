@@ -36,14 +36,15 @@
 
 using Microsoft::WRL::ComPtr;
 using namespace DirectX;
+using namespace DirectX::LoaderHelpers;
 
 namespace
 {
     //--------------------------------------------------------------------------------------
     HRESULT CaptureTexture(_In_ ID3D11DeviceContext* pContext,
         _In_ ID3D11Resource* pSource,
-        _Inout_ D3D11_TEXTURE2D_DESC& desc,
-        _Inout_ ComPtr<ID3D11Texture2D>& pStaging)
+        D3D11_TEXTURE2D_DESC& desc,
+        ComPtr<ID3D11Texture2D>& pStaging)
     {
         if (!pContext || !pSource)
             return E_INVALIDARG;
@@ -103,7 +104,7 @@ namespace
             desc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
             desc.Usage = D3D11_USAGE_STAGING;
 
-            hr = d3dDevice->CreateTexture2D(&desc, 0, pStaging.GetAddressOf());
+            hr = d3dDevice->CreateTexture2D(&desc, 0, pStaging.ReleaseAndGetAddressOf());
             if (FAILED(hr))
                 return hr;
 
@@ -124,7 +125,7 @@ namespace
             desc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
             desc.Usage = D3D11_USAGE_STAGING;
 
-            hr = d3dDevice->CreateTexture2D(&desc, 0, pStaging.GetAddressOf());
+            hr = d3dDevice->CreateTexture2D(&desc, 0, pStaging.ReleaseAndGetAddressOf());
             if (FAILED(hr))
                 return hr;
 
@@ -179,9 +180,9 @@ HRESULT DirectX::SaveDDSTextureToFile( ID3D11DeviceContext* pContext,
 
     // Create file
 #if (_WIN32_WINNT >= _WIN32_WINNT_WIN8)
-    ScopedHandle hFile( safe_handle( CreateFile2( fileName, GENERIC_WRITE | DELETE, 0, CREATE_ALWAYS, 0 ) ) );
+    ScopedHandle hFile( safe_handle( CreateFile2( fileName, GENERIC_WRITE | DELETE, 0, CREATE_ALWAYS, nullptr ) ) );
 #else
-    ScopedHandle hFile( safe_handle( CreateFileW( fileName, GENERIC_WRITE | DELETE, 0, 0, CREATE_ALWAYS, 0, 0 ) ) );
+    ScopedHandle hFile( safe_handle( CreateFileW( fileName, GENERIC_WRITE | DELETE, 0, nullptr, CREATE_ALWAYS, 0, nullptr ) ) );
 #endif
     if ( !hFile )
         return HRESULT_FROM_WIN32( GetLastError() );
@@ -306,13 +307,13 @@ HRESULT DirectX::SaveDDSTextureToFile( ID3D11DeviceContext* pContext,
 
     // Write header & pixels
     DWORD bytesWritten;
-    if ( !WriteFile( hFile.get(), fileHeader, static_cast<DWORD>( headerSize ), &bytesWritten, 0 ) )
+    if ( !WriteFile( hFile.get(), fileHeader, static_cast<DWORD>( headerSize ), &bytesWritten, nullptr ) )
         return HRESULT_FROM_WIN32( GetLastError() );
 
     if ( bytesWritten != headerSize )
         return E_FAIL;
 
-    if ( !WriteFile( hFile.get(), pixels.get(), static_cast<DWORD>( slicePitch ), &bytesWritten, 0 ) )
+    if ( !WriteFile( hFile.get(), pixels.get(), static_cast<DWORD>( slicePitch ), &bytesWritten, nullptr ) )
         return HRESULT_FROM_WIN32( GetLastError() );
 
     if ( bytesWritten != slicePitch )
