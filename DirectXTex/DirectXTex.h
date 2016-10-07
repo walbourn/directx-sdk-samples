@@ -411,6 +411,9 @@ namespace DirectX
         TEX_FILTER_SEPARATE_ALPHA   = 0x100,
             // Resize color and alpha channel independently
 
+        TEX_FILTER_FLOAT_X2BIAS     = 0x200,
+            // Enable *2 - 1 conversion cases for unorm<->float and positive-only float formats
+
         TEX_FILTER_RGB_COPY_RED     = 0x1000,
         TEX_FILTER_RGB_COPY_GREEN   = 0x2000,
         TEX_FILTER_RGB_COPY_BLUE    = 0x4000,
@@ -503,30 +506,33 @@ namespace DirectX
 
     enum TEX_COMPRESS_FLAGS
     {
-        TEX_COMPRESS_DEFAULT        = 0,
+        TEX_COMPRESS_DEFAULT            = 0,
 
-        TEX_COMPRESS_RGB_DITHER     = 0x10000,
+        TEX_COMPRESS_RGB_DITHER         = 0x10000,
             // Enables dithering RGB colors for BC1-3 compression
 
-        TEX_COMPRESS_A_DITHER       = 0x20000,
+        TEX_COMPRESS_A_DITHER           = 0x20000,
             // Enables dithering alpha for BC1-3 compression
 
-        TEX_COMPRESS_DITHER         = 0x30000,
+        TEX_COMPRESS_DITHER             = 0x30000,
             // Enables both RGB and alpha dithering for BC1-3 compression
 
-        TEX_COMPRESS_UNIFORM        = 0x40000,
+        TEX_COMPRESS_UNIFORM            = 0x40000,
             // Uniform color weighting for BC1-3 compression; by default uses perceptual weighting
 
-        TEX_COMPRESS_BC7_USE_3SUBSETS = 0x80000,
+        TEX_COMPRESS_BC7_USE_3SUBSETS   = 0x80000,
             // Enables exhaustive search for BC7 compress for mode 0 and 2; by default skips trying these modes
 
-        TEX_COMPRESS_SRGB_IN        = 0x1000000,
-        TEX_COMPRESS_SRGB_OUT       = 0x2000000,
-        TEX_COMPRESS_SRGB           = ( TEX_COMPRESS_SRGB_IN | TEX_COMPRESS_SRGB_OUT ),
+        TEX_COMPRESS_BC7_QUICK          = 0x100000,
+            // Minimal modes (usually mode 6) for BC7 compression
+
+        TEX_COMPRESS_SRGB_IN            = 0x1000000,
+        TEX_COMPRESS_SRGB_OUT           = 0x2000000,
+        TEX_COMPRESS_SRGB               = ( TEX_COMPRESS_SRGB_IN | TEX_COMPRESS_SRGB_OUT ),
             // if the input format type is IsSRGB(), then SRGB_IN is on by default
             // if the output format type is IsSRGB(), then SRGB_OUT is on by default
 
-        TEX_COMPRESS_PARALLEL       = 0x10000000,
+        TEX_COMPRESS_PARALLEL           = 0x10000000,
             // Compress is free to use multithreading to improve performance (by default it does not use multithreading)
     };
 
@@ -616,17 +622,19 @@ namespace DirectX
 
     HRESULT __cdecl ComputeMSE( _In_ const Image& image1, _In_ const Image& image2, _Out_ float& mse, _Out_writes_opt_(4) float* mseV, _In_ DWORD flags = 0 );
 
-    HRESULT __cdecl Evaluate( _In_ const Image& image,
-                              _In_ std::function<void __cdecl(_In_reads_(width) const XMVECTOR* pixels, size_t width, size_t y)> pixelFunc );
+    HRESULT __cdecl EvaluateImage( _In_ const Image& image,
+                                   _In_ std::function<void __cdecl(_In_reads_(width) const XMVECTOR* pixels, size_t width, size_t y)> pixelFunc );
+    HRESULT __cdecl EvaluateImage( _In_reads_(nimages) const Image* images, _In_ size_t nimages, _In_ const TexMetadata& metadata,
+                                   _In_ std::function<void __cdecl(_In_reads_(width) const XMVECTOR* pixels, size_t width, size_t y)> pixelFunc );
 
-    HRESULT __cdecl Transform( _In_ const Image& image,
-                               _In_ std::function<void __cdecl(_Out_writes_(width) XMVECTOR* outPixels,
+    HRESULT __cdecl TransformImage( _In_ const Image& image,
+                                    _In_ std::function<void __cdecl(_Out_writes_(width) XMVECTOR* outPixels,
+                                        _In_reads_(width) const XMVECTOR* inPixels, size_t width, size_t y)> pixelFunc,
+                                    ScratchImage& result );
+    HRESULT __cdecl TransformImage( _In_reads_(nimages) const Image* srcImages, _In_ size_t nimages, _In_ const TexMetadata& metadata,
+                                        _In_ std::function<void __cdecl(_Out_writes_(width) XMVECTOR* outPixels,
                                     _In_reads_(width) const XMVECTOR* inPixels, size_t width, size_t y)> pixelFunc,
-                               ScratchImage& result );
-    HRESULT __cdecl Transform(_In_reads_(nimages) const Image* srcImages, _In_ size_t nimages, _In_ const TexMetadata& metadata,
-                               _In_ std::function<void __cdecl(_Out_writes_(width) XMVECTOR* outPixels,
-                                    _In_reads_(width) const XMVECTOR* inPixels, size_t width, size_t y)> pixelFunc,
-                               ScratchImage& result );
+                                    ScratchImage& result );
 
     //---------------------------------------------------------------------------------
     // WIC utility code
