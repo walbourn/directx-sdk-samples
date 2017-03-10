@@ -31,7 +31,7 @@ struct RValue
 #define RVALUE_END()    { nullptr, 0U }
 #define RVALUE_ENTRY(prefix, x)         { #x, (uint32_t)prefix##x }
 
-enum ELhsType;
+enum ELhsType : int;
 
 struct LValue
 {

@@ -107,7 +107,7 @@ void ImeUi_SetFlags( _In_ DWORD dwFlags, _In_ bool bSet );
 WORD ImeUi_GetPrimaryLanguage();
 DWORD ImeUi_GetImeId( _In_ UINT uIndex );
 WORD ImeUi_GetLanguage();
-LPTSTR ImeUi_GetIndicatior();
+LPCTSTR ImeUi_GetIndicatior();
 bool ImeUi_IsShowReadingWindow();
 bool ImeUi_IsShowCandListWindow();
 bool ImeUi_IsVerticalCand();

@@ -66,7 +66,7 @@ struct SConstantBuffer;
 class CEffect;
 class CEffectLoader;
 
-enum ELhsType;
+enum ELhsType : int;
 
 // Allows the use of 32-bit and 64-bit timers depending on platform type
 typedef size_t Timer;

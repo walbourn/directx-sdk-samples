@@ -170,7 +170,7 @@ namespace
     //-------------------------------------------------------------------------------------
     HRESULT EvaluateImage_(
         const Image& image,
-        std::function<void __cdecl(_In_reads_(width) const XMVECTOR* pixels, size_t width, size_t y)> pixelFunc)
+        std::function<void __cdecl(_In_reads_(width) const XMVECTOR* pixels, size_t width, size_t y)>& pixelFunc)
     {
         if (!pixelFunc)
             return E_INVALIDARG;
@@ -206,7 +206,7 @@ namespace
     //-------------------------------------------------------------------------------------
     HRESULT TransformImage_(
         const Image& srcImage,
-        std::function<void __cdecl(_Out_writes_(width) XMVECTOR* outPixels, _In_reads_(width) const XMVECTOR* inPixels, size_t width, size_t y)> pixelFunc,
+        std::function<void __cdecl(_Out_writes_(width) XMVECTOR* outPixels, _In_reads_(width) const XMVECTOR* inPixels, size_t width, size_t y)>& pixelFunc,
         const Image& destImage)
     {
         if (!pixelFunc)
@@ -517,7 +517,7 @@ HRESULT DirectX::EvaluateImage(
         || metadata.height > UINT32_MAX)
         return E_INVALIDARG;
 
-    if (metadata.IsVolumemap() && metadata.depth > UINT32_MAX)
+    if (metadata.IsVolumemap() && metadata.depth > UINT16_MAX)
         return E_INVALIDARG;
 
     ScratchImage temp;
@@ -645,7 +645,7 @@ HRESULT DirectX::TransformImage(
         || metadata.height > UINT32_MAX)
         return E_INVALIDARG;
 
-    if (metadata.IsVolumemap() && metadata.depth > UINT32_MAX)
+    if (metadata.IsVolumemap() && metadata.depth > UINT16_MAX)
         return E_INVALIDARG;
 
     HRESULT hr = result.Initialize(metadata);

@@ -4107,7 +4107,7 @@ void DXUTUpdateFrameStats()
 LPCWSTR WINAPI DXUTGetFrameStats( _In_ bool bShowFPS )
 {
     auto pstrFrameStats = GetDXUTState().GetFrameStats();
-    WCHAR* pstrFPS = ( bShowFPS ) ? GetDXUTState().GetFPSStats() : L"";
+    const WCHAR* pstrFPS = ( bShowFPS ) ? GetDXUTState().GetFPSStats() : L"";
     WCHAR* pstrStats = GetDXUTState().GetStaticFrameStats();
     swprintf_s( pstrFrameStats, 256, pstrStats, pstrFPS );
     return pstrFrameStats;

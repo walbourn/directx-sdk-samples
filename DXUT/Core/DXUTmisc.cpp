@@ -213,7 +213,7 @@ void CDXUTTimer::LimitThreadAffinityToCurrentProc()
 _Use_decl_annotations_
 LPCWSTR WINAPI DXUTDXGIFormatToString( DXGI_FORMAT format, bool bWithPrefix )
 {
-    WCHAR* pstr = nullptr;
+    const WCHAR* pstr = nullptr;
     switch( format )
     {
         DXUTDXGIFMTSTR(DXGI_FORMAT_R32G32B32A32_TYPELESS)

@@ -4,7 +4,7 @@ DirectXTK - the DirectX Tool Kit for DirectX 11
 
 Copyright (c) Microsoft Corporation. All rights reserved.
 
-October 6, 2016
+February 10, 2017
 
 This package contains the "DirectX Tool Kit", a collection of helper classes for 
 writing Direct3D 11 C++ code for Universal Windows Platform (UWP) apps for Windows 10,
@@ -78,6 +78,18 @@ https://opensource.microsoft.com/codeofconduct/
 ---------------
 RELEASE HISTORY
 ---------------
+
+February 10, 2017
+    GamePad now supports special value of -1 for 'most recently connected controller'
+    WIC format 40bppCMYKAlpha should be converted to RGBA8 rather than RGBA16
+    DDS support for L8A8 with bitcount 8 rather than 16
+    Minor code cleanup
+
+December 5, 2016
+    Mouse and Keyboard classes updated with IsConnected method
+    Windows10 project /ZW switch removed to support use in C++/WinRT projection apps
+    VS 2017 RC projects added
+    Minor code cleanup
 
 October 6, 2016
     SDKMESH loader and BasicEffects support for compressed vertex normals with biasing
@@ -321,7 +333,7 @@ September 7, 2012
     Tweaked SpriteBatch.cpp to workaround ARM NEON compiler codegen bug
 
 May 31, 2012
-    Updated Metro project for Visual Studio 2012 Release Candidate changes
+    Updated Windows Store project for Visual Studio 2012 Release Candidate changes
     Cleaned up x64 Debug configuration warnings and switched to use "_DEBUG" instead of "DEBUG"
     Minor fix for DDSTextureLoader's retry fallback that can happen with 10level9 feature levels
 
@@ -333,7 +345,7 @@ March 29, 2012
 
 March 6, 2012
     Fix for too much temp memory used by WICTextureLoader
-    Add separate Visual Studio 11 projects for Desktop vs. Metro builds
+    Add separate Visual Studio 11 projects for Desktop vs. Windows Store builds
 
 March 5, 2012
     Bug fix for SpriteBatch with batches > 2048

@@ -3,7 +3,7 @@ DIRECTX TEXTURE LIBRARY (DirectXTex)
 
 Copyright (c) Microsoft Corporation. All rights reserved.
 
-October 5, 2016
+January 31, 2017
 
 This package contains DirectXTex, a shared source library for reading and writing DDS
 files, and performing various texture content processing operations including
@@ -112,6 +112,20 @@ RELEASE NOTES
 
 ------------------------------------
 RELEASE HISTORY
+
+January 31, 2017
+    DirectX 12 versions of IsSupported, CreateTexture (PrepareUpload), and CaptureTexture
+    Update to DirectX 11 version of IsSupported
+    WIC format 40bppCMYKAlpha should be converted to RGBA8 rather than RGBA16
+    DDS support for L8A8 with bitcount 8 rather than 16
+    DXGI_FORMAT_R32G8X24_TYPELESS and DXGI_FORMAT_R24G8_TYPELESS should be IsDepthStencil formats
+    Updates to DDSTextureLoader, ScreenGrab, and WICTextureLoader
+    Minor code cleanup
+
+December 5, 2016
+    Fixed over-validation in DDS header parsing
+    VS 2017 RC projects added
+    Minor code cleanup
 
 October 5, 2016
     *breaking change*
@@ -322,7 +336,7 @@ June 22, 2012
 May 31, 2012
     Minor fix for DDSTextureLoader's retry fallback that can happen with 10level9 feature levels
     Switched to use "_DEBUG" instead of "DEBUG" and cleaned up debug warnings
-    added Metro style application project files for DirectXTex
+    added Windows Store style application project files for DirectXTex
 
 April 20, 2012
     DirectTex's WIC-based writer opts-in for the Windows 8 BMP encoder option for writing 32 bpp RGBA files with the BITMAPV5HEADER
@@ -350,7 +364,7 @@ February 20, 2012
     Fixed bug in _SwizzleScanline when copying alpha channel for BGRA<->RGBA swizzling
 
 February 11, 2012
-    Update of DDSTextureLoader to also build in Metro style apps; added WICTextureLoader
+    Update of DDSTextureLoader to also build in Windows Store style apps; added WICTextureLoader
     Added CMYK WIC pixel formats to the DirectXTex conversion table
 
 January 30, 2012

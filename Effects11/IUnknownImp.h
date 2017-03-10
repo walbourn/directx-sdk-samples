@@ -20,7 +20,7 @@
 
 #define IUNKNOWN_IMP(Class, Interface, BaseInterface) \
  \
-HRESULT STDMETHODCALLTYPE Class##::QueryInterface(REFIID iid, _COM_Outptr_ LPVOID *ppv) override \
+HRESULT STDMETHODCALLTYPE QueryInterface(REFIID iid, _COM_Outptr_ LPVOID *ppv) override \
 { \
     if( !ppv ) \
         return E_INVALIDARG; \
@@ -46,12 +46,12 @@ HRESULT STDMETHODCALLTYPE Class##::QueryInterface(REFIID iid, _COM_Outptr_ LPVOI
     return S_OK; \
 } \
  \
-ULONG STDMETHODCALLTYPE Class##::AddRef() override \
+ULONG STDMETHODCALLTYPE AddRef() override \
 { \
     return 1; \
 } \
  \
-ULONG STDMETHODCALLTYPE Class##::Release() override \
+ULONG STDMETHODCALLTYPE Release() override \
 { \
     return 0; \
 }

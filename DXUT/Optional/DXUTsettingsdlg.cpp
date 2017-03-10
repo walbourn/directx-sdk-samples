@@ -1505,9 +1505,9 @@ HRESULT CD3DSettingsDlg::UpdateD3D11RefreshRates()
     bool bWindowed = IsWindowed();
     if( bWindowed )
     {
-        DXGI_RATIONAL default;
-        default.Denominator = default.Numerator = 0;
-        AddD3D11RefreshRate( default );
+        DXGI_RATIONAL def;
+        def.Denominator = def.Numerator = 0;
+        AddD3D11RefreshRate(def);
     }
     else
     {
