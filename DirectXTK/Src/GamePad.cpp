@@ -82,7 +82,10 @@ namespace
 // Windows::Gaming::Input (Windows 10)
 //======================================================================================
 
+#pragma warning(push)
+#pragma warning(disable : 4471)
 #include <Windows.Gaming.Input.h>
+#pragma warning(pop)
 
 class GamePad::Impl
 {
@@ -250,7 +253,7 @@ public:
                 {
                     ComPtr<IUser> user;
                     hr = ctrl->get_User(user.GetAddressOf());
-                    if (SUCCEEDED(hr))
+                    if (SUCCEEDED(hr) && user != nullptr)
                     {
                         Wrappers::HString str;
                         hr = user->get_NonRoamableId(str.GetAddressOf());
