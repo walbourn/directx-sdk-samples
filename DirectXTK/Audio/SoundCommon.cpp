@@ -727,7 +727,7 @@ void SoundEffectInstanceBase::Apply3D( const AudioListener& listener, const Audi
         dwCalcFlags |= X3DAUDIO_CALCULATE_LPF_REVERB | X3DAUDIO_CALCULATE_REVERB;
     }
 
-    float matrix[ XAUDIO2_MAX_AUDIO_CHANNELS * 8 ];
+    float matrix[XAUDIO2_MAX_AUDIO_CHANNELS * 8] = {};
     assert( mDSPSettings.SrcChannelCount <= XAUDIO2_MAX_AUDIO_CHANNELS );
     assert( mDSPSettings.DstChannelCount <= 8 );
     mDSPSettings.pMatrixCoefficients = matrix;
@@ -766,7 +766,11 @@ void SoundEffectInstanceBase::Apply3D( const AudioListener& listener, const Audi
 
     if ( reverb )
     {
-        (void)voice->SetOutputMatrix( reverb, 1, 1, &mDSPSettings.ReverbLevel );
+        for ( size_t j = 0; j < mDSPSettings.SrcChannelCount; ++j )
+        {
+            matrix[j] = mDSPSettings.ReverbLevel;
+        }
+        (void)voice->SetOutputMatrix( reverb, mDSPSettings.SrcChannelCount, 1, matrix );
     }
 
     if ( mFlags & SoundEffectInstance_ReverbUseFilters )
