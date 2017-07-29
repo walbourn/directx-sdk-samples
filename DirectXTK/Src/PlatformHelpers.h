@@ -30,7 +30,7 @@ namespace DirectX
         virtual const char* what() const override
         {
             static char s_str[64] = {};
-            sprintf_s(s_str, "Failure with HRESULT of %08X", result);
+            sprintf_s(s_str, "Failure with HRESULT of %08X", static_cast<unsigned int>(result));
             return s_str;
         }
 
@@ -74,7 +74,7 @@ namespace DirectX
 
     struct handle_closer { void operator()(HANDLE h) { if (h) CloseHandle(h); } };
 
-    typedef public std::unique_ptr<void, handle_closer> ScopedHandle;
+    typedef std::unique_ptr<void, handle_closer> ScopedHandle;
 
     inline HANDLE safe_handle( HANDLE h ) { return (h == INVALID_HANDLE_VALUE) ? 0 : h; }
 }
