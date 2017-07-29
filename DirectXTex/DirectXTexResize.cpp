@@ -111,7 +111,7 @@ namespace
                     return E_UNEXPECTED;
                 }
 
-                hr = FC->Initialize(scaler.Get(), pfGUID, _GetWICDither(filter), 0, 0, WICBitmapPaletteTypeCustom);
+                hr = FC->Initialize(scaler.Get(), pfGUID, _GetWICDither(filter), nullptr, 0, WICBitmapPaletteTypeMedianCut);
                 if (FAILED(hr))
                     return hr;
 
@@ -758,7 +758,7 @@ namespace
                     {
                         // Need to slightly bias results for floating-point error accumulation which can
                         // be visible with harshly quantized values
-                        static const XMVECTORF32 Bias = { 0.f, 0.f, 0.f, 0.1f };
+                        static const XMVECTORF32 Bias = { { { 0.f, 0.f, 0.f, 0.1f } } };
 
                         XMVECTOR* ptr = pAccSrc;
                         for (size_t i = 0; i < destImage.width; ++i, ++ptr)
@@ -767,6 +767,9 @@ namespace
                         }
                     }
                     break;
+
+                    default:
+                        break;
                     }
 
                     // This performs any required clamping

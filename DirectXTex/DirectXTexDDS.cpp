@@ -19,9 +19,9 @@
 
 using namespace DirectX;
 
-static_assert(TEX_DIMENSION_TEXTURE1D == DDS_DIMENSION_TEXTURE1D, "header enum mismatch");
-static_assert(TEX_DIMENSION_TEXTURE2D == DDS_DIMENSION_TEXTURE2D, "header enum mismatch");
-static_assert(TEX_DIMENSION_TEXTURE3D == DDS_DIMENSION_TEXTURE3D, "header enum mismatch");
+static_assert(static_cast<int>(TEX_DIMENSION_TEXTURE1D) == static_cast<int>(DDS_DIMENSION_TEXTURE1D), "header enum mismatch");
+static_assert(static_cast<int>(TEX_DIMENSION_TEXTURE2D) == static_cast<int>(DDS_DIMENSION_TEXTURE2D), "header enum mismatch");
+static_assert(static_cast<int>(TEX_DIMENSION_TEXTURE3D) == static_cast<int>(DDS_DIMENSION_TEXTURE3D), "header enum mismatch");
 
 namespace
 {
@@ -155,15 +155,22 @@ namespace
     //      FourCC CTX1 (Xbox 360 only)
     //      FourCC EAR, EARG, ET2, ET2A (Ericsson Texture Compression)
 
-    DXGI_FORMAT GetDXGIFormat(const DDS_PIXELFORMAT& ddpf, DWORD flags, _Inout_ DWORD& convFlags)
+    DXGI_FORMAT GetDXGIFormat(const DDS_HEADER& hdr, const DDS_PIXELFORMAT& ddpf, DWORD flags, _Inout_ DWORD& convFlags)
     {
+        uint32_t ddpfFlags = ddpf.dwFlags;
+        if (hdr.dwReserved1[9] == MAKEFOURCC('N', 'V', 'T', 'T'))
+        {
+            // Clear out non-standard nVidia DDS flags
+            ddpfFlags &= ~0xC0000000 /* DDPF_SRGB | DDPF_NORMAL */;
+        }
+
         const size_t MAP_SIZE = sizeof(g_LegacyDDSMap) / sizeof(LegacyDDS);
         size_t index = 0;
         for (index = 0; index < MAP_SIZE; ++index)
         {
             const LegacyDDS* entry = &g_LegacyDDSMap[index];
 
-            if (ddpf.dwFlags == entry->ddpf.dwFlags)
+            if (ddpfFlags == entry->ddpf.dwFlags)
             {
                 if (entry->ddpf.dwFlags & DDS_FOURCC)
                 {
@@ -245,6 +252,12 @@ namespace
             cflags ^= CONV_FLAGS_SWIZZLE;
         }
 
+        if ((hdr.dwReserved1[9] == MAKEFOURCC('N', 'V', 'T', 'T'))
+            && (ddpf.dwFlags & 0x40000000 /* DDPF_SRGB */))
+        {
+            format = MakeSRGB(format);
+        }
+
         convFlags = cflags;
 
         return format;
@@ -316,7 +329,7 @@ namespace
                 return HRESULT_FROM_WIN32(ERROR_NOT_SUPPORTED);
             }
 
-            static_assert(TEX_MISC_TEXTURECUBE == DDS_RESOURCE_MISC_TEXTURECUBE, "DDS header mismatch");
+            static_assert(static_cast<int>(TEX_MISC_TEXTURECUBE) == static_cast<int>(DDS_RESOURCE_MISC_TEXTURECUBE), "DDS header mismatch");
 
             metadata.miscFlags = d3d10ext->miscFlag & ~TEX_MISC_TEXTURECUBE;
 
@@ -368,13 +381,13 @@ namespace
                 return HRESULT_FROM_WIN32(ERROR_INVALID_DATA);
             }
 
-            static_assert(TEX_MISC2_ALPHA_MODE_MASK == DDS_MISC_FLAGS2_ALPHA_MODE_MASK, "DDS header mismatch");
+            static_assert(static_cast<int>(TEX_MISC2_ALPHA_MODE_MASK) == static_cast<int>(DDS_MISC_FLAGS2_ALPHA_MODE_MASK), "DDS header mismatch");
 
-            static_assert(TEX_ALPHA_MODE_UNKNOWN == DDS_ALPHA_MODE_UNKNOWN, "DDS header mismatch");
-            static_assert(TEX_ALPHA_MODE_STRAIGHT == DDS_ALPHA_MODE_STRAIGHT, "DDS header mismatch");
-            static_assert(TEX_ALPHA_MODE_PREMULTIPLIED == DDS_ALPHA_MODE_PREMULTIPLIED, "DDS header mismatch");
-            static_assert(TEX_ALPHA_MODE_OPAQUE == DDS_ALPHA_MODE_OPAQUE, "DDS header mismatch");
-            static_assert(TEX_ALPHA_MODE_CUSTOM == DDS_ALPHA_MODE_CUSTOM, "DDS header mismatch");
+            static_assert(static_cast<int>(TEX_ALPHA_MODE_UNKNOWN) == static_cast<int>(DDS_ALPHA_MODE_UNKNOWN), "DDS header mismatch");
+            static_assert(static_cast<int>(TEX_ALPHA_MODE_STRAIGHT) == static_cast<int>(DDS_ALPHA_MODE_STRAIGHT), "DDS header mismatch");
+            static_assert(static_cast<int>(TEX_ALPHA_MODE_PREMULTIPLIED) == static_cast<int>(DDS_ALPHA_MODE_PREMULTIPLIED), "DDS header mismatch");
+            static_assert(static_cast<int>(TEX_ALPHA_MODE_OPAQUE) == static_cast<int>(DDS_ALPHA_MODE_OPAQUE), "DDS header mismatch");
+            static_assert(static_cast<int>(TEX_ALPHA_MODE_CUSTOM) == static_cast<int>(DDS_ALPHA_MODE_CUSTOM), "DDS header mismatch");
 
             metadata.miscFlags2 = d3d10ext->miscFlags2;
         }
@@ -409,7 +422,7 @@ namespace
                 // Note there's no way for a legacy Direct3D 9 DDS to express a '1D' texture
             }
 
-            metadata.format = GetDXGIFormat(pHeader->ddspf, flags, convFlags);
+            metadata.format = GetDXGIFormat(*pHeader, pHeader->ddspf, flags, convFlags);
 
             if (metadata.format == DXGI_FORMAT_UNKNOWN)
                 return HRESULT_FROM_WIN32(ERROR_NOT_SUPPORTED);
@@ -435,6 +448,9 @@ namespace
                 case DXGI_FORMAT_R16_UNORM:
                     metadata.format = DXGI_FORMAT_R16G16B16A16_UNORM;
                     convFlags |= CONV_FLAGS_L16 | CONV_FLAGS_EXPAND;
+                    break;
+
+                default:
                     break;
                 }
             }
@@ -474,6 +490,9 @@ namespace
                 metadata.format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
                 convFlags |= CONV_FLAGS_SWIZZLE | CONV_FLAGS_NOALPHA;
                 break;
+
+            default:
+                break;
             }
         }
 
@@ -489,6 +508,9 @@ namespace
                 convFlags |= CONV_FLAGS_EXPAND;
                 if (metadata.format == DXGI_FORMAT_B5G6R5_UNORM)
                     convFlags |= CONV_FLAGS_NOALPHA;
+
+            default:
+                break;
             }
         }
 
@@ -582,6 +604,9 @@ HRESULT DirectX::_EncodeDDSHeader(
             break;
         case DXGI_FORMAT_R16_FLOAT:
             ddpf.dwSize = sizeof(DDS_PIXELFORMAT); ddpf.dwFlags = DDS_FOURCC; ddpf.dwFourCC = 111;  // D3DFMT_R16F
+            break;
+
+        default:
             break;
         }
     }
@@ -695,7 +720,7 @@ HRESULT DirectX::_EncodeDDSHeader(
         if (metadata.arraySize > UINT16_MAX)
             return E_INVALIDARG;
 
-        static_assert(TEX_MISC_TEXTURECUBE == DDS_RESOURCE_MISC_TEXTURECUBE, "DDS header mismatch");
+        static_assert(static_cast<int>(TEX_MISC_TEXTURECUBE) == static_cast<int>(DDS_RESOURCE_MISC_TEXTURECUBE), "DDS header mismatch");
 
         ext->miscFlag = metadata.miscFlags & ~TEX_MISC_TEXTURECUBE;
 
@@ -710,13 +735,13 @@ HRESULT DirectX::_EncodeDDSHeader(
             ext->arraySize = static_cast<UINT>(metadata.arraySize);
         }
 
-        static_assert(TEX_MISC2_ALPHA_MODE_MASK == DDS_MISC_FLAGS2_ALPHA_MODE_MASK, "DDS header mismatch");
+        static_assert(static_cast<int>(TEX_MISC2_ALPHA_MODE_MASK) == static_cast<int>(DDS_MISC_FLAGS2_ALPHA_MODE_MASK), "DDS header mismatch");
 
-        static_assert(TEX_ALPHA_MODE_UNKNOWN == DDS_ALPHA_MODE_UNKNOWN, "DDS header mismatch");
-        static_assert(TEX_ALPHA_MODE_STRAIGHT == DDS_ALPHA_MODE_STRAIGHT, "DDS header mismatch");
-        static_assert(TEX_ALPHA_MODE_PREMULTIPLIED == DDS_ALPHA_MODE_PREMULTIPLIED, "DDS header mismatch");
-        static_assert(TEX_ALPHA_MODE_OPAQUE == DDS_ALPHA_MODE_OPAQUE, "DDS header mismatch");
-        static_assert(TEX_ALPHA_MODE_CUSTOM == DDS_ALPHA_MODE_CUSTOM, "DDS header mismatch");
+        static_assert(static_cast<int>(TEX_ALPHA_MODE_UNKNOWN) == static_cast<int>(DDS_ALPHA_MODE_UNKNOWN), "DDS header mismatch");
+        static_assert(static_cast<int>(TEX_ALPHA_MODE_STRAIGHT) == static_cast<int>(DDS_ALPHA_MODE_STRAIGHT), "DDS header mismatch");
+        static_assert(static_cast<int>(TEX_ALPHA_MODE_PREMULTIPLIED) == static_cast<int>(DDS_ALPHA_MODE_PREMULTIPLIED), "DDS header mismatch");
+        static_assert(static_cast<int>(TEX_ALPHA_MODE_OPAQUE) == static_cast<int>(DDS_ALPHA_MODE_OPAQUE), "DDS header mismatch");
+        static_assert(static_cast<int>(TEX_ALPHA_MODE_CUSTOM) == static_cast<int>(DDS_ALPHA_MODE_CUSTOM), "DDS header mismatch");
 
         if (flags & DDS_FLAGS_FORCE_DX10_EXT_MISC2)
         {
@@ -867,6 +892,9 @@ namespace
                     return true;
                 }
                 return false;
+
+            default:
+                return false;
             }
             break;
 
@@ -980,6 +1008,9 @@ namespace
                     return true;
                 }
                 return false;
+
+            default:
+                return false;
             }
             break;
 
@@ -1078,9 +1109,10 @@ namespace
                 return true;
             }
             return false;
-        }
 
-        return false;
+        default:
+            return false;
+        }
     }
 
 
@@ -1617,7 +1649,7 @@ HRESULT DirectX::LoadFromDDSFile(
     if (!(convFlags & CONV_FLAGS_DX10))
     {
         // Must reset file position since we read more than the standard header above
-        LARGE_INTEGER filePos = { sizeof(uint32_t) + sizeof(DDS_HEADER), 0 };
+        LARGE_INTEGER filePos = { { sizeof(uint32_t) + sizeof(DDS_HEADER), 0 } };
         if (!SetFilePointerEx(hFile.get(), filePos, 0, FILE_BEGIN))
         {
             return HRESULT_FROM_WIN32(GetLastError());

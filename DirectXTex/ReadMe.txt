@@ -3,7 +3,7 @@ DIRECTX TEXTURE LIBRARY (DirectXTex)
 
 Copyright (c) Microsoft Corporation. All rights reserved.
 
-April 24, 2017
+July 26, 2017
 
 This package contains DirectXTex, a shared source library for reading and writing DDS
 files, and performing various texture content processing operations including
@@ -31,15 +31,24 @@ Texconv\
     from the DirectX SDK utilizing DirectXTex rather than D3DX.
 
     It supports the same arguments as the Texture Conversion Tool Extended (texconvex.exe) DirectX
-    SDK utility. See <http://msdn.microsoft.com/en-us/library/ee422506.aspx>. The primary differences
-    are the -10 and -11 arguments are not applicable and the filter names (POINT, LINEAR, CUBIC,
-    FANT or BOX, TRIANGLE, *_DITHER, *_DITHER_DIFFUSION). This also includes support for the JPEG XR
-    (HD Photo) bitmap format.
+    SDK utility. The primary differences are the -10 and -11 arguments are not applicable and the
+    filter names (POINT, LINEAR, CUBIC, FANT or BOX, TRIANGLE, *_DITHER, *_DITHER_DIFFUSION).
+    This also includes support for the JPEG XR (HD Photo) bitmap format.
     (see <http://blogs.msdn.com/b/chuckw/archive/2011/01/19/known-issue-texconvex.aspx>)
+
+    See <https://github.com/Microsoft/DirectXTex/wiki/Texconv> for details.
 
 Texassemble\
     This DirectXTex sample is a command-line utility for creating cubemaps, volume maps, or
     texture arrays from a set of individual input image files.
+
+    See <https://github.com/Microsoft/DirectXTex/wiki/Texassemble> for details.
+
+Texdiag\
+    This DirectXTex sample is a command-line utility for analyzing image contents, primarily for
+    debugging purposes.
+
+    See <https://github.com/Microsoft/DirectXTex/wiki/Texdiag>
     
 DDSView\
     This DirectXTex sample is a simple Direct3D 11-based viewer for DDS files. For array textures
@@ -112,6 +121,12 @@ RELEASE NOTES
 
 ------------------------------------
 RELEASE HISTORY
+
+July 26, 2017
+    Support for reading non-standard DDS files written by nVidia Texture Tools (NVTT)
+    Fix for ComputeMSE when using CMSE_IMAGE2_X2_BIAS
+    Fix for WIC writer then codec target format requires a palette    
+    Code cleanup
 
 April 24, 2017
     VS 2017 project updates
