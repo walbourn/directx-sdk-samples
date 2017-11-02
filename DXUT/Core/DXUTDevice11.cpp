@@ -236,7 +236,7 @@ HRESULT CD3D11Enumeration::Enumerate( LPDXUTCALLBACKISD3D11DEVICEACCEPTABLE IsD3
     {
         static const D3D_FEATURE_LEVEL fLvlWarp[] =
         {
-#ifdef USE_DIRECT3D11_3
+#if defined(USE_DIRECT3D11_3) || defined(USE_DIRECT3D11_4) 
             D3D_FEATURE_LEVEL_12_1, D3D_FEATURE_LEVEL_12_0,
 #endif
             D3D_FEATURE_LEVEL_11_1, D3D_FEATURE_LEVEL_11_0, D3D_FEATURE_LEVEL_10_1
@@ -247,7 +247,7 @@ HRESULT CD3D11Enumeration::Enumerate( LPDXUTCALLBACKISD3D11DEVICEACCEPTABLE IsD3
                                              D3D11_SDK_VERSION, &pDevice, &m_warpFL, nullptr );
         if ( hr == E_INVALIDARG )
         {
-#ifdef USE_DIRECT3D11_3
+#if defined(USE_DIRECT3D11_3) || defined(USE_DIRECT3D11_4) 
             // DirectX 11.1 runtime will not recognize FL 12.x, so try without it
             hr = DXUT_Dynamic_D3D11CreateDevice(nullptr, D3D_DRIVER_TYPE_WARP, 0, 0, &fLvlWarp[2], _countof(fLvlWarp) - 2,
                                                 D3D11_SDK_VERSION, &pDevice, &m_warpFL, nullptr);
@@ -496,7 +496,7 @@ HRESULT CD3D11Enumeration::EnumerateDevices( _In_ CD3D11EnumAdapterInfo* pAdapte
 
         static const D3D_FEATURE_LEVEL FeatureLevels[] =
         {
-#ifdef USE_DIRECT3D11_3
+#if defined(USE_DIRECT3D11_3) || defined(USE_DIRECT3D11_4) 
             D3D_FEATURE_LEVEL_12_1,
             D3D_FEATURE_LEVEL_12_0,
 #endif
@@ -526,7 +526,7 @@ HRESULT CD3D11Enumeration::EnumerateDevices( _In_ CD3D11EnumAdapterInfo* pAdapte
 
         if ( hr == E_INVALIDARG )
         {
-#ifdef USE_DIRECT3D11_3
+#if defined(USE_DIRECT3D11_3) || defined(USE_DIRECT3D11_4) 
             // DirectX 11.1 runtime will not recognize FL 12.x, so try without it
             hr = DXUT_Dynamic_D3D11CreateDevice((devTypeArray[iDeviceType] == D3D_DRIVER_TYPE_HARDWARE) ? pAdapterInfo->m_pAdapter : nullptr,
                                                 (devTypeArray[iDeviceType] == D3D_DRIVER_TYPE_HARDWARE) ? D3D_DRIVER_TYPE_UNKNOWN : devTypeArray[iDeviceType],
