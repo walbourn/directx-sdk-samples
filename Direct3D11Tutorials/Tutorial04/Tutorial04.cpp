@@ -157,7 +157,7 @@ HRESULT InitWindow( HINSTANCE hInstance, int nCmdShow )
 //
 // With VS 11, we could load up prebuilt .cso files instead...
 //--------------------------------------------------------------------------------------
-HRESULT CompileShaderFromFile( WCHAR* szFileName, LPCSTR szEntryPoint, LPCSTR szShaderModel, ID3DBlob** ppBlobOut )
+HRESULT CompileShaderFromFile( const WCHAR* szFileName, LPCSTR szEntryPoint, LPCSTR szShaderModel, ID3DBlob** ppBlobOut )
 {
     HRESULT hr = S_OK;
 
