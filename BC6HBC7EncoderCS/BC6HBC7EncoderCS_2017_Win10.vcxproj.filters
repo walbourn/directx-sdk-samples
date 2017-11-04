@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="utils.cpp" />
+    <ClCompile Include="BC7EncoderCS10.cpp" />
+    <ClCompile Include="BC6HBC7EncoderCS.cpp" />
+    <ClCompile Include="BC6HEncoderCS10.cpp" />
+    <ClCompile Include="EncoderBase.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="utils.h" />
+    <ClInclude Include="BC7EncoderCS10.h" />
+    <ClInclude Include="BC6HEncoderCS10.h" />
+    <ClInclude Include="EncoderBase.h" />
+  </ItemGroup>
+</Project>

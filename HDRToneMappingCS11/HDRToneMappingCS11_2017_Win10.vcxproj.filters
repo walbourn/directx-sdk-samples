@@ -11,21 +11,38 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\DXUT\Optional\directx.ico">
+    <None Include="..\..\DXUT11\Optional\directx.ico">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="DynamicShaderLinkage11.cpp" />
-    <CLInclude Include="DynamicShaderLinkage11_LightPSH.h" />
-    <CLInclude Include="DynamicShaderLinkage11_MaterialPSH.h" />
-    <CLInclude Include="DynamicShaderLinkage11_PSBuffers.h" />
+    <ClCompile Include="HDRToneMappingCS11.cpp" />
+    <ClCompile Include="skybox11.cpp" />
+    <CLInclude Include="skybox11.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="DynamicShaderLinkage11_PS.hlsl">
+    <None Include="BrightPassAndHorizFilterCS.hlsl">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="DynamicShaderLinkage11_VS.hlsl">
+    <None Include="DumpToTexture.hlsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="FilterCS.hlsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="FinalPass.hlsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="PSApproach.hlsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="ReduceTo1DCS.hlsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="ReduceToSingleCS.hlsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="skybox11.hlsl">
       <Filter>Shaders</Filter>
     </None>
   </ItemGroup>
@@ -33,7 +50,7 @@
     <CLInclude Include="resource.h">
       <Filter>Resource Files</Filter>
     </CLInclude>
-    <ResourceCompile Include="DynamicShaderLinkage11.rc">
+    <ResourceCompile Include="HDRToneMappingCS11.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
   </ItemGroup>

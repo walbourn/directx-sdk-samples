@@ -11,21 +11,19 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\DXUT\Optional\directx.ico">
+    <None Include="..\..\DXUT11\Optional\directx.ico">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="DynamicShaderLinkage11.cpp" />
-    <CLInclude Include="DynamicShaderLinkage11_LightPSH.h" />
-    <CLInclude Include="DynamicShaderLinkage11_MaterialPSH.h" />
-    <CLInclude Include="DynamicShaderLinkage11_PSBuffers.h" />
+    <ClCompile Include="NBodyGravityCS11.cpp" />
+    <CLInclude Include="WaitDlg.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="DynamicShaderLinkage11_PS.hlsl">
+    <None Include="NBodyGravityCS11.hlsl">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="DynamicShaderLinkage11_VS.hlsl">
+    <None Include="ParticleDraw.hlsl">
       <Filter>Shaders</Filter>
     </None>
   </ItemGroup>
@@ -33,7 +31,7 @@
     <CLInclude Include="resource.h">
       <Filter>Resource Files</Filter>
     </CLInclude>
-    <ResourceCompile Include="DynamicShaderLinkage11.rc">
+    <ResourceCompile Include="NBodyGravityCS11.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
   </ItemGroup>

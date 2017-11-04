@@ -16,16 +16,11 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="DynamicShaderLinkage11.cpp" />
-    <CLInclude Include="DynamicShaderLinkage11_LightPSH.h" />
-    <CLInclude Include="DynamicShaderLinkage11_MaterialPSH.h" />
-    <CLInclude Include="DynamicShaderLinkage11_PSBuffers.h" />
+    <ClCompile Include="SimpleBezier11.cpp" />
+    <CLInclude Include="MobiusStrip.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="DynamicShaderLinkage11_PS.hlsl">
-      <Filter>Shaders</Filter>
-    </None>
-    <None Include="DynamicShaderLinkage11_VS.hlsl">
+    <None Include="SimpleBezier11.hlsl">
       <Filter>Shaders</Filter>
     </None>
   </ItemGroup>
@@ -33,7 +28,7 @@
     <CLInclude Include="resource.h">
       <Filter>Resource Files</Filter>
     </CLInclude>
-    <ResourceCompile Include="DynamicShaderLinkage11.rc">
+    <ResourceCompile Include="SimpleBezier11.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
   </ItemGroup>
