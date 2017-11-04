@@ -37,6 +37,7 @@
 #include <assert.h>
 
 #include <algorithm>
+#include <fstream>
 #include <list>
 #include <memory>
 #include <vector>
@@ -666,6 +667,7 @@ enum OPTIONS
     OPT_NOCOMPACT,
     OPT_FRIENDLY_NAMES,
     OPT_NOLOGO,
+    OPT_FILELIST,
     OPT_MAX
 };
 
@@ -721,7 +723,7 @@ namespace
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 
-SValue g_pOptions[] =
+const SValue g_pOptions [] =
 {
     { L"r",         OPT_RECURSIVE },
     { L"s",         OPT_STREAMING },
@@ -732,6 +734,7 @@ SValue g_pOptions[] =
     { L"nc",        OPT_NOCOMPACT },
     { L"f",         OPT_FRIENDLY_NAMES },
     { L"nologo",    OPT_NOLOGO },
+    { L"flist",     OPT_FILELIST },
     { nullptr,      0 }
 };
 
@@ -768,7 +771,6 @@ namespace
 
         return L"";
     }
-
 
     void SearchForFiles(const wchar_t* path, std::list<SConversion>& files, bool recursive)
     {
@@ -848,6 +850,9 @@ namespace
     {
         wprintf(L"Microsoft (R) XACT-style Wave Bank Tool \n");
         wprintf(L"Copyright (C) Microsoft Corp. All rights reserved.\n");
+#ifdef _DEBUG
+        wprintf(L"*** Debug build ***\n");
+#endif
         wprintf(L"\n");
     }
 
@@ -867,6 +872,7 @@ namespace
         wprintf(L"   -nc                 force creation of non-compact wavebank\n");
         wprintf(L"   -f                  include entry friendly names\n");
         wprintf(L"   -nologo             suppress copyright message\n");
+        wprintf(L"   -flist <filename>   use text file with a list of input files (one per line)\n");
     }
 
     const char* GetFormatTagName(WORD wFormatTag)
@@ -976,6 +982,7 @@ int __cdecl wmain(_In_ int argc, _In_z_count_(argc) wchar_t* argv[])
             {
             case OPT_OUTPUTFILE:
             case OPT_OUTPUTHEADER:
+            case OPT_FILELIST:
                 if (!*pValue)
                 {
                     if ((iArg + 1 >= argc))
@@ -1013,6 +1020,48 @@ int __cdecl wmain(_In_ int argc, _In_z_count_(argc) wchar_t* argv[])
                 {
                     wprintf(L"-c and -nc are mutually exclusive options\n");
                     return 1;
+                }
+                break;
+
+            case OPT_FILELIST:
+                {
+                    std::wifstream inFile(pValue);
+                    if (!inFile)
+                    {
+                        wprintf(L"Error opening -flist file %ls\n", pValue);
+                        return 1;
+                    }
+                    wchar_t fname[1024] = {};
+                    for (;;)
+                    {
+                        inFile >> fname;
+                        if (!inFile)
+                            break;
+
+                        if (*fname == L'#')
+                        {
+                            // Comment
+                        }
+                        else if (*fname == L'-')
+                        {
+                            wprintf(L"Command-line arguments not supported in -flist file\n");
+                            return 1;
+                        }
+                        else if (wcspbrk(fname, L"?*") != nullptr)
+                        {
+                            wprintf(L"Wildcards not supported in -flist file\n");
+                            return 1;
+                        }
+                        else
+                        {
+                            SConversion conv;
+                            wcscpy_s(conv.szSrc, MAX_PATH, fname);
+                            conversion.push_back(conv);
+                        }
+
+                        inFile.ignore(1000, '\n');
+                    }
+                    inFile.close();
                 }
                 break;
             }
