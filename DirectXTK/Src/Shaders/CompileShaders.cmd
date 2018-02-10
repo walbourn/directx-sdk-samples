@@ -9,6 +9,8 @@ rem Copyright (c) Microsoft Corporation. All rights reserved.
 setlocal
 set error=0
 
+set FXCOPTS=/nologo /WX /Ges /Zi /Zpc /Qstrip_reflect /Qstrip_debug
+
 if %1.==xbox. goto continuexbox
 if %1.==. goto continuepc
 echo usage: CompileShaders [xbox]
@@ -154,15 +156,36 @@ call :CompileShader%1 SkinnedEffect ps PSSkinnedVertexLighting
 call :CompileShader%1 SkinnedEffect ps PSSkinnedVertexLightingNoFog
 call :CompileShader%1 SkinnedEffect ps PSSkinnedPixelLighting
 
-call :CompileShader%1 NormalMapEffect vs VSNormalPixelLightingTx
-call :CompileShader%1 NormalMapEffect vs VSNormalPixelLightingTxBn
-call :CompileShader%1 NormalMapEffect vs VSNormalPixelLightingTxVc
-call :CompileShader%1 NormalMapEffect vs VSNormalPixelLightingTxVcBn
+call :CompileShaderSM4%1 NormalMapEffect vs VSNormalPixelLightingTx
+call :CompileShaderSM4%1 NormalMapEffect vs VSNormalPixelLightingTxBn
+call :CompileShaderSM4%1 NormalMapEffect vs VSNormalPixelLightingTxVc
+call :CompileShaderSM4%1 NormalMapEffect vs VSNormalPixelLightingTxVcBn
 
-call :CompileShader%1 NormalMapEffect ps PSNormalPixelLightingTx
-call :CompileShader%1 NormalMapEffect ps PSNormalPixelLightingTxNoFog
-call :CompileShader%1 NormalMapEffect ps PSNormalPixelLightingTxNoSpec
-call :CompileShader%1 NormalMapEffect ps PSNormalPixelLightingTxNoFogSpec
+call :CompileShaderSM4%1 NormalMapEffect ps PSNormalPixelLightingTx
+call :CompileShaderSM4%1 NormalMapEffect ps PSNormalPixelLightingTxNoFog
+call :CompileShaderSM4%1 NormalMapEffect ps PSNormalPixelLightingTxNoSpec
+call :CompileShaderSM4%1 NormalMapEffect ps PSNormalPixelLightingTxNoFogSpec
+
+call :CompileShaderSM4%1 PBREffect vs VSConstant
+call :CompileShaderSM4%1 PBREffect vs VSConstantVelocity
+call :CompileShaderSM4%1 PBREffect vs VSConstantBn
+call :CompileShaderSM4%1 PBREffect vs VSConstantVelocityBn
+
+call :CompileShaderSM4%1 PBREffect ps PSConstant
+call :CompileShaderSM4%1 PBREffect ps PSTextured
+call :CompileShaderSM4%1 PBREffect ps PSTexturedEmissive
+call :CompileShaderSM4%1 PBREffect ps PSTexturedVelocity
+call :CompileShaderSM4%1 PBREffect ps PSTexturedEmissiveVelocity
+
+call :CompileShaderSM4%1 DebugEffect vs VSDebug
+call :CompileShaderSM4%1 DebugEffect vs VSDebugBn
+call :CompileShaderSM4%1 DebugEffect vs VSDebugVc
+call :CompileShaderSM4%1 DebugEffect vs VSDebugVcBn
+
+call :CompileShaderSM4%1 DebugEffect ps PSHemiAmbient
+call :CompileShaderSM4%1 DebugEffect ps PSRGBNormals
+call :CompileShaderSM4%1 DebugEffect ps PSRGBTangents
+call :CompileShaderSM4%1 DebugEffect ps PSRGBBiTangents
 
 call :CompileShader%1 SpriteEffect vs SpriteVertexShader
 call :CompileShader%1 SpriteEffect ps SpritePixelShader
@@ -238,21 +261,21 @@ endlocal
 exit /b
 
 :CompileShader
-set fxc=%PCFXC% /nologo %1.fx /T%2_4_0_level_9_1 /Zi /Zpc /Qstrip_reflect /Qstrip_debug /E%3 /FhCompiled\%1_%3.inc /FdCompiled\%1_%3.pdb /Vn%1_%3
+set fxc=%PCFXC% %1.fx %FXCOPTS% /T%2_4_0_level_9_1 /E%3 /FhCompiled\%1_%3.inc /FdCompiled\%1_%3.pdb /Vn%1_%3
 echo.
 echo %fxc%
 %fxc% || set error=1
 exit /b
 
 :CompileShaderSM4
-set fxc=%PCFXC% /nologo %1.fx /T%2_4_0 /Zi /Zpc /Qstrip_reflect /Qstrip_debug /E%3 /FhCompiled\%1_%3.inc /FdCompiled\%1_%3.pdb /Vn%1_%3
+set fxc=%PCFXC% %1.fx %FXCOPTS% /T%2_4_0 /E%3 /FhCompiled\%1_%3.inc /FdCompiled\%1_%3.pdb /Vn%1_%3
 echo.
 echo %fxc%
 %fxc% || set error=1
 exit /b
 
 :CompileShaderHLSL
-set fxc=%PCFXC% /nologo %1.hlsl /T%2_4_0_level_9_1 /Zi /Zpc /Qstrip_reflect /Qstrip_debug /E%3 /FhCompiled\%1_%3.inc /FdCompiled\%1_%3.pdb /Vn%1_%3
+set fxc=%PCFXC% %1.hlsl %FXCOPTS% /T%2_4_0_level_9_1 /E%3 /FhCompiled\%1_%3.inc /FdCompiled\%1_%3.pdb /Vn%1_%3
 echo.
 echo %fxc%
 %fxc% || set error=1
@@ -260,14 +283,14 @@ exit /b
 
 :CompileShaderxbox
 :CompileShaderSM4xbox
-set fxc=%XBOXFXC% /nologo %1.fx /T%2_5_0 /Zpc /Zi /Qstrip_reflect /Qstrip_debug %XBOXOPTS% /E%3 /FhCompiled\XboxOne%1_%3.inc /FdCompiled\XboxOne%1_%3.pdb /Vn%1_%3
+set fxc=%XBOXFXC% %1.fx %FXCOPTS% /T%2_5_0 %XBOXOPTS% /E%3 /FhCompiled\XboxOne%1_%3.inc /FdCompiled\XboxOne%1_%3.pdb /Vn%1_%3
 echo.
 echo %fxc%
 %fxc% || set error=1
 exit /b
 
 :CompileShaderHLSLxbox
-set fxc=%XBOXFXC% /nologo %1.hlsl /T%2_5_0 /Zpc /Zi /Qstrip_reflect /Qstrip_debug %XBOXOPTS% /E%3 /FhCompiled\XboxOne%1_%3.inc /FdCompiled\XboxOne%1_%3.pdb /Vn%1_%3
+set fxc=%XBOXFXC% %1.hlsl %FXCOPTS% /T%2_5_0 %XBOXOPTS% /E%3 /FhCompiled\XboxOne%1_%3.inc /FdCompiled\XboxOne%1_%3.pdb /Vn%1_%3
 echo.
 echo %fxc%
 %fxc% || set error=1

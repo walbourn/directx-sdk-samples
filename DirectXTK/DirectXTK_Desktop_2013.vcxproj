@@ -59,6 +59,7 @@
     <ClCompile Include="Src\BasicPostProcess.cpp" />
     <ClCompile Include="Src\CommonStates.cpp" />
     <ClCompile Include="Src\DDSTextureLoader.cpp" />
+    <ClCompile Include="Src\DebugEffect.cpp" />
     <ClCompile Include="Src\DGSLEffect.cpp" />
     <ClCompile Include="Src\DGSLEffectFactory.cpp" />
     <ClCompile Include="Src\DualPostProcess.cpp" />
@@ -78,6 +79,7 @@
     <ClCompile Include="Src\ModelLoadVBO.cpp" />
     <ClCompile Include="Src\Mouse.cpp" />
     <ClCompile Include="Src\NormalMapEffect.cpp" />
+    <ClCompile Include="Src\PBREffect.cpp" />
     <ClCompile Include="Src\pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
@@ -197,6 +199,22 @@
     <None Include="Src\Shaders\Compiled\BasicEffect_VSBasicVertexLightingVc.pdb" />
     <None Include="Src\Shaders\Compiled\BasicEffect_VSBasicVertexLightingVcBn.inc" />
     <None Include="Src\Shaders\Compiled\BasicEffect_VSBasicVertexLightingVcBn.pdb" />
+    <None Include="Src\Shaders\Compiled\DebugEffect_PSHemiAmbient.inc" />
+    <None Include="Src\Shaders\Compiled\DebugEffect_PSHemiAmbient.pdb" />
+    <None Include="Src\Shaders\Compiled\DebugEffect_PSRGBBiTangents.inc" />
+    <None Include="Src\Shaders\Compiled\DebugEffect_PSRGBBiTangents.pdb" />
+    <None Include="Src\Shaders\Compiled\DebugEffect_PSRGBNormals.inc" />
+    <None Include="Src\Shaders\Compiled\DebugEffect_PSRGBNormals.pdb" />
+    <None Include="Src\Shaders\Compiled\DebugEffect_PSRGBTangents.inc" />
+    <None Include="Src\Shaders\Compiled\DebugEffect_PSRGBTangents.pdb" />
+    <None Include="Src\Shaders\Compiled\DebugEffect_VSDebug.inc" />
+    <None Include="Src\Shaders\Compiled\DebugEffect_VSDebug.pdb" />
+    <None Include="Src\Shaders\Compiled\DebugEffect_VSDebugBn.inc" />
+    <None Include="Src\Shaders\Compiled\DebugEffect_VSDebugBn.pdb" />
+    <None Include="Src\Shaders\Compiled\DebugEffect_VSDebugVc.inc" />
+    <None Include="Src\Shaders\Compiled\DebugEffect_VSDebugVc.pdb" />
+    <None Include="Src\Shaders\Compiled\DebugEffect_VSDebugVcBn.inc" />
+    <None Include="Src\Shaders\Compiled\DebugEffect_VSDebugVcBn.pdb" />
     <None Include="Src\Shaders\Compiled\DGSLEffect_main.inc" />
     <None Include="Src\Shaders\Compiled\DGSLEffect_main.pdb" />
     <None Include="Src\Shaders\Compiled\DGSLEffect_main1Bones.inc" />
@@ -301,6 +319,24 @@
     <None Include="Src\Shaders\Compiled\NormalMapEffect_VSNormalPixelLightingTxVc.pdb" />
     <None Include="Src\Shaders\Compiled\NormalMapEffect_VSNormalPixelLightingTxVcBn.inc" />
     <None Include="Src\Shaders\Compiled\NormalMapEffect_VSNormalPixelLightingTxVcBn.pdb" />
+    <None Include="Src\Shaders\Compiled\PBREffect_PSConstant.inc" />
+    <None Include="Src\Shaders\Compiled\PBREffect_PSConstant.pdb" />
+    <None Include="Src\Shaders\Compiled\PBREffect_PSTextured.inc" />
+    <None Include="Src\Shaders\Compiled\PBREffect_PSTextured.pdb" />
+    <None Include="Src\Shaders\Compiled\PBREffect_PSTexturedEmissive.inc" />
+    <None Include="Src\Shaders\Compiled\PBREffect_PSTexturedEmissive.pdb" />
+    <None Include="Src\Shaders\Compiled\PBREffect_PSTexturedEmissiveVelocity.inc" />
+    <None Include="Src\Shaders\Compiled\PBREffect_PSTexturedEmissiveVelocity.pdb" />
+    <None Include="Src\Shaders\Compiled\PBREffect_PSTexturedVelocity.inc" />
+    <None Include="Src\Shaders\Compiled\PBREffect_PSTexturedVelocity.pdb" />
+    <None Include="Src\Shaders\Compiled\PBREffect_VSConstant.inc" />
+    <None Include="Src\Shaders\Compiled\PBREffect_VSConstant.pdb" />
+    <None Include="Src\Shaders\Compiled\PBREffect_VSConstantBn.inc" />
+    <None Include="Src\Shaders\Compiled\PBREffect_VSConstantBn.pdb" />
+    <None Include="Src\Shaders\Compiled\PBREffect_VSConstantVelocity.inc" />
+    <None Include="Src\Shaders\Compiled\PBREffect_VSConstantVelocity.pdb" />
+    <None Include="Src\Shaders\Compiled\PBREffect_VSConstantVelocityBn.inc" />
+    <None Include="Src\Shaders\Compiled\PBREffect_VSConstantVelocityBn.pdb" />
     <None Include="Src\Shaders\Compiled\PostProcess_PSBloomBlur.inc" />
     <None Include="Src\Shaders\Compiled\PostProcess_PSBloomBlur.pdb" />
     <None Include="Src\Shaders\Compiled\PostProcess_PSBloomCombine.inc" />
@@ -391,6 +427,7 @@
     <None Include="Src\Shaders\Compiled\ToneMap_VSQuad.pdb" />
     <None Include="Src\Shaders\CompileShaders.cmd" />
     <None Include="Src\Shaders\Lighting.fxh" />
+    <None Include="Src\Shaders\PBRCommon.fxh" />
     <None Include="Src\Shaders\SpriteEffect.fx" />
     <None Include="Src\Shaders\Structures.fxh" />
     <None Include="Src\Shaders\Utilities.fxh" />
@@ -437,6 +474,16 @@
       <FileType>Document</FileType>
     </None>
     <None Include="Src\Shaders\ToneMap.fx">
+      <FileType>Document</FileType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Src\Shaders\PBREffect.fx">
+      <FileType>Document</FileType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Src\Shaders\DebugEffect.fx">
       <FileType>Document</FileType>
     </None>
   </ItemGroup>

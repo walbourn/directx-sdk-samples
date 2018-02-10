@@ -98,7 +98,6 @@ namespace DirectX
         static const int MaxBones = 72;
     };
 
-
     //----------------------------------------------------------------------------------
     // Built-in shader supports optional texture mapping, vertex coloring, directional lighting, and fog.
     class BasicEffect : public IEffect, public IEffectMatrices, public IEffectLights, public IEffectFog
@@ -417,8 +416,6 @@ namespace DirectX
         void __cdecl SetLightingEnabled(bool value) override;
     };
 
-    
-
     //----------------------------------------------------------------------------------
     // Built-in effect for Visual Studio Shader Designer (DGSL) shaders
     class DGSLEffect : public IEffect, public IEffectMatrices, public IEffectLights, public IEffectSkinning
@@ -558,7 +555,7 @@ namespace DirectX
         void __cdecl SetSpecularTexture(_In_opt_ ID3D11ShaderResourceView* value);
 
         // Normal compression settings.
-        void __cdecl SetBiasedVertexNormalsAndTangents(bool value);
+        void __cdecl SetBiasedVertexNormals(bool value);
 
     private:
         // Private implementation.
@@ -569,6 +566,130 @@ namespace DirectX
         // Unsupported interface methods.
         void __cdecl SetLightingEnabled(bool value) override;
         void __cdecl SetPerPixelLighting(bool value) override;
+    };
+
+    //----------------------------------------------------------------------------------
+    // Built-in shader for Physically-Based Rendering (Roughness/Metalness) with Image-based lighting
+    class PBREffect : public IEffect, public IEffectMatrices, public IEffectLights
+    {
+    public:
+        explicit PBREffect(_In_ ID3D11Device* device);
+        PBREffect(PBREffect&& moveFrom);
+        PBREffect& operator= (PBREffect&& moveFrom);
+
+        PBREffect(PBREffect const&) = delete;
+        PBREffect& operator= (PBREffect const&) = delete;
+
+        virtual ~PBREffect();
+
+        // IEffect methods.
+        void __cdecl Apply(_In_ ID3D11DeviceContext* deviceContext) override;
+
+        void __cdecl GetVertexShaderBytecode(_Out_ void const** pShaderByteCode, _Out_ size_t* pByteCodeLength) override;
+
+        // Camera settings.
+        void XM_CALLCONV SetWorld(FXMMATRIX value) override;
+        void XM_CALLCONV SetView(FXMMATRIX value) override;
+        void XM_CALLCONV SetProjection(FXMMATRIX value) override;
+        void XM_CALLCONV SetMatrices(FXMMATRIX world, CXMMATRIX view, CXMMATRIX projection) override;
+
+        // Light settings.
+        void __cdecl SetLightEnabled(int whichLight, bool value) override;
+        void XM_CALLCONV SetLightDirection(int whichLight, FXMVECTOR value) override;
+        void XM_CALLCONV SetLightDiffuseColor(int whichLight, FXMVECTOR value) override;
+
+        void __cdecl EnableDefaultLighting() override;
+
+        // PBR Settings.
+        void __cdecl SetAlpha(float value);
+        void XM_CALLCONV SetConstantAlbedo(FXMVECTOR value);
+        void __cdecl SetConstantMetallic(float value);
+        void __cdecl SetConstantRoughness(float value);
+
+        // Texture settings.
+        void __cdecl SetSurfaceTextures(
+            _In_opt_ ID3D11ShaderResourceView* albedo,
+            _In_opt_ ID3D11ShaderResourceView* normal,
+            _In_opt_ ID3D11ShaderResourceView* roughnessMetallicAmbientOcclusion);
+
+        void __cdecl SetIBLTextures(
+            _In_opt_ ID3D11ShaderResourceView* radiance,
+            int numRadianceMips,
+            _In_opt_ ID3D11ShaderResourceView* irradiance);
+
+        void __cdecl SetEmissiveTexture(_In_opt_ ID3D11ShaderResourceView* emissive);
+
+        // Normal compression settings.
+        void __cdecl SetBiasedVertexNormals(bool value);
+
+        // Velocity buffer settings.
+        void __cdecl SetVelocityGeneration(bool value);
+
+        // Render target size, required for velocity buffer output.
+        void __cdecl SetRenderTargetSizeInPixels(int width, int height);
+
+    private:
+        // Private implementation.
+        class Impl;
+
+        std::unique_ptr<Impl> pImpl;
+
+        // Unsupported interface methods.
+        void __cdecl SetLightingEnabled(bool value) override;
+        void __cdecl SetPerPixelLighting(bool value) override;
+        void XM_CALLCONV SetAmbientLightColor(FXMVECTOR value) override;
+        void XM_CALLCONV SetLightSpecularColor(int whichLight, FXMVECTOR value) override;
+    };
+
+    //----------------------------------------------------------------------------------
+    // Built-in shader for debug visualization of normals, tangents, etc.
+    class DebugEffect : public IEffect, public IEffectMatrices
+    {
+    public:
+        enum Mode
+        {
+            Mode_Default = 0,   // Hemispherical ambient lighting
+            Mode_Normals,       // RGB normals
+            Mode_Tangents,      // RGB tangents
+            Mode_BiTangents,    // RGB bi-tangents
+        };
+
+        explicit DebugEffect(_In_ ID3D11Device* device);
+        DebugEffect(DebugEffect&& moveFrom);
+        DebugEffect& operator= (DebugEffect&& moveFrom);
+
+        DebugEffect(DebugEffect const&) = delete;
+        DebugEffect& operator= (DebugEffect const&) = delete;
+
+        virtual ~DebugEffect();
+
+        // IEffect methods.
+        void __cdecl Apply(_In_ ID3D11DeviceContext* deviceContext) override;
+
+        void __cdecl GetVertexShaderBytecode(_Out_ void const** pShaderByteCode, _Out_ size_t* pByteCodeLength) override;
+
+        // Camera settings.
+        void XM_CALLCONV SetWorld(FXMMATRIX value) override;
+        void XM_CALLCONV SetView(FXMMATRIX value) override;
+        void XM_CALLCONV SetProjection(FXMMATRIX value) override;
+        void XM_CALLCONV SetMatrices(FXMMATRIX world, CXMMATRIX view, CXMMATRIX projection) override;
+
+        // Debug Settings.
+        void __cdecl SetMode(Mode debugMode);
+        void XM_CALLCONV SetHemisphericalAmbientColor(FXMVECTOR upper, FXMVECTOR lower);
+        void __cdecl SetAlpha(float value);
+
+        // Vertex color setting.
+        void __cdecl SetVertexColorEnabled(bool value);
+
+        // Normal compression settings.
+        void __cdecl SetBiasedVertexNormals(bool value);
+
+    private:
+        // Private implementation.
+        class Impl;
+
+        std::unique_ptr<Impl> pImpl;
     };
 
     //----------------------------------------------------------------------------------
@@ -588,10 +709,10 @@ namespace DirectX
             bool                biasedVertexNormals;
             float               specularPower;
             float               alpha;
-            DirectX::XMFLOAT3   ambientColor;
-            DirectX::XMFLOAT3   diffuseColor;
-            DirectX::XMFLOAT3   specularColor;
-            DirectX::XMFLOAT3   emissiveColor;
+            XMFLOAT3            ambientColor;
+            XMFLOAT3            diffuseColor;
+            XMFLOAT3            specularColor;
+            XMFLOAT3            emissiveColor;
             const wchar_t*      diffuseTexture;
             const wchar_t*      specularTexture;
             const wchar_t*      normalTexture;
@@ -687,5 +808,4 @@ namespace DirectX
 
         std::shared_ptr<Impl> pImpl;
     };
-
 }

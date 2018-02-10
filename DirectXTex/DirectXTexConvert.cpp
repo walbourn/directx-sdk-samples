@@ -2886,7 +2886,7 @@ namespace
     };
 
 #pragma prefast( suppress : 25004, "Signature must match bsearch_s" );
-    int __cdecl _ConvertCompare(void *context, const void* ptr1, const void *ptr2)
+    int __cdecl ConvertCompare(void *context, const void* ptr1, const void *ptr2) DIRECTX_NOEXCEPT
     {
         UNREFERENCED_PARAMETER(context);
         const ConvertData *p1 = reinterpret_cast<const ConvertData*>(ptr1);
@@ -2912,7 +2912,7 @@ DWORD DirectX::_GetConvertFlags(DXGI_FORMAT format)
 
     ConvertData key = { format, 0 };
     const ConvertData* in = (const ConvertData*)bsearch_s(&key, g_ConvertTable, _countof(g_ConvertTable), sizeof(ConvertData),
-        _ConvertCompare, nullptr);
+        ConvertCompare, nullptr);
     return (in) ? in->flags : 0;
 }
 
@@ -2945,10 +2945,10 @@ void DirectX::_ConvertScanline(
     // Determine conversion details about source and dest formats
     ConvertData key = { inFormat, 0 };
     const ConvertData* in = (const ConvertData*)bsearch_s(&key, g_ConvertTable, _countof(g_ConvertTable), sizeof(ConvertData),
-        _ConvertCompare, nullptr);
+        ConvertCompare, nullptr);
     key.format = outFormat;
     const ConvertData* out = (const ConvertData*)bsearch_s(&key, g_ConvertTable, _countof(g_ConvertTable), sizeof(ConvertData),
-        _ConvertCompare, nullptr);
+        ConvertCompare, nullptr);
     if (!in || !out)
     {
         assert(false);
@@ -3649,7 +3649,7 @@ namespace
                 if ( norm && clampzero ) v = XMVectorSaturate( v ) ; \
                 else if ( clampzero ) v = XMVectorClamp( v, g_XMZero, scalev ); \
                 else if ( norm ) v = XMVectorClamp( v, g_XMNegativeOne, g_XMOne ); \
-                else v = XMVectorClamp( v, -scalev + g_XMOne, scalev ); \
+                else v = XMVectorClamp( v, XMVectorAdd( XMVectorNegate( scalev ), g_XMOne ), scalev ); \
                 v = XMVectorAdd( v, vError ); \
                 if ( norm ) v = XMVectorMultiply( v, scalev ); \
                 \
@@ -3661,9 +3661,9 @@ namespace
                     if (norm) vError = XMVectorDivide( vError, scalev ); \
                     \
                     /* Distribute error to next scanline and next pixel */ \
-                    pDiffusionErrors[ index-delta ]   += XMVectorMultiply( g_ErrorWeight3, vError ); \
-                    pDiffusionErrors[ index+1 ]       += XMVectorMultiply( g_ErrorWeight5, vError ); \
-                    pDiffusionErrors[ index+2+delta ] += XMVectorMultiply( g_ErrorWeight1, vError ); \
+                    pDiffusionErrors[ index-delta ]   = XMVectorMultiplyAdd( g_ErrorWeight3, vError, pDiffusionErrors[ index-delta ] ); \
+                    pDiffusionErrors[ index+1 ]       = XMVectorMultiplyAdd( g_ErrorWeight5, vError, pDiffusionErrors[ index+1 ] ); \
+                    pDiffusionErrors[ index+2+delta ] = XMVectorMultiplyAdd( g_ErrorWeight1, vError, pDiffusionErrors[ index+2+delta ] ); \
                     vError = XMVectorMultiply( vError, g_ErrorWeight7 ); \
                 } \
                 else \
@@ -3674,7 +3674,7 @@ namespace
                 } \
                 \
                 target = XMVectorMin( scalev, target ); \
-                target = XMVectorMax( (clampzero) ? g_XMZero : ( -scalev + g_XMOne ), target ); \
+                target = XMVectorMax( (clampzero) ? g_XMZero : ( XMVectorAdd( XMVectorNegate( scalev ), g_XMOne ) ), target ); \
                 \
                 XMFLOAT4A tmp; \
                 XMStoreFloat4A( &tmp, target ); \
@@ -3704,7 +3704,7 @@ namespace
                 if ( norm && clampzero ) v = XMVectorSaturate( v ) ; \
                 else if ( clampzero ) v = XMVectorClamp( v, g_XMZero, scalev ); \
                 else if ( norm ) v = XMVectorClamp( v, g_XMNegativeOne, g_XMOne ); \
-                else v = XMVectorClamp( v, -scalev + g_XMOne, scalev ); \
+                else v = XMVectorClamp( v, XMVectorAdd( XMVectorNegate( scalev ), g_XMOne ), scalev ); \
                 v = XMVectorAdd( v, vError ); \
                 if ( norm ) v = XMVectorMultiply( v, scalev ); \
                 \
@@ -3716,9 +3716,9 @@ namespace
                     if (norm) vError = XMVectorDivide( vError, scalev ); \
                     \
                     /* Distribute error to next scanline and next pixel */ \
-                    pDiffusionErrors[ index-delta ]   += XMVectorMultiply( g_ErrorWeight3, vError ); \
-                    pDiffusionErrors[ index+1 ]       += XMVectorMultiply( g_ErrorWeight5, vError ); \
-                    pDiffusionErrors[ index+2+delta ] += XMVectorMultiply( g_ErrorWeight1, vError ); \
+                    pDiffusionErrors[ index-delta ]   = XMVectorMultiplyAdd( g_ErrorWeight3, vError, pDiffusionErrors[ index-delta ] ); \
+                    pDiffusionErrors[ index+1 ]       = XMVectorMultiplyAdd( g_ErrorWeight5, vError, pDiffusionErrors[ index+1 ] ); \
+                    pDiffusionErrors[ index+2+delta ] = XMVectorMultiplyAdd( g_ErrorWeight1, vError, pDiffusionErrors[ index+2+delta ] ); \
                     vError = XMVectorMultiply( vError, g_ErrorWeight7 ); \
                 } \
                 else \
@@ -3729,7 +3729,7 @@ namespace
                 } \
                 \
                 target = XMVectorMin( scalev, target ); \
-                target = XMVectorMax( (clampzero) ? g_XMZero : ( -scalev + g_XMOne ), target ); \
+                target = XMVectorMax( (clampzero) ? g_XMZero : ( XMVectorAdd( XMVectorNegate( scalev ), g_XMOne ) ), target ); \
                 \
                 XMFLOAT4A tmp; \
                 XMStoreFloat4A( &tmp, target ); \
@@ -3757,7 +3757,7 @@ namespace
                 if ( norm && clampzero ) v = XMVectorSaturate( v ) ; \
                 else if ( clampzero ) v = XMVectorClamp( v, g_XMZero, scalev ); \
                 else if ( norm ) v = XMVectorClamp( v, g_XMNegativeOne, g_XMOne ); \
-                else v = XMVectorClamp( v, -scalev + g_XMOne, scalev ); \
+                else v = XMVectorClamp( v,  XMVectorAdd( XMVectorNegate( scalev ), g_XMOne ), scalev ); \
                 v = XMVectorAdd( v, vError ); \
                 if ( norm ) v = XMVectorMultiply( v, scalev ); \
                 \
@@ -3769,9 +3769,9 @@ namespace
                     if (norm) vError = XMVectorDivide( vError, scalev ); \
                     \
                     /* Distribute error to next scanline and next pixel */ \
-                    pDiffusionErrors[ index-delta ]   += XMVectorMultiply( g_ErrorWeight3, vError ); \
-                    pDiffusionErrors[ index+1 ]       += XMVectorMultiply( g_ErrorWeight5, vError ); \
-                    pDiffusionErrors[ index+2+delta ] += XMVectorMultiply( g_ErrorWeight1, vError ); \
+                    pDiffusionErrors[ index-delta ]   = XMVectorMultiplyAdd( g_ErrorWeight3, vError, pDiffusionErrors[ index-delta ] ); \
+                    pDiffusionErrors[ index+1 ]       = XMVectorMultiplyAdd( g_ErrorWeight5, vError, pDiffusionErrors[ index+1 ] ); \
+                    pDiffusionErrors[ index+2+delta ] = XMVectorMultiplyAdd( g_ErrorWeight1, vError, pDiffusionErrors[ index+2+delta ] ); \
                     vError = XMVectorMultiply( vError, g_ErrorWeight7 ); \
                 } \
                 else \
@@ -3782,7 +3782,7 @@ namespace
                 } \
                 \
                 target = XMVectorMin( scalev, target ); \
-                target = XMVectorMax( (clampzero) ? g_XMZero : ( -scalev + g_XMOne ), target ); \
+                target = XMVectorMax( (clampzero) ? g_XMZero : (  XMVectorAdd( XMVectorNegate( scalev ), g_XMOne ) ), target ); \
                 \
                 auto dPtr = &dest[ index ]; \
                 if (dPtr >= ePtr) break; \
@@ -3897,9 +3897,9 @@ bool DirectX::_StoreScanlineDither(
                     vError = XMVectorDivide(vError, Scale);
 
                     // Distribute error to next scanline and next pixel
-                    pDiffusionErrors[index - delta] += XMVectorMultiply(g_ErrorWeight3, vError);
-                    pDiffusionErrors[index + 1] += XMVectorMultiply(g_ErrorWeight5, vError);
-                    pDiffusionErrors[index + 2 + delta] += XMVectorMultiply(g_ErrorWeight1, vError);
+                    pDiffusionErrors[index - delta]     = XMVectorMultiplyAdd(g_ErrorWeight3, vError, pDiffusionErrors[index - delta]);
+                    pDiffusionErrors[index + 1]         = XMVectorMultiplyAdd(g_ErrorWeight5, vError, pDiffusionErrors[index + 1]);
+                    pDiffusionErrors[index + 2 + delta] = XMVectorMultiplyAdd(g_ErrorWeight1, vError, pDiffusionErrors[index + 2 + delta]);
                     vError = XMVectorMultiply(vError, g_ErrorWeight7);
                 }
                 else
@@ -3976,9 +3976,9 @@ bool DirectX::_StoreScanlineDither(
                     vError = XMVectorDivide(vError, Scale);
 
                     // Distribute error to next scanline and next pixel
-                    pDiffusionErrors[index - delta] += XMVectorMultiply(g_ErrorWeight3, vError);
-                    pDiffusionErrors[index + 1] += XMVectorMultiply(g_ErrorWeight5, vError);
-                    pDiffusionErrors[index + 2 + delta] += XMVectorMultiply(g_ErrorWeight1, vError);
+                    pDiffusionErrors[index - delta]     = XMVectorMultiplyAdd(g_ErrorWeight3, vError, pDiffusionErrors[index - delta]);
+                    pDiffusionErrors[index + 1]         = XMVectorMultiplyAdd(g_ErrorWeight5, vError, pDiffusionErrors[index + 1]);
+                    pDiffusionErrors[index + 2 + delta] = XMVectorMultiplyAdd(g_ErrorWeight1, vError, pDiffusionErrors[index + 2 + delta]);
                     vError = XMVectorMultiply(vError, g_ErrorWeight7);
                 }
                 else
@@ -4064,9 +4064,9 @@ bool DirectX::_StoreScanlineDither(
                     vError = XMVectorDivide(vError, g_Scale565pc);
 
                     // Distribute error to next scanline and next pixel
-                    pDiffusionErrors[index - delta] += XMVectorMultiply(g_ErrorWeight3, vError);
-                    pDiffusionErrors[index + 1] += XMVectorMultiply(g_ErrorWeight5, vError);
-                    pDiffusionErrors[index + 2 + delta] += XMVectorMultiply(g_ErrorWeight1, vError);
+                    pDiffusionErrors[index - delta]     = XMVectorMultiplyAdd(g_ErrorWeight3, vError, pDiffusionErrors[index - delta]);
+                    pDiffusionErrors[index + 1]         = XMVectorMultiplyAdd(g_ErrorWeight5, vError, pDiffusionErrors[index + 1]);
+                    pDiffusionErrors[index + 2 + delta] = XMVectorMultiplyAdd(g_ErrorWeight1, vError, pDiffusionErrors[index + 2 + delta]);
                     vError = XMVectorMultiply(vError, g_ErrorWeight7);
                 }
                 else
@@ -4113,9 +4113,9 @@ bool DirectX::_StoreScanlineDither(
                     vError = XMVectorDivide(vError, g_Scale5551pc);
 
                     // Distribute error to next scanline and next pixel
-                    pDiffusionErrors[index - delta] += XMVectorMultiply(g_ErrorWeight3, vError);
-                    pDiffusionErrors[index + 1] += XMVectorMultiply(g_ErrorWeight5, vError);
-                    pDiffusionErrors[index + 2 + delta] += XMVectorMultiply(g_ErrorWeight1, vError);
+                    pDiffusionErrors[index - delta]     = XMVectorMultiplyAdd(g_ErrorWeight3, vError, pDiffusionErrors[index - delta]);
+                    pDiffusionErrors[index + 1]         = XMVectorMultiplyAdd(g_ErrorWeight5, vError, pDiffusionErrors[index + 1]);
+                    pDiffusionErrors[index + 2 + delta] = XMVectorMultiplyAdd(g_ErrorWeight1, vError, pDiffusionErrors[index + 2 + delta]);
                     vError = XMVectorMultiply(vError, g_ErrorWeight7);
                 }
                 else
@@ -4168,9 +4168,9 @@ bool DirectX::_StoreScanlineDither(
                     vError = XMVectorDivide(vError, g_Scale8pc);
 
                     // Distribute error to next scanline and next pixel
-                    pDiffusionErrors[index - delta] += XMVectorMultiply(g_ErrorWeight3, vError);
-                    pDiffusionErrors[index + 1] += XMVectorMultiply(g_ErrorWeight5, vError);
-                    pDiffusionErrors[index + 2 + delta] += XMVectorMultiply(g_ErrorWeight1, vError);
+                    pDiffusionErrors[index - delta]     = XMVectorMultiplyAdd(g_ErrorWeight3, vError, pDiffusionErrors[index - delta]);
+                    pDiffusionErrors[index + 1]         = XMVectorMultiplyAdd(g_ErrorWeight5, vError, pDiffusionErrors[index + 1]);
+                    pDiffusionErrors[index + 2 + delta] = XMVectorMultiplyAdd(g_ErrorWeight1, vError, pDiffusionErrors[index + 2 + delta]);
                     vError = XMVectorMultiply(vError, g_ErrorWeight7);
                 }
                 else
@@ -4223,9 +4223,9 @@ bool DirectX::_StoreScanlineDither(
                     vError = XMVectorDivide(vError, g_Scale4pc);
 
                     // Distribute error to next scanline and next pixel
-                    pDiffusionErrors[index - delta] += XMVectorMultiply(g_ErrorWeight3, vError);
-                    pDiffusionErrors[index + 1] += XMVectorMultiply(g_ErrorWeight5, vError);
-                    pDiffusionErrors[index + 2 + delta] += XMVectorMultiply(g_ErrorWeight1, vError);
+                    pDiffusionErrors[index - delta]     = XMVectorMultiplyAdd(g_ErrorWeight3, vError, pDiffusionErrors[index - delta]);
+                    pDiffusionErrors[index + 1]         = XMVectorMultiplyAdd(g_ErrorWeight5, vError, pDiffusionErrors[index + 1]);
+                    pDiffusionErrors[index + 2 + delta] = XMVectorMultiplyAdd(g_ErrorWeight1, vError, pDiffusionErrors[index + 2 + delta]);
                     vError = XMVectorMultiply(vError, g_ErrorWeight7);
                 }
                 else
