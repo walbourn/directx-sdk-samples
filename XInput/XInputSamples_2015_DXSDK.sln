@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2015
+# Visual Studio 14
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SimpleControllerDX", "SimpleController\SimpleController_2015_DXSDK.vcxproj", "{046E097B-DE11-4E92-9BDD-B5F5664CD19D}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RumbleControllerDX", "RumbleController\RumbleController_2015_DXSDK.vcxproj", "{AAE65FBA-8A0F-4C81-AA0A-3874203F7B57}"

@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2015
+# Visual Studio 14
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "XAudio2BasicSound", "XAudio2BasicSound\XAudio2BasicSound_2015_Win10.vcxproj", "{C93E74C8-D021-4DA6-92DE-4BF63FAC418B}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "XAudio2AsyncStream", "XAudio2AsyncStream\XAudio2AsyncStream_2015_Win10.vcxproj", "{AAC8F063-80CD-4696-82C6-386B33CD8509}"

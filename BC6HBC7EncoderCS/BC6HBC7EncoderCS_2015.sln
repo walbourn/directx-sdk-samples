@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2015
+# Visual Studio 14
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BC6HBC7EncoderCS", "BC6HBC7EncoderCS_2015.vcxproj", "{9319900C-1B38-4F85-B8D2-B39F76178449}"
 	ProjectSection(ProjectDependencies) = postProject
 		{371B9FA9-4C90-4AC6-A123-ACED756D6C77} = {371B9FA9-4C90-4AC6-A123-ACED756D6C77}

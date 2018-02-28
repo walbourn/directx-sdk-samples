@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2015
+# Visual Studio 14
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HDRToneMappingCS11", "HDRToneMappingCS11_2015_Win10.vcxproj", "{D3D11102-96D0-4629-88B8-122C0256058C}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DXUT", "..\DXUT\Core\DXUT_2015_Win10.vcxproj", "{85344B7F-5AA0-4E12-A065-D1333D11F6CA}"
