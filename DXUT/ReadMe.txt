@@ -3,7 +3,7 @@ DXUT FOR DIRECT3D 11
 
 Copyright (c) Microsoft Corporation. All rights reserved.
 
-November 2, 2017
+February 27, 2018
 
 DXUT is a "GLUT"-like framework for Direct3D 11.x Win32 desktop applications; primarily
 samples, demos, and prototypes.
@@ -66,6 +66,11 @@ RELEASE NOTES
 ---------------
 RELEASE HISTORY
 ---------------
+
+February 27, 2018 (11.18)
+    Fixed array length mismatch issue with TOTAL_FEATURE_LEVELS
+    Fixed optional Direct3D 11.4 support in VS 2013/2015 projects
+    Minor code cleanup
 
 November 2, 2017 (11.17)
     VS 2017 updated for Windows 10 Fall Creators Update SDK (16299)

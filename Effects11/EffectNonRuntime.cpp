@@ -6,12 +6,8 @@
 // are typically called when creating, cloning, or optimizing an 
 // Effect, or reflecting a variable.
 //
-// THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF
-// ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO
-// THE IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A
-// PARTICULAR PURPOSE.
-//
 // Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
 //
 // http://go.microsoft.com/fwlink/p/?LinkId=271568
 //--------------------------------------------------------------------------------------
@@ -540,7 +536,7 @@ HRESULT SShaderBlock::GetSignatureElementDesc(ESigType SigType, uint32_t Element
         D3D11_SHADER_DESC ShaderDesc;
         VH( pReflectionData->pReflection->GetDesc( &ShaderDesc ) );
 
-        D3D11_SIGNATURE_PARAMETER_DESC ParamDesc ={0};
+        D3D11_SIGNATURE_PARAMETER_DESC ParamDesc ={};
         if( pReflectionData->IsNullGS )
         {
             switch( SigType )

@@ -3,7 +3,7 @@ EFFECTS FOR DIRECT3D 11 (FX11)
 
 Copyright (c) Microsoft Corporation. All rights reserved.
 
-November 2, 2017
+February 27, 2018
 
 Effects for Direct3D 11 (FX11) is a management runtime for authoring HLSL shaders, render
 state, and runtime variables together.
@@ -61,6 +61,9 @@ in a future update.
 ---------------
 RELEASE HISTORY
 ---------------
+
+February 27, 2018 (11.22)
+    Minor code update
 
 November 2, 2017 (11.21)
     VS 2017 updated for Windows 10 Fall Creators Update SDK (16299)

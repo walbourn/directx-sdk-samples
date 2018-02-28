@@ -3,12 +3,8 @@
 //
 // Various helper functionality that is shared between SDK samples
 //
-// THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF
-// ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO
-// THE IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A
-// PARTICULAR PURPOSE.
-//
 // Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
 //
 // http://go.microsoft.com/fwlink/?LinkId=320437
 //--------------------------------------------------------------------------------------
@@ -629,7 +625,7 @@ HRESULT WINAPI DXUTCompileFromFile( LPCWSTR pFileName,
     if ( !hFile )
         return HRESULT_FROM_WIN32( GetLastError() );
 
-    LARGE_INTEGER FileSize = { 0 };
+    LARGE_INTEGER FileSize = {};
 
 #if (_WIN32_WINNT >= _WIN32_WINNT_VISTA)
     FILE_STANDARD_INFO fileInfo;
