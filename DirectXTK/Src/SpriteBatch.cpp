@@ -1,12 +1,8 @@
 //--------------------------------------------------------------------------------------
 // File: SpriteBatch.cpp
 //
-// THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF
-// ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO
-// THE IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A
-// PARTICULAR PURPOSE.
-//
 // Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
 //
 // http://go.microsoft.com/fwlink/?LinkId=248929
 //--------------------------------------------------------------------------------------
@@ -273,7 +269,7 @@ void SpriteBatch::Impl::DeviceResources::CreateIndexBuffer(_In_ ID3D11Device* de
 {
     D3D11_BUFFER_DESC indexBufferDesc = {};
 
-    static_assert( ( MaxBatchSize * VerticesPerSprite ) < USHRT_MAX, "MaxBatchSize too large for 16-bit indices" );
+    static_assert((MaxBatchSize * VerticesPerSprite) < USHRT_MAX, "MaxBatchSize too large for 16-bit indices");
 
     indexBufferDesc.ByteWidth = sizeof(short) * MaxBatchSize * IndicesPerSprite;
     indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
@@ -371,7 +367,7 @@ void SpriteBatch::Impl::ContextResources::CreateVertexBuffer()
 
 // Per-SpriteBatch constructor.
 SpriteBatch::Impl::Impl(_In_ ID3D11DeviceContext* deviceContext)
-  : mRotation( DXGI_MODE_ROTATION_IDENTITY ),
+  : mRotation(DXGI_MODE_ROTATION_IDENTITY),
     mSetViewport(false),
     mViewPort{},
     mSpriteQueueCount(0),
@@ -558,10 +554,10 @@ void SpriteBatch::Impl::PrepareForRendering()
     auto deviceContext = mContextResources->deviceContext.Get();
 
     // Set state objects.
-    auto blendState        = mBlendState        ? mBlendState.Get()        : mDeviceResources->stateObjects.AlphaBlend();
+    auto blendState = mBlendState ? mBlendState.Get() : mDeviceResources->stateObjects.AlphaBlend();
     auto depthStencilState = mDepthStencilState ? mDepthStencilState.Get() : mDeviceResources->stateObjects.DepthNone();
-    auto rasterizerState   = mRasterizerState   ? mRasterizerState.Get()   : mDeviceResources->stateObjects.CullCounterClockwise();
-    auto samplerState      = mSamplerState      ? mSamplerState.Get()      : mDeviceResources->stateObjects.LinearClamp();
+    auto rasterizerState = mRasterizerState ? mRasterizerState.Get() : mDeviceResources->stateObjects.CullCounterClockwise();
+    auto samplerState = mSamplerState ? mSamplerState.Get() : mDeviceResources->stateObjects.LinearClamp();
 
     deviceContext->OMSetBlendState(blendState, nullptr, 0xFFFFFFFF);
     deviceContext->OMSetDepthStencilState(depthStencilState, 0);
@@ -587,14 +583,14 @@ void SpriteBatch::Impl::PrepareForRendering()
 
     // Set the transform matrix.
     XMMATRIX transformMatrix = (mRotation == DXGI_MODE_ROTATION_UNSPECIFIED)
-                               ? mTransformMatrix
-                               : ( mTransformMatrix * GetViewportTransform(deviceContext, mRotation) );
+        ? mTransformMatrix
+        : (mTransformMatrix * GetViewportTransform(deviceContext, mRotation));
 
 #if defined(_XBOX_ONE) && defined(_TITLE)
     void* grfxMemory;
     mContextResources->constantBuffer.SetData(deviceContext, transformMatrix, &grfxMemory);
 
-    deviceContext->VSSetPlacementConstantBuffer( 0, mContextResources->constantBuffer.GetBuffer(), grfxMemory );
+    deviceContext->VSSetPlacementConstantBuffer(0, mContextResources->constantBuffer.GetBuffer(), grfxMemory);
 #else
     mContextResources->constantBuffer.SetData(deviceContext, transformMatrix);
 
@@ -951,10 +947,10 @@ XMVECTOR SpriteBatch::Impl::GetTextureSize(_In_ ID3D11ShaderResourceView* textur
 
 
 // Generates a viewport transform matrix for rendering sprites using x-right y-down screen pixel coordinates.
-XMMATRIX SpriteBatch::Impl::GetViewportTransform(_In_ ID3D11DeviceContext* deviceContext, DXGI_MODE_ROTATION rotation )
+XMMATRIX SpriteBatch::Impl::GetViewportTransform(_In_ ID3D11DeviceContext* deviceContext, DXGI_MODE_ROTATION rotation)
 {
     // Look up the current viewport.
-    if ( !mSetViewport )
+    if (!mSetViewport)
     {
         UINT viewportCount = 1;
 
@@ -963,68 +959,68 @@ XMMATRIX SpriteBatch::Impl::GetViewportTransform(_In_ ID3D11DeviceContext* devic
         if (viewportCount != 1)
             throw std::exception("No viewport is set");
     }
-    
+
     // Compute the matrix.
-    float xScale = (mViewPort.Width  > 0) ? 2.0f / mViewPort.Width  : 0.0f;
+    float xScale = (mViewPort.Width > 0) ? 2.0f / mViewPort.Width : 0.0f;
     float yScale = (mViewPort.Height > 0) ? 2.0f / mViewPort.Height : 0.0f;
 
-    switch( rotation )
+    switch (rotation)
     {
-    case DXGI_MODE_ROTATION_ROTATE90:
-        return XMMATRIX
-        (
-             0,       -yScale,  0,  0,
-             -xScale, 0,        0,  0,
-             0,       0,        1,  0,
-             1,       1,        0,  1
-        );
+        case DXGI_MODE_ROTATION_ROTATE90:
+            return XMMATRIX
+            (
+                0, -yScale, 0, 0,
+                -xScale, 0, 0, 0,
+                0, 0, 1, 0,
+                1, 1, 0, 1
+            );
 
-    case DXGI_MODE_ROTATION_ROTATE270:
-        return XMMATRIX
-        (
-             0,       yScale,   0,  0,
-             xScale,  0,        0,  0,
-             0,       0,        1,  0,
-            -1,      -1,        0,  1
-        );
+        case DXGI_MODE_ROTATION_ROTATE270:
+            return XMMATRIX
+            (
+                0, yScale, 0, 0,
+                xScale, 0, 0, 0,
+                0, 0, 1, 0,
+                -1, -1, 0, 1
+            );
 
-    case DXGI_MODE_ROTATION_ROTATE180:
-        return XMMATRIX
-        (
-            -xScale,  0,       0,  0,
-             0,       yScale,  0,  0,
-             0,       0,       1,  0,
-             1,      -1,       0,  1
-        );
+        case DXGI_MODE_ROTATION_ROTATE180:
+            return XMMATRIX
+            (
+                -xScale, 0, 0, 0,
+                0, yScale, 0, 0,
+                0, 0, 1, 0,
+                1, -1, 0, 1
+            );
 
-    default:
-        return XMMATRIX
-        (
-             xScale,  0,       0,  0,
-             0,      -yScale,  0,  0,
-             0,       0,       1,  0,
-            -1,       1,       0,  1
-        );
+        default:
+            return XMMATRIX
+            (
+                xScale, 0, 0, 0,
+                0, -yScale, 0, 0,
+                0, 0, 1, 0,
+                -1, 1, 0, 1
+            );
     }
 }
 
 
 // Public constructor.
 SpriteBatch::SpriteBatch(_In_ ID3D11DeviceContext* deviceContext)
-  : pImpl(new Impl(deviceContext))
+  : pImpl(std::make_unique<Impl>(deviceContext))
 {
 }
 
 
 // Move constructor.
-SpriteBatch::SpriteBatch(SpriteBatch&& moveFrom)
+SpriteBatch::SpriteBatch(SpriteBatch&& moveFrom) throw()
   : pImpl(std::move(moveFrom.pImpl))
 {
 }
 
 
 // Move assignment.
-SpriteBatch& SpriteBatch::operator= (SpriteBatch&& moveFrom)
+SpriteBatch& SpriteBatch::operator= (SpriteBatch&& moveFrom) throw()
 {
     pImpl = std::move(moveFrom.pImpl);
     return *this;
@@ -1181,7 +1177,7 @@ void XM_CALLCONV SpriteBatch::Draw(ID3D11ShaderResourceView* texture,
 }
 
 
-void SpriteBatch::SetRotation( DXGI_MODE_ROTATION mode )
+void SpriteBatch::SetRotation(DXGI_MODE_ROTATION mode)
 {
     pImpl->mRotation = mode;
 }
@@ -1193,7 +1189,7 @@ DXGI_MODE_ROTATION SpriteBatch::GetRotation() const
 }
 
 
-void SpriteBatch::SetViewport( const D3D11_VIEWPORT& viewPort )
+void SpriteBatch::SetViewport(const D3D11_VIEWPORT& viewPort)
 {
     pImpl->mSetViewport = true;
     pImpl->mViewPort = viewPort;

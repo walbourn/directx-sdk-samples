@@ -1,12 +1,8 @@
 //--------------------------------------------------------------------------------------
 // File: EffectCommon.cpp
 //
-// THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF
-// ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO
-// THE IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A
-// PARTICULAR PURPOSE.
-//
 // Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
 //
 // http://go.microsoft.com/fwlink/?LinkId=248929
 //--------------------------------------------------------------------------------------
@@ -29,7 +25,7 @@ void XM_CALLCONV IEffectMatrices::SetMatrices(FXMMATRIX world, CXMMATRIX view, C
 
 
 // Constructor initializes default matrix values.
-EffectMatrices::EffectMatrices()
+EffectMatrices::EffectMatrices() throw()
 {
     world = XMMatrixIdentity();
     view = XMMatrixIdentity();
@@ -54,7 +50,7 @@ _Use_decl_annotations_ void EffectMatrices::SetConstants(int& dirtyFlags, XMMATR
 
 
 // Constructor initializes default fog settings.
-EffectFog::EffectFog() :
+EffectFog::EffectFog() throw() :
     enabled(false),
     start(0),
     end(1.f)
@@ -113,7 +109,7 @@ void XM_CALLCONV EffectFog::SetConstants(int& dirtyFlags, FXMMATRIX worldView, X
 
 
 // Constructor initializes default material color settings.
-EffectColor::EffectColor() :
+EffectColor::EffectColor() throw() :
     alpha(1.f)
 {
     diffuseColor = g_XMOne;
@@ -137,7 +133,7 @@ void EffectColor::SetConstants(_Inout_ int& dirtyFlags, _Inout_ XMVECTOR& diffus
 
 
 // Constructor initializes default light settings.
-EffectLights::EffectLights()
+EffectLights::EffectLights() throw()
 {
     emissiveColor = g_XMZero;
     ambientLightColor = g_XMZero;
@@ -419,7 +415,7 @@ ID3D11ShaderResourceView* EffectDeviceResources::GetDefaultTexture()
     return DemandCreate(mDefaultTexture, mMutex, [&](ID3D11ShaderResourceView** pResult) -> HRESULT
     {
         static const uint32_t s_pixel = 0xffffffff;
-                
+
         D3D11_SUBRESOURCE_DATA initData = { &s_pixel, sizeof(uint32_t), 0 };
 
         D3D11_TEXTURE2D_DESC desc = {};
@@ -430,7 +426,7 @@ ID3D11ShaderResourceView* EffectDeviceResources::GetDefaultTexture()
         desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
 
         ComPtr<ID3D11Texture2D> tex;
-        HRESULT hr = mDevice->CreateTexture2D( &desc, &initData, tex.GetAddressOf() );
+        HRESULT hr = mDevice->CreateTexture2D(&desc, &initData, tex.GetAddressOf());
 
         if (SUCCEEDED(hr))
         {
@@ -441,7 +437,7 @@ ID3D11ShaderResourceView* EffectDeviceResources::GetDefaultTexture()
             SRVDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
             SRVDesc.Texture2D.MipLevels = 1;
 
-            hr = mDevice->CreateShaderResourceView( tex.Get(), &SRVDesc, pResult );
+            hr = mDevice->CreateShaderResourceView(tex.Get(), &SRVDesc, pResult);
             if (SUCCEEDED(hr))
                 SetDebugObjectName(*pResult, "DirectXTK:Effect");
         }

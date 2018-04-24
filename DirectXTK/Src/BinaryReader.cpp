@@ -1,14 +1,11 @@
 //--------------------------------------------------------------------------------------
 // File: BinaryReader.cpp
 //
-// THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF
-// ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO
-// THE IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A
-// PARTICULAR PURPOSE.
-//
 // Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
 //
 // http://go.microsoft.com/fwlink/?LinkId=248929
+// http://go.microsoft.com/fwlink/?LinkID=615561
 //--------------------------------------------------------------------------------------
 
 #include "pch.h"
@@ -26,10 +23,10 @@ BinaryReader::BinaryReader(_In_z_ wchar_t const* fileName) :
     size_t dataSize;
 
     HRESULT hr = ReadEntireFile(fileName, mOwnedData, &dataSize);
-    if ( FAILED(hr) )
+    if (FAILED(hr))
     {
-        DebugTrace( "BinaryReader failed (%08X) to load '%ls'\n", hr, fileName );
-        throw std::exception( "BinaryReader" );
+        DebugTrace("BinaryReader failed (%08X) to load '%ls'\n", hr, fileName);
+        throw std::exception("BinaryReader");
     }
 
     mPos = mOwnedData.get();
@@ -87,6 +84,6 @@ HRESULT BinaryReader::ReadEntireFile(_In_z_ wchar_t const* fileName, _Inout_ std
         return E_FAIL;
 
     *dataSize = bytesRead;
-    
+
     return S_OK;
 }

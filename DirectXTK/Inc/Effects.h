@@ -1,12 +1,8 @@
 //--------------------------------------------------------------------------------------
 // File: Effects.h
 //
-// THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF
-// ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO
-// THE IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A
-// PARTICULAR PURPOSE.
-//
 // Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
 //
 // http://go.microsoft.com/fwlink/?LinkId=248929
 //--------------------------------------------------------------------------------------
@@ -89,7 +85,7 @@ namespace DirectX
     class IEffectSkinning
     {
     public:
-        virtual ~IEffectSkinning() { } 
+        virtual ~IEffectSkinning() { }
 
         virtual void __cdecl SetWeightsPerVertex(int value) = 0;
         virtual void __cdecl SetBoneTransforms(_In_reads_(count) XMMATRIX const* value, size_t count) = 0;
@@ -104,8 +100,8 @@ namespace DirectX
     {
     public:
         explicit BasicEffect(_In_ ID3D11Device* device);
-        BasicEffect(BasicEffect&& moveFrom);
-        BasicEffect& operator= (BasicEffect&& moveFrom);
+        BasicEffect(BasicEffect&& moveFrom) throw();
+        BasicEffect& operator= (BasicEffect&& moveFrom) throw();
 
         BasicEffect(BasicEffect const&) = delete;
         BasicEffect& operator= (BasicEffect const&) = delete;
@@ -131,7 +127,7 @@ namespace DirectX
         void __cdecl DisableSpecular();
         void __cdecl SetAlpha(float value);
         void XM_CALLCONV SetColorAndAlpha(FXMVECTOR value);
-        
+
         // Light settings.
         void __cdecl SetLightingEnabled(bool value) override;
         void __cdecl SetPerPixelLighting(bool value) override;
@@ -156,7 +152,7 @@ namespace DirectX
         // Texture setting.
         void __cdecl SetTextureEnabled(bool value);
         void __cdecl SetTexture(_In_opt_ ID3D11ShaderResourceView* value);
-        
+
         // Normal compression settings.
         void __cdecl SetBiasedVertexNormals(bool value);
 
@@ -174,8 +170,8 @@ namespace DirectX
     {
     public:
         explicit AlphaTestEffect(_In_ ID3D11Device* device);
-        AlphaTestEffect(AlphaTestEffect&& moveFrom);
-        AlphaTestEffect& operator= (AlphaTestEffect&& moveFrom);
+        AlphaTestEffect(AlphaTestEffect&& moveFrom) throw();
+        AlphaTestEffect& operator= (AlphaTestEffect&& moveFrom) throw();
 
         AlphaTestEffect(AlphaTestEffect const&) = delete;
         AlphaTestEffect& operator= (AlphaTestEffect const&) = delete;
@@ -197,7 +193,7 @@ namespace DirectX
         void XM_CALLCONV SetDiffuseColor(FXMVECTOR value);
         void __cdecl SetAlpha(float value);
         void XM_CALLCONV SetColorAndAlpha(FXMVECTOR value);
-        
+
         // Fog settings.
         void __cdecl SetFogEnabled(bool value) override;
         void __cdecl SetFogStart(float value) override;
@@ -209,7 +205,7 @@ namespace DirectX
 
         // Texture setting.
         void __cdecl SetTexture(_In_opt_ ID3D11ShaderResourceView* value);
-        
+
         // Alpha test settings.
         void __cdecl SetAlphaFunction(D3D11_COMPARISON_FUNC value);
         void __cdecl SetReferenceAlpha(int value);
@@ -228,8 +224,8 @@ namespace DirectX
     {
     public:
         explicit DualTextureEffect(_In_ ID3D11Device* device);
-        DualTextureEffect(DualTextureEffect&& moveFrom);
-        DualTextureEffect& operator= (DualTextureEffect&& moveFrom);
+        DualTextureEffect(DualTextureEffect&& moveFrom) throw();
+        DualTextureEffect& operator= (DualTextureEffect&& moveFrom) throw();
 
         DualTextureEffect(DualTextureEffect const&) = delete;
         DualTextureEffect& operator= (DualTextureEffect const&) = delete;
@@ -251,7 +247,7 @@ namespace DirectX
         void XM_CALLCONV SetDiffuseColor(FXMVECTOR value);
         void __cdecl SetAlpha(float value);
         void XM_CALLCONV SetColorAndAlpha(FXMVECTOR value);
-        
+
         // Fog settings.
         void __cdecl SetFogEnabled(bool value) override;
         void __cdecl SetFogStart(float value) override;
@@ -264,7 +260,7 @@ namespace DirectX
         // Texture settings.
         void __cdecl SetTexture(_In_opt_ ID3D11ShaderResourceView* value);
         void __cdecl SetTexture2(_In_opt_ ID3D11ShaderResourceView* value);
-        
+
     private:
         // Private implementation.
         class Impl;
@@ -279,8 +275,8 @@ namespace DirectX
     {
     public:
         explicit EnvironmentMapEffect(_In_ ID3D11Device* device);
-        EnvironmentMapEffect(EnvironmentMapEffect&& moveFrom);
-        EnvironmentMapEffect& operator= (EnvironmentMapEffect&& moveFrom);
+        EnvironmentMapEffect(EnvironmentMapEffect&& moveFrom) throw();
+        EnvironmentMapEffect& operator= (EnvironmentMapEffect&& moveFrom) throw();
 
         EnvironmentMapEffect(EnvironmentMapEffect const&) = delete;
         EnvironmentMapEffect& operator= (EnvironmentMapEffect const&) = delete;
@@ -303,7 +299,7 @@ namespace DirectX
         void XM_CALLCONV SetEmissiveColor(FXMVECTOR value);
         void __cdecl SetAlpha(float value);
         void XM_CALLCONV SetColorAndAlpha(FXMVECTOR value);
-        
+
         // Light settings.
         void XM_CALLCONV SetAmbientLightColor(FXMVECTOR value) override;
 
@@ -350,8 +346,8 @@ namespace DirectX
     {
     public:
         explicit SkinnedEffect(_In_ ID3D11Device* device);
-        SkinnedEffect(SkinnedEffect&& moveFrom);
-        SkinnedEffect& operator= (SkinnedEffect&& moveFrom);
+        SkinnedEffect(SkinnedEffect&& moveFrom) throw();
+        SkinnedEffect& operator= (SkinnedEffect&& moveFrom) throw();
 
         SkinnedEffect(SkinnedEffect const&) = delete;
         SkinnedEffect& operator= (SkinnedEffect const&) = delete;
@@ -377,7 +373,7 @@ namespace DirectX
         void __cdecl DisableSpecular();
         void __cdecl SetAlpha(float value);
         void XM_CALLCONV SetColorAndAlpha(FXMVECTOR value);
-        
+
         // Light settings.
         void __cdecl SetPerPixelLighting(bool value) override;
         void XM_CALLCONV SetAmbientLightColor(FXMVECTOR value) override;
@@ -397,7 +393,7 @@ namespace DirectX
 
         // Texture setting.
         void __cdecl SetTexture(_In_opt_ ID3D11ShaderResourceView* value);
-        
+
         // Animation settings.
         void __cdecl SetWeightsPerVertex(int value) override;
         void __cdecl SetBoneTransforms(_In_reads_(count) XMMATRIX const* value, size_t count) override;
@@ -421,10 +417,10 @@ namespace DirectX
     class DGSLEffect : public IEffect, public IEffectMatrices, public IEffectLights, public IEffectSkinning
     {
     public:
-        explicit DGSLEffect( _In_ ID3D11Device* device, _In_opt_ ID3D11PixelShader* pixelShader = nullptr,
-                             _In_ bool enableSkinning = false );
-        DGSLEffect(DGSLEffect&& moveFrom);
-        DGSLEffect& operator= (DGSLEffect&& moveFrom);
+        explicit DGSLEffect(_In_ ID3D11Device* device, _In_opt_ ID3D11PixelShader* pixelShader = nullptr,
+                            _In_ bool enableSkinning = false);
+        DGSLEffect(DGSLEffect&& moveFrom) throw();
+        DGSLEffect& operator= (DGSLEffect&& moveFrom) throw();
 
         DGSLEffect(DGSLEffect const&) = delete;
         DGSLEffect& operator= (DGSLEffect const&) = delete;
@@ -454,8 +450,8 @@ namespace DirectX
 
         // Additional settings.
         void XM_CALLCONV SetUVTransform(FXMMATRIX value);
-        void __cdecl SetViewport( float width, float height );
-        void __cdecl SetTime( float time );
+        void __cdecl SetViewport(float width, float height);
+        void __cdecl SetTime(float time);
         void __cdecl SetAlphaDiscardEnable(bool value);
 
         // Light settings.
@@ -502,8 +498,8 @@ namespace DirectX
     {
     public:
         explicit NormalMapEffect(_In_ ID3D11Device* device);
-        NormalMapEffect(NormalMapEffect&& moveFrom);
-        NormalMapEffect& operator= (NormalMapEffect&& moveFrom);
+        NormalMapEffect(NormalMapEffect&& moveFrom) throw();
+        NormalMapEffect& operator= (NormalMapEffect&& moveFrom) throw();
 
         NormalMapEffect(NormalMapEffect const&) = delete;
         NormalMapEffect& operator= (NormalMapEffect const&) = delete;
@@ -574,8 +570,8 @@ namespace DirectX
     {
     public:
         explicit PBREffect(_In_ ID3D11Device* device);
-        PBREffect(PBREffect&& moveFrom);
-        PBREffect& operator= (PBREffect&& moveFrom);
+        PBREffect(PBREffect&& moveFrom) throw();
+        PBREffect& operator= (PBREffect&& moveFrom) throw();
 
         PBREffect(PBREffect const&) = delete;
         PBREffect& operator= (PBREffect const&) = delete;
@@ -655,8 +651,8 @@ namespace DirectX
         };
 
         explicit DebugEffect(_In_ ID3D11Device* device);
-        DebugEffect(DebugEffect&& moveFrom);
-        DebugEffect& operator= (DebugEffect&& moveFrom);
+        DebugEffect(DebugEffect&& moveFrom) throw();
+        DebugEffect& operator= (DebugEffect&& moveFrom) throw();
 
         DebugEffect(DebugEffect const&) = delete;
         DebugEffect& operator= (DebugEffect const&) = delete;
@@ -717,12 +713,12 @@ namespace DirectX
             const wchar_t*      specularTexture;
             const wchar_t*      normalTexture;
 
-            EffectInfo() { memset( this, 0, sizeof(EffectInfo) ); };
+            EffectInfo() throw() { memset(this, 0, sizeof(EffectInfo)); };
         };
 
-        virtual std::shared_ptr<IEffect> __cdecl CreateEffect( _In_ const EffectInfo& info, _In_opt_ ID3D11DeviceContext* deviceContext ) = 0;
+        virtual std::shared_ptr<IEffect> __cdecl CreateEffect(_In_ const EffectInfo& info, _In_opt_ ID3D11DeviceContext* deviceContext) = 0;
 
-        virtual void __cdecl CreateTexture( _In_z_ const wchar_t* name, _In_opt_ ID3D11DeviceContext* deviceContext, _Outptr_ ID3D11ShaderResourceView** textureView ) = 0;
+        virtual void __cdecl CreateTexture(_In_z_ const wchar_t* name, _In_opt_ ID3D11DeviceContext* deviceContext, _Outptr_ ID3D11ShaderResourceView** textureView) = 0;
     };
 
 
@@ -731,8 +727,8 @@ namespace DirectX
     {
     public:
         explicit EffectFactory(_In_ ID3D11Device* device);
-        EffectFactory(EffectFactory&& moveFrom);
-        EffectFactory& operator= (EffectFactory&& moveFrom);
+        EffectFactory(EffectFactory&& moveFrom) throw();
+        EffectFactory& operator= (EffectFactory&& moveFrom) throw();
 
         EffectFactory(EffectFactory const&) = delete;
         EffectFactory& operator= (EffectFactory const&) = delete;
@@ -740,18 +736,21 @@ namespace DirectX
         virtual ~EffectFactory();
 
         // IEffectFactory methods.
-        virtual std::shared_ptr<IEffect> __cdecl CreateEffect( _In_ const EffectInfo& info, _In_opt_ ID3D11DeviceContext* deviceContext ) override;
-        virtual void __cdecl CreateTexture( _In_z_ const wchar_t* name, _In_opt_ ID3D11DeviceContext* deviceContext, _Outptr_ ID3D11ShaderResourceView** textureView ) override;
+        virtual std::shared_ptr<IEffect> __cdecl CreateEffect(_In_ const EffectInfo& info, _In_opt_ ID3D11DeviceContext* deviceContext) override;
+        virtual void __cdecl CreateTexture(_In_z_ const wchar_t* name, _In_opt_ ID3D11DeviceContext* deviceContext, _Outptr_ ID3D11ShaderResourceView** textureView) override;
 
         // Settings.
         void __cdecl ReleaseCache();
 
-        void __cdecl SetSharing( bool enabled );
+        void __cdecl SetSharing(bool enabled);
 
-        void __cdecl EnableNormalMapEffect( bool enabled );
-        void __cdecl EnableForceSRGB( bool forceSRGB );
+        void __cdecl EnableNormalMapEffect(bool enabled);
+        void __cdecl EnableForceSRGB(bool forceSRGB);
 
-        void __cdecl SetDirectory( _In_opt_z_ const wchar_t* path );
+        void __cdecl SetDirectory(_In_opt_z_ const wchar_t* path);
+
+        // Properties.
+        ID3D11Device* GetDevice() const;
 
     private:
         // Private implementation.
@@ -766,8 +765,8 @@ namespace DirectX
     {
     public:
         explicit DGSLEffectFactory(_In_ ID3D11Device* device);
-        DGSLEffectFactory(DGSLEffectFactory&& moveFrom);
-        DGSLEffectFactory& operator= (DGSLEffectFactory&& moveFrom);
+        DGSLEffectFactory(DGSLEffectFactory&& moveFrom) throw();
+        DGSLEffectFactory& operator= (DGSLEffectFactory&& moveFrom) throw();
 
         DGSLEffectFactory(DGSLEffectFactory const&) = delete;
         DGSLEffectFactory& operator= (DGSLEffectFactory const&) = delete;
@@ -775,8 +774,8 @@ namespace DirectX
         virtual ~DGSLEffectFactory();
 
         // IEffectFactory methods.
-        virtual std::shared_ptr<IEffect> __cdecl CreateEffect( _In_ const EffectInfo& info, _In_opt_ ID3D11DeviceContext* deviceContext ) override;
-        virtual void __cdecl CreateTexture( _In_z_ const wchar_t* name, _In_opt_ ID3D11DeviceContext* deviceContext, _Outptr_ ID3D11ShaderResourceView** textureView ) override;
+        virtual std::shared_ptr<IEffect> __cdecl CreateEffect(_In_ const EffectInfo& info, _In_opt_ ID3D11DeviceContext* deviceContext) override;
+        virtual void __cdecl CreateTexture(_In_z_ const wchar_t* name, _In_opt_ ID3D11DeviceContext* deviceContext, _Outptr_ ID3D11ShaderResourceView** textureView) override;
 
         // DGSL methods.
         struct DGSLEffectInfo : public EffectInfo
@@ -786,21 +785,24 @@ namespace DirectX
             const wchar_t* textures[DGSLEffect::MaxTextures - BaseTextureOffset];
             const wchar_t* pixelShader;
 
-            DGSLEffectInfo() { memset( this, 0, sizeof(DGSLEffectInfo) ); };
+            DGSLEffectInfo() throw() { memset(this, 0, sizeof(DGSLEffectInfo)); };
         };
 
-        virtual std::shared_ptr<IEffect> __cdecl CreateDGSLEffect( _In_ const DGSLEffectInfo& info, _In_opt_ ID3D11DeviceContext* deviceContext );
+        virtual std::shared_ptr<IEffect> __cdecl CreateDGSLEffect(_In_ const DGSLEffectInfo& info, _In_opt_ ID3D11DeviceContext* deviceContext);
 
-        virtual void __cdecl CreatePixelShader( _In_z_ const wchar_t* shader, _Outptr_ ID3D11PixelShader** pixelShader );
+        virtual void __cdecl CreatePixelShader(_In_z_ const wchar_t* shader, _Outptr_ ID3D11PixelShader** pixelShader);
 
         // Settings.
         void __cdecl ReleaseCache();
 
-        void __cdecl SetSharing( bool enabled );
+        void __cdecl SetSharing(bool enabled);
 
-        void __cdecl EnableForceSRGB( bool forceSRGB );
+        void __cdecl EnableForceSRGB(bool forceSRGB);
 
-        void __cdecl SetDirectory( _In_opt_z_ const wchar_t* path );
+        void __cdecl SetDirectory(_In_opt_z_ const wchar_t* path);
+
+        // Properties.
+        ID3D11Device* GetDevice() const;
 
     private:
         // Private implementation.

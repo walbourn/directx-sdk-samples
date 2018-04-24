@@ -3,12 +3,8 @@
 //  
 // Block-compression (BC) functionality for BC6H and BC7 (DirectX 11 texture compression)
 //
-// THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF
-// ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO
-// THE IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A
-// PARTICULAR PURPOSE.
-//  
 // Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
 //
 // http://go.microsoft.com/fwlink/?LinkId=248926
 //-------------------------------------------------------------------------------------
@@ -455,8 +451,8 @@ namespace
 
     public:
         INTColor() = default;
-        INTColor(int nr, int ng, int nb) { r = nr; g = ng; b = nb; }
-        INTColor(const INTColor& c) { r = c.r; g = c.g; b = c.b; }
+        INTColor(int nr, int ng, int nb) : pad(0) { r = nr; g = ng; b = nb; }
+        INTColor(const INTColor& c) : pad(0) { r = c.r; g = c.g; b = c.b; }
 
         INTColor operator - (_In_ const INTColor& c) const
         {
@@ -3233,14 +3229,14 @@ void D3DX_BC7::EmitBlock(const EncodeParams* pEP, size_t uShape, size_t uRotatio
 _Use_decl_annotations_
 float D3DX_BC7::Refine(const EncodeParams* pEP, size_t uShape, size_t uRotation, size_t uIndexMode)
 {
-    assert( pEP );
-    assert( uShape < BC7_MAX_SHAPES );
-    _Analysis_assume_( uShape < BC7_MAX_SHAPES );
+    assert(pEP);
+    assert(uShape < BC7_MAX_SHAPES);
+    _Analysis_assume_(uShape < BC7_MAX_SHAPES);
     const LDREndPntPair* aEndPts = pEP->aEndPts[uShape];
 
     const size_t uPartitions = ms_aInfo[pEP->uMode].uPartitions;
-    assert( uPartitions < BC7_MAX_REGIONS );
-    _Analysis_assume_( uPartitions < BC7_MAX_REGIONS );
+    assert(uPartitions < BC7_MAX_REGIONS);
+    _Analysis_assume_(uPartitions < BC7_MAX_REGIONS);
 
     LDREndPntPair aOrgEndPts[BC7_MAX_REGIONS];
     LDREndPntPair aOptEndPts[BC7_MAX_REGIONS];
@@ -3251,7 +3247,7 @@ float D3DX_BC7::Refine(const EncodeParams* pEP, size_t uShape, size_t uRotation,
     float aOrgErr[BC7_MAX_REGIONS];
     float aOptErr[BC7_MAX_REGIONS];
 
-    for(size_t p = 0; p <= uPartitions; p++)
+    for (size_t p = 0; p <= uPartitions; p++)
     {
         aOrgEndPts[p].A = Quantize(aEndPts[p].A, ms_aInfo[pEP->uMode].RGBAPrecWithP);
         aOrgEndPts[p].B = Quantize(aEndPts[p].B, ms_aInfo[pEP->uMode].RGBAPrecWithP);
@@ -3262,12 +3258,12 @@ float D3DX_BC7::Refine(const EncodeParams* pEP, size_t uShape, size_t uRotation,
     AssignIndices(pEP, uShape, uIndexMode, aOptEndPts, aOptIdx, aOptIdx2, aOptErr);
 
     float fOrgTotErr = 0, fOptTotErr = 0;
-    for(size_t p = 0; p <= uPartitions; p++)
+    for (size_t p = 0; p <= uPartitions; p++)
     {
         fOrgTotErr += aOrgErr[p];
         fOptTotErr += aOptErr[p];
     }
-    if(fOptTotErr < fOrgTotErr)
+    if (fOptTotErr < fOrgTotErr)
     {
         EmitBlock(pEP, uShape, uRotation, uIndexMode, aOptEndPts, aOptIdx, aOptIdx2);
         return fOptTotErr;

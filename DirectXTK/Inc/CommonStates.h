@@ -1,12 +1,8 @@
 //--------------------------------------------------------------------------------------
 // File: CommonStates.h
 //
-// THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF
-// ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO
-// THE IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A
-// PARTICULAR PURPOSE.
-//
 // Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
 //
 // http://go.microsoft.com/fwlink/?LinkId=248929
 //--------------------------------------------------------------------------------------
@@ -28,8 +24,8 @@ namespace DirectX
     {
     public:
         explicit CommonStates(_In_ ID3D11Device* device);
-        CommonStates(CommonStates&& moveFrom);
-        CommonStates& operator= (CommonStates&& moveFrom);
+        CommonStates(CommonStates&& moveFrom) throw();
+        CommonStates& operator= (CommonStates&& moveFrom) throw();
 
         CommonStates(CommonStates const&) = delete;
         CommonStates& operator= (CommonStates const&) = delete;

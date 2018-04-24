@@ -1,12 +1,8 @@
 //--------------------------------------------------------------------------------------
 // File: Model.cpp
 //
-// THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF
-// ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO
-// THE IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A
-// PARTICULAR PURPOSE.
-//
 // Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
 //
 // http://go.microsoft.com/fwlink/?LinkId=248929
 //--------------------------------------------------------------------------------------
@@ -29,7 +25,7 @@ using namespace DirectX;
 // ModelMeshPart
 //--------------------------------------------------------------------------------------
 
-ModelMeshPart::ModelMeshPart() :
+ModelMeshPart::ModelMeshPart() throw() :
     indexCount(0),
     startIndex(0),
     vertexOffset(0),
@@ -95,9 +91,9 @@ void ModelMeshPart::CreateInputLayout(ID3D11Device* d3dDevice, IEffect* ieffect,
 
     ThrowIfFailed(
         d3dDevice->CreateInputLayout(vbDecl->data(),
-            static_cast<UINT>(vbDecl->size()),
-            shaderByteCode, byteCodeLength,
-            iinputLayout)
+        static_cast<UINT>(vbDecl->size()),
+        shaderByteCode, byteCodeLength,
+        iinputLayout)
     );
 
     _Analysis_assume_(*iinputLayout != 0);
@@ -123,9 +119,9 @@ void ModelMeshPart::ModifyEffect(ID3D11Device* d3dDevice, std::shared_ptr<IEffec
 
     ThrowIfFailed(
         d3dDevice->CreateInputLayout(vbDecl->data(),
-            static_cast<UINT>(vbDecl->size()),
-            shaderByteCode, byteCodeLength,
-            &inputLayout)
+        static_cast<UINT>(vbDecl->size()),
+        shaderByteCode, byteCodeLength,
+        &inputLayout)
     );
 }
 
@@ -134,7 +130,7 @@ void ModelMeshPart::ModifyEffect(ID3D11Device* d3dDevice, std::shared_ptr<IEffec
 // ModelMesh
 //--------------------------------------------------------------------------------------
 
-ModelMesh::ModelMesh() :
+ModelMesh::ModelMesh() throw() :
     ccw(true),
     pmalpha(true)
 {

@@ -1,14 +1,11 @@
 //--------------------------------------------------------------------------------------
 // File: Keyboard.h
 //
-// THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF
-// ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO
-// THE IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A
-// PARTICULAR PURPOSE.
-//
 // Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
 //
 // http://go.microsoft.com/fwlink/?LinkId=248929
+// http://go.microsoft.com/fwlink/?LinkID=615561
 //--------------------------------------------------------------------------------------
 
 #pragma once
@@ -27,8 +24,8 @@ namespace DirectX
     {
     public:
         Keyboard();
-        Keyboard(Keyboard&& moveFrom);
-        Keyboard& operator= (Keyboard&& moveFrom);
+        Keyboard(Keyboard&& moveFrom) throw();
+        Keyboard& operator= (Keyboard&& moveFrom) throw();
 
         Keyboard(Keyboard const&) = delete;
         Keyboard& operator=(Keyboard const&) = delete;
@@ -431,7 +428,7 @@ namespace DirectX
             State released;
             State pressed;
 
-            KeyboardStateTracker() { Reset(); }
+            KeyboardStateTracker() throw() { Reset(); }
 
             void __cdecl Update(const State& state);
 
@@ -455,20 +452,20 @@ namespace DirectX
         // Feature detection
         bool __cdecl IsConnected() const;
 
-#if !defined(WINAPI_FAMILY) || (WINAPI_FAMILY == WINAPI_FAMILY_DESKTOP_APP) && defined(WM_USER)
+    #if !defined(WINAPI_FAMILY) || (WINAPI_FAMILY == WINAPI_FAMILY_DESKTOP_APP) && defined(WM_USER)
         static void __cdecl ProcessMessage(UINT message, WPARAM wParam, LPARAM lParam);
-#endif
+    #endif
 
-#if (defined(WINAPI_FAMILY) && (WINAPI_FAMILY == WINAPI_FAMILY_APP)) || (defined(_XBOX_ONE) && defined(_TITLE))
+    #if (defined(WINAPI_FAMILY) && (WINAPI_FAMILY == WINAPI_FAMILY_APP)) || (defined(_XBOX_ONE) && defined(_TITLE))
         void __cdecl SetWindow(ABI::Windows::UI::Core::ICoreWindow* window);
-#ifdef __cplusplus_winrt
+    #ifdef __cplusplus_winrt
         void __cdecl SetWindow(Windows::UI::Core::CoreWindow^ window)
         {
             // See https://msdn.microsoft.com/en-us/library/hh755802.aspx
             SetWindow(reinterpret_cast<ABI::Windows::UI::Core::ICoreWindow*>(window));
         }
-#endif
-#endif
+    #endif
+    #endif
 
         // Singleton
         static Keyboard& __cdecl Get();

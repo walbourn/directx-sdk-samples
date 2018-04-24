@@ -1,12 +1,8 @@
 //--------------------------------------------------------------------------------------
 // File: GeometricPrimitive.cpp
 //
-// THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF
-// ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO
-// THE IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A
-// PARTICULAR PURPOSE.
-//
 // Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
 //
 // http://go.microsoft.com/fwlink/?LinkId=248929
 //--------------------------------------------------------------------------------------
@@ -67,7 +63,7 @@ namespace
             GeometricPrimitive::VertexType::InputElementCount,
             shaderByteCode, byteCodeLength,
             pInputLayout)
-            );
+        );
 
         _Analysis_assume_(*pInputLayout != 0);
 
@@ -80,6 +76,8 @@ namespace
 class GeometricPrimitive::Impl
 {
 public:
+    Impl() throw() : mIndexCount(0) {}
+
     void Initialize(_In_ ID3D11DeviceContext* deviceContext, const VertexCollection& vertices, const IndexCollection& indices);
 
     void XM_CALLCONV Draw(FXMMATRIX world, CXMMATRIX view, CXMMATRIX projection, FXMVECTOR color, _In_opt_ ID3D11ShaderResourceView* texture, bool wireframe, std::function<void()>& setCustomState) const;
@@ -311,7 +309,7 @@ void GeometricPrimitive::Impl::CreateInputLayout(IEffect* effect, ID3D11InputLay
 
 // Constructor.
 GeometricPrimitive::GeometricPrimitive()
-    : pImpl(new Impl())
+    : pImpl(std::make_unique<Impl>())
 {
 }
 

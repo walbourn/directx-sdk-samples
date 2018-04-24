@@ -3,12 +3,8 @@
 //  
 // DirectX Texture Library - WIC-based file reader/writer
 //
-// THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF
-// ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO
-// THE IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A
-// PARTICULAR PURPOSE.
-//
 // Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
 //
 // http://go.microsoft.com/fwlink/?LinkId=248926
 //-------------------------------------------------------------------------------------
@@ -26,10 +22,10 @@
 
 #ifdef __cplusplus_winrt
 
-    static inline HRESULT CreateMemoryStream( _Outptr_ IStream** stream )
+    static inline HRESULT CreateMemoryStream(_Outptr_ IStream** stream)
     {
         auto randomAccessStream = ref new ::Windows::Storage::Streams::InMemoryRandomAccessStream();
-        return CreateStreamOverRandomAccessStream( randomAccessStream, IID_PPV_ARGS( stream ) );
+        return CreateStreamOverRandomAccessStream(randomAccessStream, IID_PPV_ARGS(stream));
     }
 
 #else
@@ -45,16 +41,16 @@
     #include <windows.storage.streams.h>
 #pragma warning(pop)
 
-    static inline HRESULT CreateMemoryStream( _Outptr_ IStream** stream )
+    static inline HRESULT CreateMemoryStream(_Outptr_ IStream** stream)
     {
         Microsoft::WRL::ComPtr<ABI::Windows::Storage::Streams::IRandomAccessStream> abiStream;
         HRESULT hr = Windows::Foundation::ActivateInstance(
-            Microsoft::WRL::Wrappers::HStringReference( RuntimeClass_Windows_Storage_Streams_InMemoryRandomAccessStream ).Get(),
-            abiStream.GetAddressOf() );
+            Microsoft::WRL::Wrappers::HStringReference(RuntimeClass_Windows_Storage_Streams_InMemoryRandomAccessStream).Get(),
+            abiStream.GetAddressOf());
 
         if (SUCCEEDED(hr))
         {
-            hr = CreateStreamOverRandomAccessStream( abiStream.Get(), IID_PPV_ARGS( stream ) );
+            hr = CreateStreamOverRandomAccessStream(abiStream.Get(), IID_PPV_ARGS(stream));
         }
         return hr;
     }
@@ -64,9 +60,9 @@
 #else
 
     #pragma prefast(suppress:6387 28196, "a simple wrapper around an existing annotated function" );
-    static inline HRESULT CreateMemoryStream( _Outptr_ IStream** stream )
+    static inline HRESULT CreateMemoryStream(_Outptr_ IStream** stream)
     {
-        return CreateStreamOnHGlobal( 0, TRUE, stream );
+        return CreateStreamOnHGlobal(0, TRUE, stream);
     }
 
 #endif
@@ -932,7 +928,7 @@ HRESULT DirectX::GetMetadataFromWICMemory(
     if (FAILED(hr))
         return hr;
 
-    hr = stream->InitializeFromMemory(reinterpret_cast<BYTE*>(const_cast<void*>(pSource)),
+    hr = stream->InitializeFromMemory(static_cast<BYTE*>(const_cast<void*>(pSource)),
         static_cast<UINT>(size));
     if (FAILED(hr))
         return hr;
@@ -1026,7 +1022,7 @@ HRESULT DirectX::LoadFromWICMemory(
     if (FAILED(hr))
         return hr;
 
-    hr = stream->InitializeFromMemory(reinterpret_cast<uint8_t*>(const_cast<void*>(pSource)), static_cast<DWORD>(size));
+    hr = stream->InitializeFromMemory(static_cast<uint8_t*>(const_cast<void*>(pSource)), static_cast<DWORD>(size));
     if (FAILED(hr))
         return hr;
 

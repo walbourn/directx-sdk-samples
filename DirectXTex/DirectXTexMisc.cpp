@@ -3,12 +3,8 @@
 //  
 // DirectX Texture Library - Misc image operations
 //
-// THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF
-// ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO
-// THE IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A
-// PARTICULAR PURPOSE.
-//
 // Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
 //
 // http://go.microsoft.com/fwlink/?LinkId=248926
 //-------------------------------------------------------------------------------------
@@ -37,7 +33,7 @@ namespace
 
         const size_t width = image1.width;
 
-        ScopedAlignedArrayXMVECTOR scanline(reinterpret_cast<XMVECTOR*>(_aligned_malloc((sizeof(XMVECTOR)*width) * 2, 16)));
+        ScopedAlignedArrayXMVECTOR scanline(static_cast<XMVECTOR*>(_aligned_malloc((sizeof(XMVECTOR)*width) * 2, 16)));
         if (!scanline)
             return E_OUTOFMEMORY;
 
@@ -188,7 +184,7 @@ namespace
 
         const size_t width = image.width;
 
-        ScopedAlignedArrayXMVECTOR scanline(reinterpret_cast<XMVECTOR*>(_aligned_malloc((sizeof(XMVECTOR)*width), 16)));
+        ScopedAlignedArrayXMVECTOR scanline(static_cast<XMVECTOR*>(_aligned_malloc((sizeof(XMVECTOR)*width), 16)));
         if (!scanline)
             return E_OUTOFMEMORY;
 
@@ -226,7 +222,7 @@ namespace
 
         const size_t width = srcImage.width;
 
-        ScopedAlignedArrayXMVECTOR scanlines(reinterpret_cast<XMVECTOR*>(_aligned_malloc((sizeof(XMVECTOR)*width*2), 16)));
+        ScopedAlignedArrayXMVECTOR scanlines(static_cast<XMVECTOR*>(_aligned_malloc((sizeof(XMVECTOR)*width*2), 16)));
         if (!scanlines)
             return E_OUTOFMEMORY;
 
@@ -351,7 +347,7 @@ HRESULT DirectX::CopyRectangle(
 
     uint8_t* pDest = dstImage.pixels + (yOffset * dstImage.rowPitch) + (xOffset * dbpp);
 
-    ScopedAlignedArrayXMVECTOR scanline(reinterpret_cast<XMVECTOR*>(_aligned_malloc((sizeof(XMVECTOR)*srcRect.w), 16)));
+    ScopedAlignedArrayXMVECTOR scanline(static_cast<XMVECTOR*>(_aligned_malloc((sizeof(XMVECTOR)*srcRect.w), 16)));
     if (!scanline)
         return E_OUTOFMEMORY;
 

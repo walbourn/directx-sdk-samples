@@ -1,12 +1,8 @@
 //--------------------------------------------------------------------------------------
 // File: GraphicsMemory.h
 //
-// THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF
-// ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO
-// THE IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A
-// PARTICULAR PURPOSE.
-//
 // Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
 //
 // http://go.microsoft.com/fwlink/?LinkId=248929
 //--------------------------------------------------------------------------------------
@@ -27,13 +23,13 @@ namespace DirectX
     class GraphicsMemory
     {
     public:
-        #if defined(_XBOX_ONE) && defined(_TITLE)
+    #if defined(_XBOX_ONE) && defined(_TITLE)
         GraphicsMemory(_In_ ID3D11DeviceX* device, UINT backBufferCount = 2);
-        #else
+    #else
         GraphicsMemory(_In_ ID3D11Device* device, UINT backBufferCount = 2);
-        #endif
-        GraphicsMemory(GraphicsMemory&& moveFrom);
-        GraphicsMemory& operator= (GraphicsMemory&& moveFrom);
+    #endif
+        GraphicsMemory(GraphicsMemory&& moveFrom) throw();
+        GraphicsMemory& operator= (GraphicsMemory&& moveFrom) throw();
 
         GraphicsMemory(GraphicsMemory const&) = delete;
         GraphicsMemory& operator=(GraphicsMemory const&) = delete;

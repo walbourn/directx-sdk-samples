@@ -1,12 +1,8 @@
 //--------------------------------------------------------------------------------------
 // File: SpriteFont.cpp
 //
-// THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF
-// ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO
-// THE IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A
-// PARTICULAR PURPOSE.
-//
 // Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
 //
 // http://go.microsoft.com/fwlink/?LinkId=248929
 //--------------------------------------------------------------------------------------
@@ -83,7 +79,7 @@ SpriteFont::Impl::Impl(_In_ ID3D11Device* device, _In_ BinaryReader* reader, boo
     {
         if (reader->Read<uint8_t>() != *magic)
         {
-            DebugTrace( "SpriteFont provided with an invalid .spritefont file\n" );
+            DebugTrace("SpriteFont provided with an invalid .spritefont file\n");
             throw std::exception("Not a MakeSpriteFont output binary");
         }
     }
@@ -126,7 +122,7 @@ SpriteFont::Impl::Impl(_In_ ID3D11Device* device, _In_ BinaryReader* reader, boo
         device->CreateShaderResourceView(texture2D.Get(), &viewDesc, &texture)
     );
 
-    SetDebugObjectName(texture.Get(),   "DirectXTK:SpriteFont");
+    SetDebugObjectName(texture.Get(), "DirectXTK:SpriteFont");
     SetDebugObjectName(texture2D.Get(), "DirectXTK:SpriteFont");
 }
 
@@ -134,7 +130,7 @@ SpriteFont::Impl::Impl(_In_ ID3D11Device* device, _In_ BinaryReader* reader, boo
 // Constructs a SpriteFont from arbitrary user specified glyph data.
 _Use_decl_annotations_
 SpriteFont::Impl::Impl(ID3D11ShaderResourceView* texture, Glyph const* glyphs, size_t glyphCount, float lineSpacing)
-  : texture(texture),
+    : texture(texture),
     glyphs(glyphs, glyphs + glyphCount),
     defaultGlyph(nullptr),
     lineSpacing(lineSpacing)
@@ -161,7 +157,7 @@ SpriteFont::Glyph const* SpriteFont::Impl::FindGlyph(wchar_t character) const
         return defaultGlyph;
     }
 
-    DebugTrace( "SpriteFont encountered a character not in the font (%u, %C), and no default glyph was provided\n", character, character );
+    DebugTrace("SpriteFont encountered a character not in the font (%u, %C), and no default glyph was provided\n", character, character);
     throw std::exception("Character not in font");
 }
 
@@ -212,9 +208,9 @@ void SpriteFont::Impl::ForEachGlyph(_In_z_ wchar_t const* text, TAction action) 
 
                 float advance = glyph->Subrect.right - glyph->Subrect.left + glyph->XAdvance;
 
-                if ( !iswspace(character)
-                     || ( ( glyph->Subrect.right - glyph->Subrect.left ) > 1 )
-                     || ( ( glyph->Subrect.bottom - glyph->Subrect.top ) > 1 ) )
+                if (!iswspace(character)
+                    || ((glyph->Subrect.right - glyph->Subrect.left) > 1)
+                    || ((glyph->Subrect.bottom - glyph->Subrect.top) > 1))
                 {
                     action(glyph, x, y, advance);
                 }
@@ -248,20 +244,20 @@ SpriteFont::SpriteFont(ID3D11Device* device, uint8_t const* dataBlob, size_t dat
 // Construct from arbitrary user specified glyph data (for those not using the MakeSpriteFont utility).
 _Use_decl_annotations_
 SpriteFont::SpriteFont(ID3D11ShaderResourceView* texture, Glyph const* glyphs, size_t glyphCount, float lineSpacing)
-  : pImpl(new Impl(texture, glyphs, glyphCount, lineSpacing))
+    : pImpl(std::make_unique<Impl>(texture, glyphs, glyphCount, lineSpacing))
 {
 }
 
 
 // Move constructor.
-SpriteFont::SpriteFont(SpriteFont&& moveFrom)
-  : pImpl(std::move(moveFrom.pImpl))
+SpriteFont::SpriteFont(SpriteFont&& moveFrom) throw()
+    : pImpl(std::move(moveFrom.pImpl))
 {
 }
 
 
 // Move assignment.
-SpriteFont& SpriteFont::operator= (SpriteFont&& moveFrom)
+SpriteFont& SpriteFont::operator= (SpriteFont&& moveFrom) throw()
 {
     pImpl = std::move(moveFrom.pImpl);
     return *this;
@@ -329,7 +325,7 @@ void XM_CALLCONV SpriteFont::DrawString(_In_ SpriteBatch* spriteBatch, _In_z_ wc
         UNREFERENCED_PARAMETER(advance);
 
         XMVECTOR offset = XMVectorMultiplyAdd(XMVectorSet(x, y + glyph->YOffset, 0, 0), axisDirectionTable[effects & 3], baseOffset);
-        
+
         if (effects)
         {
             // For mirrored characters, specify bottom and/or right instead of top left.
@@ -452,10 +448,10 @@ SpriteFont::Glyph const* SpriteFont::FindGlyph(wchar_t character) const
 }
 
 
-void SpriteFont::GetSpriteSheet( ID3D11ShaderResourceView** texture ) const
+void SpriteFont::GetSpriteSheet(ID3D11ShaderResourceView** texture) const
 {
-    if ( !texture )
+    if (!texture)
         return;
 
-    ThrowIfFailed( pImpl->texture.CopyTo( texture ) );
+    ThrowIfFailed(pImpl->texture.CopyTo(texture));
 }

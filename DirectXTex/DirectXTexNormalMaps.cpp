@@ -3,12 +3,8 @@
 //  
 // DirectX Texture Library - Normal map operations
 //
-// THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF
-// ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO
-// THE IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A
-// PARTICULAR PURPOSE.
-//
 // Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
 //
 // http://go.microsoft.com/fwlink/?LinkId=248926
 //-------------------------------------------------------------------------------------
@@ -97,11 +93,11 @@ namespace
             return E_FAIL;
 
         // Allocate temporary space (4 scanlines and 3 evaluated rows)
-        ScopedAlignedArrayXMVECTOR scanline(reinterpret_cast<XMVECTOR*>(_aligned_malloc((sizeof(XMVECTOR)*width * 4), 16)));
+        ScopedAlignedArrayXMVECTOR scanline(static_cast<XMVECTOR*>(_aligned_malloc((sizeof(XMVECTOR)*width * 4), 16)));
         if (!scanline)
             return E_OUTOFMEMORY;
 
-        ScopedAlignedArrayFloat buffer(reinterpret_cast<float*>(_aligned_malloc(((sizeof(float) * (width + 2)) * 3), 16)));
+        ScopedAlignedArrayFloat buffer(static_cast<float*>(_aligned_malloc(((sizeof(float) * (width + 2)) * 3), 16)));
         if (!buffer)
             return E_OUTOFMEMORY;
 

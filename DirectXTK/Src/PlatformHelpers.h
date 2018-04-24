@@ -1,14 +1,11 @@
 //--------------------------------------------------------------------------------------
 // File: PlatformHelpers.h
 //
-// THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF
-// ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO
-// THE IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A
-// PARTICULAR PURPOSE.
-//
 // Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
 //
 // http://go.microsoft.com/fwlink/?LinkId=248929
+// http://go.microsoft.com/fwlink/?LinkID=615561
 //--------------------------------------------------------------------------------------
 
 #pragma once
@@ -49,19 +46,19 @@ namespace DirectX
 
 
     // Helper for output debug tracing
-    inline void DebugTrace( _In_z_ _Printf_format_string_ const char* format, ... )
+    inline void DebugTrace(_In_z_ _Printf_format_string_ const char* format, ...)
     {
-#ifdef _DEBUG
+    #ifdef _DEBUG
         va_list args;
-        va_start( args, format );
+        va_start(args, format);
 
         char buff[1024] = {};
-        vsprintf_s( buff, format, args );
-        OutputDebugStringA( buff );
-        va_end( args );
-#else
-        UNREFERENCED_PARAMETER( format );
-#endif
+        vsprintf_s(buff, format, args);
+        OutputDebugStringA(buff);
+        va_end(args);
+    #else
+        UNREFERENCED_PARAMETER(format);
+    #endif
     }
 
 
@@ -76,77 +73,5 @@ namespace DirectX
 
     typedef std::unique_ptr<void, handle_closer> ScopedHandle;
 
-    inline HANDLE safe_handle( HANDLE h ) { return (h == INVALID_HANDLE_VALUE) ? 0 : h; }
+    inline HANDLE safe_handle(HANDLE h) { return (h == INVALID_HANDLE_VALUE) ? 0 : h; }
 }
-
-
-#ifdef DIRECTX_EMULATE_MUTEX
-
-// Emulate the C++0x mutex and lock_guard types when building with Visual Studio CRT versions < 2012.
-namespace std
-{
-    class mutex
-    {
-    public:
-        mutex()         { InitializeCriticalSection(&mCriticalSection); }
-        ~mutex()        { DeleteCriticalSection(&mCriticalSection); }
-
-        void lock()     { EnterCriticalSection(&mCriticalSection); }
-        void unlock()   { LeaveCriticalSection(&mCriticalSection); }
-        bool try_lock() { return TryEnterCriticalSection(&mCriticalSection) != 0; }
-
-    private:
-        CRITICAL_SECTION mCriticalSection;
-
-        mutex(mutex const&);
-        mutex& operator= (mutex const&);
-    };
-
-
-    template<typename Mutex>
-    class lock_guard
-    {
-    public:
-        typedef Mutex mutex_type;
-
-        explicit lock_guard(mutex_type& mutex)
-          : mMutex(mutex)
-        {
-            mMutex.lock();
-        }
-
-        ~lock_guard()
-        {
-            mMutex.unlock();
-        }
-
-    private:
-        mutex_type& mMutex;
-
-        lock_guard(lock_guard const&);
-        lock_guard& operator= (lock_guard const&);
-    };
-}
-
-#else
-
-#include <mutex>
-
-#endif
-
-
-#ifdef DIRECTX_EMULATE_MAKE_UNIQUE
-
-// Emulate make_unique when building with Visual Studio CRT versions < 2012.
-namespace std
-{
-
-    template<typename T, typename... Args>
-    std::unique_ptr<T> make_unique(Args&&... args)
-    {
-        return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
-    }
-
-}
-
-#endif

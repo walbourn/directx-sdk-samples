@@ -1,12 +1,8 @@
 //--------------------------------------------------------------------------------------
 // File: ConstantBuffer.h
 //
-// THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF
-// ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO
-// THE IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A
-// PARTICULAR PURPOSE.
-//
 // Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
 //
 // http://go.microsoft.com/fwlink/?LinkId=248929
 //--------------------------------------------------------------------------------------
@@ -29,13 +25,13 @@ namespace DirectX
         ConstantBuffer() = default;
         explicit ConstantBuffer(_In_ ID3D11Device* device)
         {
-            Create( device );
+            Create(device);
         }
 
         ConstantBuffer(ConstantBuffer const&) = delete;
         ConstantBuffer& operator= (ConstantBuffer const&) = delete;
 
-        #if defined(_XBOX_ONE) && defined(_TITLE)
+    #if defined(_XBOX_ONE) && defined(_TITLE)
         void Create(_In_ ID3D11Device* device)
         {
             D3D11_BUFFER_DESC desc = {};
@@ -57,16 +53,16 @@ namespace DirectX
         // Writes new data into the constant buffer.
         void SetData(_In_ ID3D11DeviceContext* deviceContext, T const& value, void** grfxMemory)
         {
-            assert( grfxMemory != 0 );
+            assert(grfxMemory != 0);
 
-            void* ptr = GraphicsMemory::Get().Allocate( deviceContext, sizeof(T), 64 );
-            assert( ptr != 0 );
+            void* ptr = GraphicsMemory::Get().Allocate(deviceContext, sizeof(T), 64);
+            assert(ptr != 0);
 
             *(T*)ptr = value;
 
             *grfxMemory = ptr;
         }
-        #else
+    #else
         void Create(_In_ ID3D11Device* device)
         {
             D3D11_BUFFER_DESC desc = {};
@@ -77,7 +73,7 @@ namespace DirectX
             desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 
             ThrowIfFailed(
-                device->CreateBuffer(&desc, nullptr, mConstantBuffer.ReleaseAndGetAddressOf() )
+                device->CreateBuffer(&desc, nullptr, mConstantBuffer.ReleaseAndGetAddressOf())
             );
 
             SetDebugObjectName(mConstantBuffer.Get(), "DirectXTK");
@@ -87,21 +83,21 @@ namespace DirectX
         // Writes new data into the constant buffer.
         void SetData(_In_ ID3D11DeviceContext* deviceContext, T const& value)
         {
-            assert( mConstantBuffer.Get() != 0 );
+            assert(mConstantBuffer.Get() != 0);
 
             D3D11_MAPPED_SUBRESOURCE mappedResource;
-            
+
             ThrowIfFailed(
                 deviceContext->Map(mConstantBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource)
             );
 
-            *(T*)mappedResource.pData = value;
+            *static_cast<T*>(mappedResource.pData) = value;
 
             deviceContext->Unmap(mConstantBuffer.Get(), 0);
         }
-        #endif
+    #endif
 
-        // Looks up the underlying D3D constant buffer.
+    // Looks up the underlying D3D constant buffer.
         ID3D11Buffer* GetBuffer()
         {
             return mConstantBuffer.Get();

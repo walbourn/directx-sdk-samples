@@ -1,14 +1,11 @@
 //--------------------------------------------------------------------------------------
 // File: SharedResourcePool.h
 //
-// THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF
-// ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO
-// THE IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A
-// PARTICULAR PURPOSE.
-//
 // Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
 //
 // http://go.microsoft.com/fwlink/?LinkId=248929
+// http://go.microsoft.com/fwlink/?LinkID=615561
 //--------------------------------------------------------------------------------------
 
 #pragma once
@@ -30,7 +27,7 @@ namespace DirectX
     {
     public:
         SharedResourcePool()
-          : mResourceMap(std::make_shared<ResourceMap>())
+            : mResourceMap(std::make_shared<ResourceMap>())
         { }
 
         SharedResourcePool(SharedResourcePool const&) = delete;
@@ -53,7 +50,7 @@ namespace DirectX
                 else
                     mResourceMap->erase(pos);
             }
-            
+
             // Allocate a new instance.
             auto newValue = std::make_shared<WrappedData>(key, mResourceMap, args...);
 
@@ -69,7 +66,7 @@ namespace DirectX
         {
             std::mutex mutex;
         };
-        
+
         std::shared_ptr<ResourceMap> mResourceMap;
 
 
@@ -78,7 +75,7 @@ namespace DirectX
         struct WrappedData : public TData
         {
             WrappedData(TKey key, std::shared_ptr<ResourceMap> const& resourceMap, TConstructorArgs... args)
-              : TData(key, args...),
+                : TData(key, args...),
                 mKey(key),
                 mResourceMap(resourceMap)
             { }

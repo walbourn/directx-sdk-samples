@@ -1,14 +1,11 @@
 //--------------------------------------------------------------------------------------
 // File: AlignedNew.h
 //
-// THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF
-// ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO
-// THE IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A
-// PARTICULAR PURPOSE.
-//
 // Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
 //
 // http://go.microsoft.com/fwlink/?LinkId=248929
+// http://go.microsoft.com/fwlink/?LinkID=615561
 //--------------------------------------------------------------------------------------
 
 #pragma once
@@ -53,13 +50,13 @@ namespace DirectX
 
 
         // Array overloads.
-        static void* operator new[] (size_t size)
+        static void* operator new[](size_t size)
         {
             return operator new(size);
         }
 
 
-        static void operator delete[] (void* ptr)
+        static void operator delete[](void* ptr)
         {
             operator delete(ptr);
         }

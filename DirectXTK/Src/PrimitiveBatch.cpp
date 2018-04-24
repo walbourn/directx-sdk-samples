@@ -1,12 +1,8 @@
 //--------------------------------------------------------------------------------------
 // File: PrimitiveBatch.cpp
 //
-// THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF
-// ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO
-// THE IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A
-// PARTICULAR PURPOSE.
-//
 // Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
 //
 // http://go.microsoft.com/fwlink/?LinkId=248929
 //--------------------------------------------------------------------------------------
@@ -120,7 +116,14 @@ PrimitiveBatchBase::Impl::Impl(_In_ ID3D11DeviceContext* deviceContext, size_t m
     mCurrentIndex(0),
     mCurrentVertex(0),
     mBaseIndex(0),
-    mBaseVertex(0)
+    mBaseVertex(0),
+#if defined(_XBOX_ONE) && defined(_TITLE)
+    grfxMemoryIB(nullptr),
+    grfxMemoryVB(nullptr)
+#else
+    mMappedIndices{},
+    mMappedVertices{}
+#endif
 {
     ComPtr<ID3D11Device> device;
     deviceContext->GetDevice(&device);
@@ -329,7 +332,7 @@ void PrimitiveBatchBase::Impl::Draw(D3D11_PRIMITIVE_TOPOLOGY topology, bool isIn
     // Copy over the index data.
     if (isIndexed)
     {
-        auto outputIndices = reinterpret_cast<uint16_t*>(mMappedIndices.pData) + mCurrentIndex;
+        auto outputIndices = static_cast<uint16_t*>(mMappedIndices.pData) + mCurrentIndex;
         
         for (size_t i = 0; i < indexCount; i++)
         {
@@ -340,7 +343,7 @@ void PrimitiveBatchBase::Impl::Draw(D3D11_PRIMITIVE_TOPOLOGY topology, bool isIn
     }
 
     // Return the output vertex data location.
-    *pMappedVertices = reinterpret_cast<uint8_t*>(mMappedVertices.pData) + (mCurrentVertex * mVertexSize);
+    *pMappedVertices = static_cast<uint8_t*>(mMappedVertices.pData) + (mCurrentVertex * mVertexSize);
 
     mCurrentVertex += vertexCount;
 #endif
@@ -397,20 +400,20 @@ void PrimitiveBatchBase::Impl::FlushBatch()
 
 // Public constructor.
 PrimitiveBatchBase::PrimitiveBatchBase(_In_ ID3D11DeviceContext* deviceContext, size_t maxIndices, size_t maxVertices, size_t vertexSize)
-  : pImpl(new Impl(deviceContext, maxIndices, maxVertices, vertexSize))
+  : pImpl(std::make_unique<Impl>(deviceContext, maxIndices, maxVertices, vertexSize))
 {
 }
 
 
 // Move constructor.
-PrimitiveBatchBase::PrimitiveBatchBase(PrimitiveBatchBase&& moveFrom)
+PrimitiveBatchBase::PrimitiveBatchBase(PrimitiveBatchBase&& moveFrom) throw()
   : pImpl(std::move(moveFrom.pImpl))
 {
 }
 
 
 // Move assignment.
-PrimitiveBatchBase& PrimitiveBatchBase::operator= (PrimitiveBatchBase&& moveFrom)
+PrimitiveBatchBase& PrimitiveBatchBase::operator= (PrimitiveBatchBase&& moveFrom) throw()
 {
     pImpl = std::move(moveFrom.pImpl);
     return *this;

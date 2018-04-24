@@ -3,12 +3,8 @@
 //  
 // DirectX Texture Library - Direct3D 11 helpers
 //
-// THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF
-// ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO
-// THE IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A
-// PARTICULAR PURPOSE.
-//
 // Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
 //
 // http://go.microsoft.com/fwlink/?LinkId=248926
 //-------------------------------------------------------------------------------------
@@ -85,7 +81,7 @@ namespace
                 if (FAILED(hr))
                     return hr;
 
-                auto pslice = reinterpret_cast<const uint8_t*>(mapped.pData);
+                auto pslice = static_cast<const uint8_t*>(mapped.pData);
                 if (!pslice)
                 {
                     pContext->Unmap(pSource, dindex);
@@ -173,7 +169,7 @@ namespace
                         return E_UNEXPECTED;
                     }
 
-                    auto sptr = reinterpret_cast<const uint8_t*>(mapped.pData);
+                    auto sptr = static_cast<const uint8_t*>(mapped.pData);
                     uint8_t* dptr = img->pixels;
                     for (size_t h = 0; h < lines; ++h)
                     {
@@ -541,7 +537,7 @@ HRESULT DirectX::CreateTextureEx(
     }
 
     // Create texture using static initialization data
-    HRESULT hr = E_FAIL;
+    HRESULT hr = E_UNEXPECTED;
 
     DXGI_FORMAT tformat = (forceSRGB) ? MakeSRGB(metadata.format) : metadata.format;
 
@@ -738,7 +734,7 @@ HRESULT DirectX::CaptureTexture(
     D3D11_RESOURCE_DIMENSION resType = D3D11_RESOURCE_DIMENSION_UNKNOWN;
     pSource->GetType(&resType);
 
-    HRESULT hr;
+    HRESULT hr = E_UNEXPECTED;
 
     switch (resType)
     {

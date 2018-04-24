@@ -1,12 +1,8 @@
 //--------------------------------------------------------------------------------------
 // File: DirectXHelpers.h
 //
-// THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF
-// ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO
-// THE IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A
-// PARTICULAR PURPOSE.
-//
 // Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
 //
 // http://go.microsoft.com/fwlink/?LinkId=248929
 //--------------------------------------------------------------------------------------
@@ -60,14 +56,14 @@ namespace DirectX
     class MapGuard : public D3D11_MAPPED_SUBRESOURCE
     {
     public:
-        MapGuard( _In_ ID3D11DeviceContext* context,
-                  _In_ ID3D11Resource *resource,
-                  _In_ UINT subresource,
-                  _In_ D3D11_MAP mapType,
-                  _In_ UINT mapFlags )
+        MapGuard(_In_ ID3D11DeviceContext* context,
+                 _In_ ID3D11Resource *resource,
+                 _In_ UINT subresource,
+                 _In_ D3D11_MAP mapType,
+                 _In_ UINT mapFlags)
             : mContext(context), mResource(resource), mSubresource(subresource)
         {
-            HRESULT hr = mContext->Map( resource, subresource, mapType, mapFlags, this );
+            HRESULT hr = mContext->Map(resource, subresource, mapType, mapFlags, this);
             if (FAILED(hr))
             {
                 throw std::exception();
@@ -76,25 +72,25 @@ namespace DirectX
 
         ~MapGuard()
         {
-            mContext->Unmap( mResource, mSubresource );
+            mContext->Unmap(mResource, mSubresource);
         }
 
         uint8_t* get() const
         {
-            return reinterpret_cast<uint8_t*>( pData );
+            return static_cast<uint8_t*>(pData);
         }
         uint8_t* get(size_t slice) const
         {
-            return reinterpret_cast<uint8_t*>( pData ) + ( slice * DepthPitch );
+            return static_cast<uint8_t*>(pData) + (slice * DepthPitch);
         }
 
         uint8_t* scanline(size_t row) const
         {
-            return reinterpret_cast<uint8_t*>( pData ) + ( row * RowPitch );
+            return static_cast<uint8_t*>(pData) + (row * RowPitch);
         }
         uint8_t* scanline(size_t slice, size_t row) const
         {
-            return reinterpret_cast<uint8_t*>( pData ) + ( slice * DepthPitch ) + ( row * RowPitch );
+            return static_cast<uint8_t*>(pData) + (slice * DepthPitch) + (row * RowPitch);
         }
 
     private:
@@ -114,10 +110,10 @@ namespace DirectX
         #if !defined(NO_D3D11_DEBUG_NAME) && ( defined(_DEBUG) || defined(PROFILE) )
             #if defined(_XBOX_ONE) && defined(_TITLE)
                 wchar_t wname[MAX_PATH];
-                int result = MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, name, TNameLength, wname, MAX_PATH );
-                if ( result > 0 )
+                int result = MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, name, TNameLength, wname, MAX_PATH);
+                if (result > 0)
                 {
-                    resource->SetName( wname );
+                    resource->SetName(wname);
                 }
             #else
                 resource->SetPrivateData(WKPDID_D3DDebugObjectName, TNameLength - 1, name);
@@ -136,8 +132,8 @@ namespace DirectX
                 resource->SetName( name );
             #else
                 char aname[MAX_PATH];
-                int result = WideCharToMultiByte( CP_ACP, 0, name, TNameLength, aname, MAX_PATH, nullptr, nullptr );
-                if ( result > 0 )
+                int result = WideCharToMultiByte(CP_ACP, 0, name, TNameLength, aname, MAX_PATH, nullptr, nullptr);
+                if (result > 0)
                 {
                     resource->SetPrivateData(WKPDID_D3DDebugObjectName, TNameLength - 1, aname);
                 }
@@ -146,5 +142,30 @@ namespace DirectX
             UNREFERENCED_PARAMETER(resource);
             UNREFERENCED_PARAMETER(name);
         #endif
+    }
+
+    // Helpers for aligning values by a power of 2
+    template<typename T>
+    inline T AlignDown(T size, size_t alignment)
+    {
+        if (alignment > 0)
+        {
+            assert(((alignment - 1) & alignment) == 0);
+            T mask = static_cast<T>(alignment - 1);
+            return size & ~mask;
+        }
+        return size;
+    }
+
+    template<typename T>
+    inline T AlignUp(T size, size_t alignment)
+    {
+        if (alignment > 0)
+        {
+            assert(((alignment - 1) & alignment) == 0);
+            T mask = static_cast<T>(alignment - 1);
+            return (size + mask) & ~mask;
+        }
+        return size;
     }
 }

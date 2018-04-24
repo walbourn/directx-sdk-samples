@@ -1,12 +1,8 @@
 //--------------------------------------------------------------------------------------
 // File: PostProcess.h
 //
-// THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF
-// ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO
-// THE IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A
-// PARTICULAR PURPOSE.
-//
 // Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
 //
 // http://go.microsoft.com/fwlink/?LinkId=248929
 //--------------------------------------------------------------------------------------
@@ -60,8 +56,8 @@ namespace DirectX
         };
 
         explicit BasicPostProcess(_In_ ID3D11Device* device);
-        BasicPostProcess(BasicPostProcess&& moveFrom);
-        BasicPostProcess& operator= (BasicPostProcess&& moveFrom);
+        BasicPostProcess(BasicPostProcess&& moveFrom) throw();
+        BasicPostProcess& operator= (BasicPostProcess&& moveFrom) throw();
 
         BasicPostProcess(BasicPostProcess const&) = delete;
         BasicPostProcess& operator= (BasicPostProcess const&) = delete;
@@ -107,8 +103,8 @@ namespace DirectX
         };
 
         explicit DualPostProcess(_In_ ID3D11Device* device);
-        DualPostProcess(DualPostProcess&& moveFrom);
-        DualPostProcess& operator= (DualPostProcess&& moveFrom);
+        DualPostProcess(DualPostProcess&& moveFrom) throw();
+        DualPostProcess& operator= (DualPostProcess&& moveFrom) throw();
 
         DualPostProcess(DualPostProcess const&) = delete;
         DualPostProcess& operator= (DualPostProcess const&) = delete;
@@ -162,8 +158,8 @@ namespace DirectX
         };
 
         explicit ToneMapPostProcess(_In_ ID3D11Device* device);
-        ToneMapPostProcess(ToneMapPostProcess&& moveFrom);
-        ToneMapPostProcess& operator= (ToneMapPostProcess&& moveFrom);
+        ToneMapPostProcess(ToneMapPostProcess&& moveFrom) throw();
+        ToneMapPostProcess& operator= (ToneMapPostProcess&& moveFrom) throw();
 
         ToneMapPostProcess(ToneMapPostProcess const&) = delete;
         ToneMapPostProcess& operator= (ToneMapPostProcess const&) = delete;
@@ -178,10 +174,10 @@ namespace DirectX
 
         void __cdecl SetTransferFunction(TransferFunction func);
 
-        #if defined(_XBOX_ONE) && defined(_TITLE)
+    #if defined(_XBOX_ONE) && defined(_TITLE)
         // Uses Multiple Render Targets to generate both HDR10 and GameDVR SDR signals
         void __cdecl SetMRTOutput(bool value = true);
-        #endif
+    #endif
 
         // Properties
         void __cdecl SetHDRSourceTexture(_In_opt_ ID3D11ShaderResourceView* value);

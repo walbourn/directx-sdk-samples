@@ -1,12 +1,8 @@
 //--------------------------------------------------------------------------------------
 // File: DebugEffect.cpp
 //
-// THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF
-// ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO
-// THE IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A
-// PARTICULAR PURPOSE.
-//
 // Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
 //
 // http://go.microsoft.com/fwlink/?LinkId=248929
 //--------------------------------------------------------------------------------------
@@ -28,7 +24,7 @@ struct DebugEffectConstants
     XMMATRIX worldViewProj;
 };
 
-static_assert( ( sizeof(DebugEffectConstants) % 16 ) == 0, "CB size not padded correctly" );
+static_assert((sizeof(DebugEffectConstants) % 16) == 0, "CB size not padded correctly");
 
 
 // Traits type describes our characteristics to the EffectBase template.
@@ -175,10 +171,10 @@ DebugEffect::Impl::Impl(_In_ ID3D11Device* device)
         throw std::exception("DebugEffect requires Feature Level 10.0 or later");
     }
 
-    static_assert( _countof(EffectBase<DebugEffectTraits>::VertexShaderIndices) ==DebugEffectTraits::ShaderPermutationCount, "array/max mismatch" );
-    static_assert( _countof(EffectBase<DebugEffectTraits>::VertexShaderBytecode) ==DebugEffectTraits::VertexShaderCount, "array/max mismatch" );
-    static_assert( _countof(EffectBase<DebugEffectTraits>::PixelShaderBytecode) ==DebugEffectTraits::PixelShaderCount, "array/max mismatch" );
-    static_assert( _countof(EffectBase<DebugEffectTraits>::PixelShaderIndices) ==DebugEffectTraits::ShaderPermutationCount, "array/max mismatch" );
+    static_assert(_countof(EffectBase<DebugEffectTraits>::VertexShaderIndices) == DebugEffectTraits::ShaderPermutationCount, "array/max mismatch");
+    static_assert(_countof(EffectBase<DebugEffectTraits>::VertexShaderBytecode) == DebugEffectTraits::VertexShaderCount, "array/max mismatch");
+    static_assert(_countof(EffectBase<DebugEffectTraits>::PixelShaderBytecode) == DebugEffectTraits::PixelShaderCount, "array/max mismatch");
+    static_assert(_countof(EffectBase<DebugEffectTraits>::PixelShaderIndices) == DebugEffectTraits::ShaderPermutationCount, "array/max mismatch");
 
     static const XMVECTORF32 s_lower = { 0.f, 0.f, 0.f, 1.f };
 
@@ -235,20 +231,20 @@ void DebugEffect::Impl::Apply(_In_ ID3D11DeviceContext* deviceContext)
 
 // Public constructor.
 DebugEffect::DebugEffect(_In_ ID3D11Device* device)
-  : pImpl(new Impl(device))
+  : pImpl(std::make_unique<Impl>(device))
 {
 }
 
 
 // Move constructor.
-DebugEffect::DebugEffect(DebugEffect&& moveFrom)
+DebugEffect::DebugEffect(DebugEffect&& moveFrom) throw()
   : pImpl(std::move(moveFrom.pImpl))
 {
 }
 
 
 // Move assignment.
-DebugEffect& DebugEffect::operator= (DebugEffect&& moveFrom)
+DebugEffect& DebugEffect::operator= (DebugEffect&& moveFrom) throw()
 {
     pImpl = std::move(moveFrom.pImpl);
     return *this;

@@ -3,12 +3,8 @@
 //  
 // DirectX Texture Library - DirectCompute-based texture compression
 //
-// THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF
-// ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO
-// THE IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A
-// PARTICULAR PURPOSE.
-//
 // Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
 //
 // http://go.microsoft.com/fwlink/?LinkId=248926
 //-------------------------------------------------------------------------------------
@@ -62,7 +58,7 @@ namespace
             return E_POINTER;
         }
 
-        ScopedAlignedArrayXMVECTOR scanline(reinterpret_cast<XMVECTOR*>(_aligned_malloc((sizeof(XMVECTOR) * srcImage.width), 16)));
+        ScopedAlignedArrayXMVECTOR scanline(static_cast<XMVECTOR*>(_aligned_malloc((sizeof(XMVECTOR) * srcImage.width), 16)));
         if (!scanline)
         {
             image.Release();
@@ -167,7 +163,7 @@ namespace
         {
             // Convert format and then use as the source image
             ScratchImage image;
-            HRESULT hr;
+            HRESULT hr = E_UNEXPECTED;
 
             DWORD srgb = GetSRGBFlags(compress);
 
@@ -186,7 +182,6 @@ namespace
                 break;
 
             default:
-                hr = E_UNEXPECTED;
                 break;
             }
 

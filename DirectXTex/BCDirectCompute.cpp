@@ -3,12 +3,8 @@
 //  
 // Direct3D 11 Compute Shader BC Compressor
 //
-// THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF
-// ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO
-// THE IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A
-// PARTICULAR PURPOSE.
-//
 // Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
 //-------------------------------------------------------------------------------------
 
 #include "directxtexp.h"
@@ -49,44 +45,46 @@ namespace
         UINT    reserved;
     };
 
-    static_assert( sizeof(ConstantsBC6HBC7) == sizeof(UINT)*8, "Constant buffer size mismatch" );
+    static_assert(sizeof(ConstantsBC6HBC7) == sizeof(UINT) * 8, "Constant buffer size mismatch");
 
-    inline void RunComputeShader( ID3D11DeviceContext* pContext,
-                                  ID3D11ComputeShader* shader,
-                                  ID3D11ShaderResourceView** pSRVs, 
-                                  UINT srvCount,
-                                  ID3D11Buffer* pCB, 
-                                  ID3D11UnorderedAccessView* pUAV,
-                                  UINT X )
+    inline void RunComputeShader(ID3D11DeviceContext* pContext,
+        ID3D11ComputeShader* shader,
+        ID3D11ShaderResourceView** pSRVs,
+        UINT srvCount,
+        ID3D11Buffer* pCB,
+        ID3D11UnorderedAccessView* pUAV,
+        UINT X)
     {
         // Force UAV to nullptr before setting SRV since we are swapping buffers
         ID3D11UnorderedAccessView* nullUAV = nullptr;
-        pContext->CSSetUnorderedAccessViews( 0, 1, &nullUAV, nullptr );
+        pContext->CSSetUnorderedAccessViews(0, 1, &nullUAV, nullptr);
 
-        pContext->CSSetShader( shader, nullptr, 0 );
-        pContext->CSSetShaderResources( 0, srvCount, pSRVs );
-        pContext->CSSetUnorderedAccessViews( 0, 1, &pUAV, nullptr );
-        pContext->CSSetConstantBuffers( 0, 1, &pCB );
-        pContext->Dispatch( X, 1, 1 );
+        pContext->CSSetShader(shader, nullptr, 0);
+        pContext->CSSetShaderResources(0, srvCount, pSRVs);
+        pContext->CSSetUnorderedAccessViews(0, 1, &pUAV, nullptr);
+        pContext->CSSetConstantBuffers(0, 1, &pCB);
+        pContext->Dispatch(X, 1, 1);
     }
 
-    inline void ResetContext( ID3D11DeviceContext* pContext )
+    inline void ResetContext(ID3D11DeviceContext* pContext)
     {
         ID3D11UnorderedAccessView* nullUAV = nullptr;
-        pContext->CSSetUnorderedAccessViews( 0, 1, &nullUAV, nullptr );
+        pContext->CSSetUnorderedAccessViews(0, 1, &nullUAV, nullptr);
 
         ID3D11ShaderResourceView* nullSRV[3] = { nullptr, nullptr, nullptr };
-        pContext->CSSetShaderResources( 0, 3, nullSRV );
+        pContext->CSSetShaderResources(0, 3, nullSRV);
 
         ID3D11Buffer* nullBuffer[1] = { nullptr };
-        pContext->CSSetConstantBuffers( 0, 1, nullBuffer );
+        pContext->CSSetConstantBuffers(0, 1, nullBuffer);
     }
 };
 
-GPUCompressBC::GPUCompressBC() :
+GPUCompressBC::GPUCompressBC() throw() :
     m_bcformat(DXGI_FORMAT_UNKNOWN),
     m_srcformat(DXGI_FORMAT_UNKNOWN),
     m_alphaWeight(1.f),
+    m_bc7_mode02(false),
+    m_bc7_mode137(false),
     m_width(0),
     m_height(0)
 {
@@ -591,7 +589,7 @@ HRESULT GPUCompressBC::Compress(const Image& srcImage, const Image& destImage)
     HRESULT hr = pContext->Map(m_outputCPU.Get(), 0, D3D11_MAP_READ, 0, &mapped);
     if (SUCCEEDED(hr))
     {
-        const uint8_t *pSrc = reinterpret_cast<const uint8_t *>(mapped.pData);
+        auto pSrc = static_cast<const uint8_t *>(mapped.pData);
         uint8_t *pDest = destImage.pixels;
 
         size_t pitch = xblocks * sizeof(BufferBC6HBC7);

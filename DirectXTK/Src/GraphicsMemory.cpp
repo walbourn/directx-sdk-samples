@@ -1,12 +1,8 @@
 //--------------------------------------------------------------------------------------
 // File: GraphicsMemory.cpp
 //
-// THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF
-// ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO
-// THE IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A
-// PARTICULAR PURPOSE.
-//
 // Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
 //
 // http://go.microsoft.com/fwlink/?LinkId=248929
 //--------------------------------------------------------------------------------------
@@ -14,20 +10,11 @@
 #include "pch.h"
 
 #include "GraphicsMemory.h"
+#include "DirectXHelpers.h"
 #include "PlatformHelpers.h"
 
 using namespace DirectX;
 using Microsoft::WRL::ComPtr;
-
-
-namespace
-{
-    template <typename T> __forceinline T AlignUp(T value, size_t alignment)
-    {
-        assert(((alignment - 1) & alignment) == 0);
-        return static_cast<T>( (static_cast<size_t>(value) + alignment - 1) & ~(alignment - 1) );
-    }
-}
 
 
 #if defined(_XBOX_ONE) && defined(_TITLE)
@@ -71,12 +58,12 @@ public:
 
     void Initialize(_In_ ID3D11DeviceX* device, UINT backBufferCount)
     {
-        assert( device != 0 );
+        assert(device != 0);
         mDevice = device;
 
-        device->GetImmediateContextX( mDeviceContext.GetAddressOf() );
+        device->GetImmediateContextX(mDeviceContext.GetAddressOf());
 
-        mFrames.resize( backBufferCount );
+        mFrames.resize(backBufferCount);
     }
 
     void* Allocate(_In_opt_ ID3D11DeviceContext* deviceContext, size_t size, int alignment)
@@ -173,7 +160,7 @@ public:
 
             void* ptr = static_cast<uint8_t*>(mPages.front().mGrfxMemory) + mCurOffset;
 
-            mCurOffset += static_cast<UINT>( alignedSize );
+            mCurOffset += static_cast<UINT>(alignedSize);
 
             return ptr;
         }
@@ -215,7 +202,7 @@ public:
 
     ComPtr<ID3D11DeviceX> mDevice;
     ComPtr<ID3D11DeviceContextX> mDeviceContext;
-    
+
     static GraphicsMemory::Impl* s_graphicsMemory;
 };
 
@@ -284,14 +271,14 @@ GraphicsMemory::GraphicsMemory(_In_ ID3D11DeviceX* device, UINT backBufferCount)
 #else
 GraphicsMemory::GraphicsMemory(_In_ ID3D11Device* device, UINT backBufferCount)
 #endif
-    : pImpl(new Impl(this))
+    : pImpl(std::make_unique<Impl>(this))
 {
     pImpl->Initialize(device, backBufferCount);
 }
 
 
 // Move constructor.
-GraphicsMemory::GraphicsMemory(GraphicsMemory&& moveFrom)
+GraphicsMemory::GraphicsMemory(GraphicsMemory&& moveFrom) throw()
     : pImpl(std::move(moveFrom.pImpl))
 {
     pImpl->mOwner = this;
@@ -299,7 +286,7 @@ GraphicsMemory::GraphicsMemory(GraphicsMemory&& moveFrom)
 
 
 // Move assignment.
-GraphicsMemory& GraphicsMemory::operator= (GraphicsMemory&& moveFrom)
+GraphicsMemory& GraphicsMemory::operator= (GraphicsMemory&& moveFrom) throw()
 {
     pImpl = std::move(moveFrom.pImpl);
     pImpl->mOwner = this;

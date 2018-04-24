@@ -1,12 +1,8 @@
 //--------------------------------------------------------------------------------------
 // File: SpriteBatch.h
 //
-// THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF
-// ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO
-// THE IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A
-// PARTICULAR PURPOSE.
-//
 // Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
 //
 // http://go.microsoft.com/fwlink/?LinkId=248929
 //--------------------------------------------------------------------------------------
@@ -35,8 +31,8 @@ namespace DirectX
         SpriteSortMode_BackToFront,
         SpriteSortMode_FrontToBack,
     };
-    
-    
+
+
     enum SpriteEffects
     {
         SpriteEffects_None = 0,
@@ -45,13 +41,13 @@ namespace DirectX
         SpriteEffects_FlipBoth = SpriteEffects_FlipHorizontally | SpriteEffects_FlipVertically,
     };
 
-    
+
     class SpriteBatch
     {
     public:
         explicit SpriteBatch(_In_ ID3D11DeviceContext* deviceContext);
-        SpriteBatch(SpriteBatch&& moveFrom);
-        SpriteBatch& operator= (SpriteBatch&& moveFrom);
+        SpriteBatch(SpriteBatch&& moveFrom) throw();
+        SpriteBatch& operator= (SpriteBatch&& moveFrom) throw();
 
         SpriteBatch(SpriteBatch const&) = delete;
         SpriteBatch& operator= (SpriteBatch const&) = delete;
@@ -78,11 +74,11 @@ namespace DirectX
         void XM_CALLCONV Draw(_In_ ID3D11ShaderResourceView* texture, RECT const& destinationRectangle, _In_opt_ RECT const* sourceRectangle, FXMVECTOR color = Colors::White, float rotation = 0, XMFLOAT2 const& origin = Float2Zero, SpriteEffects effects = SpriteEffects_None, float layerDepth = 0);
 
         // Rotation mode to be applied to the sprite transformation
-        void __cdecl SetRotation( DXGI_MODE_ROTATION mode );
+        void __cdecl SetRotation(DXGI_MODE_ROTATION mode);
         DXGI_MODE_ROTATION __cdecl GetRotation() const;
 
         // Set viewport for sprite transformation
-        void __cdecl SetViewport( const D3D11_VIEWPORT& viewPort );
+        void __cdecl SetViewport(const D3D11_VIEWPORT& viewPort);
 
     private:
         // Private implementation.

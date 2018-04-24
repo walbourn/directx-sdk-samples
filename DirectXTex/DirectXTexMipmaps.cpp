@@ -3,12 +3,8 @@
 //  
 // DirectX Texture Library - Mip-map generation
 //
-// THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF
-// ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO
-// THE IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A
-// PARTICULAR PURPOSE.
-//
 // Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
 //
 // http://go.microsoft.com/fwlink/?LinkId=248926
 //-------------------------------------------------------------------------------------
@@ -658,7 +654,7 @@ namespace
         size_t height = mipChain.GetMetadata().height;
 
         // Allocate temporary space (2 scanlines)
-        ScopedAlignedArrayXMVECTOR scanline(reinterpret_cast<XMVECTOR*>(_aligned_malloc((sizeof(XMVECTOR)*width * 2), 16)));
+        ScopedAlignedArrayXMVECTOR scanline(static_cast<XMVECTOR*>(_aligned_malloc((sizeof(XMVECTOR)*width * 2), 16)));
         if (!scanline)
             return E_OUTOFMEMORY;
 
@@ -745,7 +741,7 @@ namespace
             return E_FAIL;
 
         // Allocate temporary space (3 scanlines)
-        ScopedAlignedArrayXMVECTOR scanline(reinterpret_cast<XMVECTOR*>(_aligned_malloc((sizeof(XMVECTOR)*width * 3), 16)));
+        ScopedAlignedArrayXMVECTOR scanline(static_cast<XMVECTOR*>(_aligned_malloc((sizeof(XMVECTOR)*width * 3), 16)));
         if (!scanline)
             return E_OUTOFMEMORY;
 
@@ -836,7 +832,7 @@ namespace
         size_t height = mipChain.GetMetadata().height;
 
         // Allocate temporary space (3 scanlines, plus X and Y filters)
-        ScopedAlignedArrayXMVECTOR scanline(reinterpret_cast<XMVECTOR*>(_aligned_malloc((sizeof(XMVECTOR)*width * 3), 16)));
+        ScopedAlignedArrayXMVECTOR scanline(static_cast<XMVECTOR*>(_aligned_malloc((sizeof(XMVECTOR)*width * 3), 16)));
         if (!scanline)
             return E_OUTOFMEMORY;
 
@@ -947,7 +943,7 @@ namespace
         size_t height = mipChain.GetMetadata().height;
 
         // Allocate temporary space (5 scanlines, plus X and Y filters)
-        ScopedAlignedArrayXMVECTOR scanline(reinterpret_cast<XMVECTOR*>(_aligned_malloc((sizeof(XMVECTOR)*width * 5), 16)));
+        ScopedAlignedArrayXMVECTOR scanline(static_cast<XMVECTOR*>(_aligned_malloc((sizeof(XMVECTOR)*width * 5), 16)));
         if (!scanline)
             return E_OUTOFMEMORY;
 
@@ -1135,7 +1131,7 @@ namespace
         size_t height = mipChain.GetMetadata().height;
 
         // Allocate initial temporary space (1 scanline, accumulation rows, plus X and Y filters)
-        ScopedAlignedArrayXMVECTOR scanline(reinterpret_cast<XMVECTOR*>(_aligned_malloc(sizeof(XMVECTOR) * width, 16)));
+        ScopedAlignedArrayXMVECTOR scanline(static_cast<XMVECTOR*>(_aligned_malloc(sizeof(XMVECTOR) * width, 16)));
         if (!scanline)
             return E_OUTOFMEMORY;
 
@@ -1224,7 +1220,7 @@ namespace
                         }
                         else
                         {
-                            rowAcc->scanline.reset(reinterpret_cast<XMVECTOR*>(_aligned_malloc(sizeof(XMVECTOR) * nwidth, 16)));
+                            rowAcc->scanline.reset(static_cast<XMVECTOR*>(_aligned_malloc(sizeof(XMVECTOR) * nwidth, 16)));
                             if (!rowAcc->scanline)
                                 return E_OUTOFMEMORY;
                         }
@@ -1403,7 +1399,7 @@ namespace
         size_t height = mipChain.GetMetadata().height;
 
         // Allocate temporary space (2 scanlines)
-        ScopedAlignedArrayXMVECTOR scanline(reinterpret_cast<XMVECTOR*>(_aligned_malloc((sizeof(XMVECTOR)*width * 2), 16)));
+        ScopedAlignedArrayXMVECTOR scanline(static_cast<XMVECTOR*>(_aligned_malloc((sizeof(XMVECTOR)*width * 2), 16)));
         if (!scanline)
             return E_OUTOFMEMORY;
 
@@ -1552,7 +1548,7 @@ namespace
             return E_FAIL;
 
         // Allocate temporary space (5 scanlines)
-        ScopedAlignedArrayXMVECTOR scanline(reinterpret_cast<XMVECTOR*>(_aligned_malloc((sizeof(XMVECTOR)*width * 5), 16)));
+        ScopedAlignedArrayXMVECTOR scanline(static_cast<XMVECTOR*>(_aligned_malloc((sizeof(XMVECTOR)*width * 5), 16)));
         if (!scanline)
             return E_OUTOFMEMORY;
 
@@ -1721,7 +1717,7 @@ namespace
         size_t height = mipChain.GetMetadata().height;
 
         // Allocate temporary space (5 scanlines, plus X/Y/Z filters)
-        ScopedAlignedArrayXMVECTOR scanline(reinterpret_cast<XMVECTOR*>(_aligned_malloc((sizeof(XMVECTOR)*width * 5), 16)));
+        ScopedAlignedArrayXMVECTOR scanline(static_cast<XMVECTOR*>(_aligned_malloc((sizeof(XMVECTOR)*width * 5), 16)));
         if (!scanline)
             return E_OUTOFMEMORY;
 
@@ -1914,7 +1910,7 @@ namespace
         size_t height = mipChain.GetMetadata().height;
 
         // Allocate temporary space (17 scanlines, plus X/Y/Z filters)
-        ScopedAlignedArrayXMVECTOR scanline(reinterpret_cast<XMVECTOR*>(_aligned_malloc((sizeof(XMVECTOR)*width * 17), 16)));
+        ScopedAlignedArrayXMVECTOR scanline(static_cast<XMVECTOR*>(_aligned_malloc((sizeof(XMVECTOR)*width * 17), 16)));
         if (!scanline)
             return E_OUTOFMEMORY;
 
@@ -2295,7 +2291,7 @@ namespace
         size_t height = mipChain.GetMetadata().height;
 
         // Allocate initial temporary space (1 scanline, accumulation rows, plus X/Y/Z filters)
-        ScopedAlignedArrayXMVECTOR scanline(reinterpret_cast<XMVECTOR*>(_aligned_malloc(sizeof(XMVECTOR) * width, 16)));
+        ScopedAlignedArrayXMVECTOR scanline(static_cast<XMVECTOR*>(_aligned_malloc(sizeof(XMVECTOR) * width, 16)));
         if (!scanline)
             return E_OUTOFMEMORY;
 
@@ -2379,7 +2375,7 @@ namespace
                         else
                         {
                             size_t bytes = sizeof(XMVECTOR) * nwidth * nheight;
-                            sliceAcc->scanline.reset(reinterpret_cast<XMVECTOR*>(_aligned_malloc(bytes, 16)));
+                            sliceAcc->scanline.reset(static_cast<XMVECTOR*>(_aligned_malloc(bytes, 16)));
                             if (!sliceAcc->scanline)
                                 return E_OUTOFMEMORY;
                         }
@@ -2555,7 +2551,7 @@ HRESULT DirectX::GenerateMipMaps(
         return HRESULT_FROM_WIN32(ERROR_NOT_SUPPORTED);
     }
 
-    HRESULT hr;
+    HRESULT hr = E_UNEXPECTED;
 
     static_assert(TEX_FILTER_POINT == 0x100000, "TEX_FILTER_ flag values don't match TEX_FILTER_MASK");
 
@@ -2748,7 +2744,7 @@ HRESULT DirectX::GenerateMipMaps(
 
     assert(baseImages.size() == metadata.arraySize);
 
-    HRESULT hr;
+    HRESULT hr = E_UNEXPECTED;
 
     static_assert(TEX_FILTER_POINT == 0x100000, "TEX_FILTER_ flag values don't match TEX_FILTER_MASK");
 
@@ -2956,7 +2952,7 @@ HRESULT DirectX::GenerateMipMaps3D(
 
     static_assert(TEX_FILTER_POINT == 0x100000, "TEX_FILTER_ flag values don't match TEX_FILTER_MASK");
 
-    HRESULT hr;
+    HRESULT hr = E_UNEXPECTED;
 
     DWORD filter_select = (filter & TEX_FILTER_MASK);
     if (!filter_select)
@@ -3070,7 +3066,7 @@ HRESULT DirectX::GenerateMipMaps3D(
 
     assert(baseImages.size() == metadata.depth);
 
-    HRESULT hr;
+    HRESULT hr = E_UNEXPECTED;
 
     static_assert(TEX_FILTER_POINT == 0x100000, "TEX_FILTER_ flag values don't match TEX_FILTER_MASK");
 
