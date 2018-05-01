@@ -30,17 +30,6 @@
 // The number of elements in a buffer to be tested
 const UINT NUM_ELEMENTS = 1024;
 
-#if defined(_MSC_VER) && (_MSC_VER<1610) && !defined(_In_reads_)
-#define _Outptr_
-#define _Outptr_opt_ 
-#define _In_reads_(exp)
-#define _In_reads_opt_(exp)
-#define _Out_writes_(exp)
-#endif
-
-#ifndef _Use_decl_annotations_
-#define _Use_decl_annotations_
-#endif
 
 //--------------------------------------------------------------------------------------
 // Forward declarations 

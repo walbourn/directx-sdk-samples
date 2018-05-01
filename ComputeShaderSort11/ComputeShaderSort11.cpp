@@ -25,19 +25,6 @@
 #define SAFE_RELEASE(p)      { if (p) { (p)->Release(); (p)=nullptr; } }
 #endif
 
-#if defined(_MSC_VER) && (_MSC_VER<1610) && !defined(_In_reads_)
-#define _Outptr_
-#define _Outptr_opt_ 
-#define _In_reads_(exp)
-#define _In_reads_opt_(exp)
-#define _Out_writes_(exp)
-#define _Analysis_assume_
-#endif
-
-#ifndef _Use_decl_annotations_
-#define _Use_decl_annotations_
-#endif
-
 // The number of elements to sort is limited to an even power of 2
 // At minimum 8,192 elements - BITONIC_BLOCK_SIZE * TRANSPOSE_BLOCK_SIZE
 // At maximum 262,144 elements - BITONIC_BLOCK_SIZE * BITONIC_BLOCK_SIZE
