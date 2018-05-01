@@ -65,7 +65,7 @@ void EnumerateUsingDXGI( IDXGIFactory* pDXGIFactory )
             }
 
             wprintf(
-                L"\tGetVideoMemoryViaDXGI\n\t\tDedicatedVideoMemory: %Iu MB (%Iu)\n\t\tDedicatedSystemMemory: %Iu MB (%Iu)\n\t\tSharedSystemMemory: %Iu MB (%Iu)\n",
+                L"\tGetVideoMemoryViaDXGI\n\t\tDedicatedVideoMemory: %zu MB (%zu)\n\t\tDedicatedSystemMemory: %zu MB (%zu)\n\t\tSharedSystemMemory: %zu MB (%zu)\n",
                 desc.DedicatedVideoMemory / 1024 / 1024, desc.DedicatedVideoMemory,
                 desc.DedicatedSystemMemory / 1024 / 1024, desc.DedicatedSystemMemory,
                 desc.SharedSystemMemory / 1024 / 1024, desc.SharedSystemMemory );

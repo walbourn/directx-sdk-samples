@@ -91,7 +91,7 @@ int wmain()
     _putws( L"" );
     _putws( L"This sample displays CPU core information for the current process.  At your" );
     _putws( L"command, a CPU-intensive thread will be created and executed on each enabled" );
-    wprintf( L"core resulting in a %Iu-second maximum load for the CPU.\n", CpuLoadTime / 1000 );
+    wprintf( L"core resulting in a %zu-second maximum load for the CPU.\n", CpuLoadTime / 1000 );
     _putws( L"" );
     _putws( L"You can view the performance in the Task Manager, as well as experiment with" );
     _putws( L"the process affinity (right-click the CoreDetection.exe process in the Task" );
@@ -119,7 +119,7 @@ int wmain()
             //
             // Max the CPU
             //
-            wprintf( L"\nMaxing out the CPU for %Iu seconds\n", CpuLoadTime / 1000 );
+            wprintf( L"\nMaxing out the CPU for %zu seconds\n", CpuLoadTime / 1000 );
             wprintf( L"(%u Thread%s): ", dwProcessCores,
                      dwProcessCores > 1 ? L"s" : L"" );
 
@@ -333,7 +333,7 @@ int wmain()
             }
         }
 
-        wprintf( L"(R)efresh, (M)ax out cpu for %Iu seconds, (Q)uit\n", CpuLoadTime / 1000 );
+        wprintf( L"(R)efresh, (M)ax out cpu for %zu seconds, (Q)uit\n", CpuLoadTime / 1000 );
         ch = _getwch();
 
     } while( L'q' != ch && L'Q' != ch );
