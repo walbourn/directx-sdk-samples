@@ -873,8 +873,7 @@ void WINAPI DXUTGetDesktopResolution( UINT AdapterOrdinal, UINT* pWidth, UINT* p
     auto DeviceSettings = DXUTGetDeviceSettings();
 
     WCHAR strDeviceName[256] = {};
-    DEVMODE devMode;
-    ZeroMemory( &devMode, sizeof( DEVMODE ) );
+    DEVMODE devMode = {};
     devMode.dmSize = sizeof( DEVMODE );
 
     auto pd3dEnum = DXUTGetD3D11Enumeration();

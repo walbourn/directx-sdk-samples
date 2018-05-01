@@ -276,36 +276,36 @@ bool CALLBACK IsD3D11DeviceAcceptable( const CD3D11EnumAdapterInfo *AdapterInfo,
 //--------------------------------------------------------------------------------------
 // Create any D3D11 resources that aren't dependant on the back buffer
 //--------------------------------------------------------------------------------------
-HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFACE_DESC* pBackBufferSurfaceDesc,
-                                     void* pUserContext )
+HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFACE_DESC* pBackBufferSurfaceDesc,
+    void* pUserContext)
 {
-    HRESULT hr; 
+    HRESULT hr;
 
     static bool bFirstOnCreateDevice = true;
 
     // Warn the user that in order to support CS4x, a non-hardware device has been created, continue or quit?
-    if ( DXUTGetDeviceSettings().d3d11.DriverType != D3D_DRIVER_TYPE_HARDWARE && bFirstOnCreateDevice )
+    if (DXUTGetDeviceSettings().d3d11.DriverType != D3D_DRIVER_TYPE_HARDWARE && bFirstOnCreateDevice)
     {
-        if ( MessageBox( 0, L"CS4x capability is missing. "\
-                            L"In order to continue, a non-hardware device has been created, "\
-                            L"it will be very slow, continue?", L"Warning", MB_ICONEXCLAMATION | MB_YESNO ) != IDYES )
+        if (MessageBox(0, L"CS4x capability is missing. "\
+            L"In order to continue, a non-hardware device has been created, "\
+            L"it will be very slow, continue?", L"Warning", MB_ICONEXCLAMATION | MB_YESNO) != IDYES)
             return E_FAIL;
     }
 
     bFirstOnCreateDevice = false;
 
     auto pd3dImmediateContext = DXUTGetD3D11DeviceContext();
-    V_RETURN( g_DialogResourceManager.OnD3D11CreateDevice( pd3dDevice, pd3dImmediateContext ) );
-    V_RETURN( g_D3DSettingsDlg.OnD3D11CreateDevice( pd3dDevice ) );
-    V_RETURN( g_Tessellator.OnD3D11CreateDevice( pd3dDevice ) );
-    g_pTxtHelper = new CDXUTTextHelper( pd3dDevice, pd3dImmediateContext, &g_DialogResourceManager, 15 );
+    V_RETURN(g_DialogResourceManager.OnD3D11CreateDevice(pd3dDevice, pd3dImmediateContext));
+    V_RETURN(g_D3DSettingsDlg.OnD3D11CreateDevice(pd3dDevice));
+    V_RETURN(g_Tessellator.OnD3D11CreateDevice(pd3dDevice));
+    g_pTxtHelper = new CDXUTTextHelper(pd3dDevice, pd3dImmediateContext, &g_DialogResourceManager, 15);
 
     // find the file
     WCHAR str[MAX_PATH];
-    V_RETURN( DXUTFindDXSDKMediaFileCch( str, MAX_PATH, L"BaseMesh.obj" ) );
+    V_RETURN(DXUTFindDXSDKMediaFileCch(str, MAX_PATH, L"BaseMesh.obj"));
 
-    std::wifstream ifs( str );
-    WCHAR line[256] = {0};
+    std::wifstream ifs(str);
+    WCHAR line[256] = { 0 };
     std::vector<XMFLOAT4> initdata;
 
     // Parse the .obj file. Both triangle faces and quad faces are supported.
@@ -313,86 +313,86 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
     {
         std::vector<XMFLOAT4> v;
 
-        while ( ifs >> line )
+        while (ifs >> line)
         {
-            if ( 0 == wcscmp( line, L"#" ) ) 
-                ifs.getline( line, 255 );
+            if (0 == wcscmp(line, L"#"))
+                ifs.getline(line, 255);
             else
-            if ( 0 == wcscmp( line, L"v" ) )
-            {
-                XMFLOAT4 pos;
-                ifs >> pos.x >> pos.y >> pos.z;
-                pos.w = 1;
-                v.push_back( pos );
-            }
+                if (0 == wcscmp(line, L"v"))
+                {
+                    XMFLOAT4 pos;
+                    ifs >> pos.x >> pos.y >> pos.z;
+                    pos.w = 1;
+                    v.push_back(pos);
+                }
         }
 
-        ifs.clear( 0 );
-        ifs.seekg( 0 );
-        while ( ifs >> line )
+        ifs.clear(0);
+        ifs.seekg(0);
+        while (ifs >> line)
         {
-            if ( 0 == wcscmp( line, L"#" ) ) 
-                ifs.getline( line, 255 );
+            if (0 == wcscmp(line, L"#"))
+                ifs.getline(line, 255);
             else
-            if ( 0 == wcscmp( line, L"f" ) )
-            {
-                ifs.getline( line, 255 );
-                std::wstringstream ss(line);
-                int idx[4] = {0}, i = 0;
-                while ( ss >> line )
+                if (0 == wcscmp(line, L"f"))
                 {
-                    std::wstringstream ss2(line);
-                    ss2 >> idx[i++];
+                    ifs.getline(line, 255);
+                    std::wstringstream ss(line);
+                    int idx[4] = { 0 }, i = 0;
+                    while (ss >> line)
+                    {
+                        std::wstringstream ss2(line);
+                        ss2 >> idx[i++];
+                    }
+
+                    initdata.push_back(v[idx[0] - 1]); initdata.push_back(v[idx[1] - 1]); initdata.push_back(v[idx[2] - 1]);
+                    if (i >= 4) // quad face?
+                    {
+                        initdata.push_back(v[idx[2] - 1]); initdata.push_back(v[idx[3] - 1]); initdata.push_back(v[idx[0] - 1]);
+                    }
                 }
-                
-                initdata.push_back( v[idx[0]-1] ); initdata.push_back( v[idx[1]-1] ); initdata.push_back( v[idx[2]-1] );
-                if ( i >= 4 ) // quad face?
-                {
-                    initdata.push_back( v[idx[2]-1] ); initdata.push_back( v[idx[3]-1] ); initdata.push_back( v[idx[0]-1] );
-                }
-            }
-        }        
+        }
     }
 
     D3D11_BUFFER_DESC desc;
     desc.Usage = D3D11_USAGE_DEFAULT;
-    desc.ByteWidth = static_cast<UINT>( sizeof(initdata[0]) * initdata.size() );
+    desc.ByteWidth = static_cast<UINT>(sizeof(initdata[0]) * initdata.size());
     desc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_VERTEX_BUFFER;
     desc.CPUAccessFlags = 0;
     desc.MiscFlags = 0;
     D3D11_SUBRESOURCE_DATA InitData;
     InitData.pSysMem = &initdata[0];
-    V_RETURN( pd3dDevice->CreateBuffer( &desc, &InitData, &g_pBaseVB ) );
-    DXUT_SetDebugName( g_pBaseVB, "Primary" );
+    V_RETURN(pd3dDevice->CreateBuffer(&desc, &InitData, &g_pBaseVB));
+    DXUT_SetDebugName(g_pBaseVB, "Primary");
 
-    g_Tessellator.SetBaseMesh( pd3dDevice, pd3dImmediateContext, static_cast<UINT>( initdata.size() ), g_pBaseVB );
+    g_Tessellator.SetBaseMesh(pd3dDevice, pd3dImmediateContext, static_cast<UINT>(initdata.size()), g_pBaseVB);
 
     ID3DBlob* pBlob = nullptr;
-    V_RETURN( DXUTCompileFromFile( L"Render.hlsl", nullptr, "RenderVS", "vs_4_0", D3DCOMPILE_ENABLE_STRICTNESS, 0, &pBlob ) );
-    V_RETURN( pd3dDevice->CreateVertexShader( pBlob->GetBufferPointer(), pBlob->GetBufferSize(), nullptr, &g_pVS ) );    
-    SAFE_RELEASE( pBlob );
-    DXUT_SetDebugName( g_pVS, "RenderVS" );
+    V_RETURN(DXUTCompileFromFile(L"Render.hlsl", nullptr, "RenderVS", "vs_4_0", D3DCOMPILE_ENABLE_STRICTNESS, 0, &pBlob));
+    V_RETURN(pd3dDevice->CreateVertexShader(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), nullptr, &g_pVS));
+    SAFE_RELEASE(pBlob);
+    DXUT_SetDebugName(g_pVS, "RenderVS");
 
-    V_RETURN( DXUTCompileFromFile( L"Render.hlsl", nullptr, "RenderBaseVS", "vs_4_0", D3DCOMPILE_ENABLE_STRICTNESS, 0, &pBlob ) );
-    V_RETURN( pd3dDevice->CreateVertexShader( pBlob->GetBufferPointer(), pBlob->GetBufferSize(), nullptr, &g_pBaseVS ) ); 
-    DXUT_SetDebugName( g_pBaseVS, "RenderBaseVS" );
+    V_RETURN(DXUTCompileFromFile(L"Render.hlsl", nullptr, "RenderBaseVS", "vs_4_0", D3DCOMPILE_ENABLE_STRICTNESS, 0, &pBlob));
+    V_RETURN(pd3dDevice->CreateVertexShader(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), nullptr, &g_pBaseVS));
+    DXUT_SetDebugName(g_pBaseVS, "RenderBaseVS");
 
     {
         D3D11_INPUT_ELEMENT_DESC layout[] =
         {
-            { "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },  
+            { "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
         };
         UINT numElements = sizeof(layout) / sizeof(layout[0]);
-        V_RETURN( pd3dDevice->CreateInputLayout(layout, numElements, pBlob->GetBufferPointer(), pBlob->GetBufferSize(), &g_pBaseVBLayout) );
-        DXUT_SetDebugName( g_pBaseVBLayout, "Primary" );
-    }    
+        V_RETURN(pd3dDevice->CreateInputLayout(layout, numElements, pBlob->GetBufferPointer(), pBlob->GetBufferSize(), &g_pBaseVBLayout));
+        DXUT_SetDebugName(g_pBaseVBLayout, "Primary");
+    }
 
-    SAFE_RELEASE( pBlob );
+    SAFE_RELEASE(pBlob);
 
-    V_RETURN( DXUTCompileFromFile( L"Render.hlsl", nullptr, "RenderPS", "ps_4_0", D3DCOMPILE_ENABLE_STRICTNESS, 0, &pBlob ) );
-    V_RETURN( pd3dDevice->CreatePixelShader( pBlob->GetBufferPointer(), pBlob->GetBufferSize(), nullptr, &g_pPS ) );
-    SAFE_RELEASE( pBlob );
-    DXUT_SetDebugName( g_pPS, "RenderPS" );
+    V_RETURN(DXUTCompileFromFile(L"Render.hlsl", nullptr, "RenderPS", "ps_4_0", D3DCOMPILE_ENABLE_STRICTNESS, 0, &pBlob));
+    V_RETURN(pd3dDevice->CreatePixelShader(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), nullptr, &g_pPS));
+    SAFE_RELEASE(pBlob);
+    DXUT_SetDebugName(g_pPS, "RenderPS");
 
     // Setup constant buffer
     D3D11_BUFFER_DESC Desc;
@@ -400,13 +400,12 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
     Desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
     Desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
     Desc.MiscFlags = 0;
-    Desc.ByteWidth = sizeof( XMFLOAT4X4 );
-    V_RETURN( pd3dDevice->CreateBuffer( &Desc, nullptr, &g_pVSCB ) );    
-    DXUT_SetDebugName( g_pVSCB, "XMMATRIX" );
+    Desc.ByteWidth = sizeof(XMFLOAT4X4);
+    V_RETURN(pd3dDevice->CreateBuffer(&Desc, nullptr, &g_pVSCB));
+    DXUT_SetDebugName(g_pVSCB, "XMMATRIX");
 
     // Rasterizer state
-    D3D11_RASTERIZER_DESC descRast;
-    ZeroMemory( &descRast, sizeof(descRast) );
+    D3D11_RASTERIZER_DESC descRast = {};
     descRast.CullMode = D3D11_CULL_NONE;
     descRast.FillMode = D3D11_FILL_WIREFRAME;
     V_RETURN( pd3dDevice->CreateRasterizerState( &descRast, &g_pRasWireFrame ) );

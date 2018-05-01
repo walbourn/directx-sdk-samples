@@ -2317,8 +2317,7 @@ HRESULT CDXUTDialogResourceManager::OnD3D11CreateDevice( ID3D11Device* pd3dDevic
     DXUT_SetDebugName( m_pPSRenderUIUntex11, "CDXUTDialogResourceManager" );
     
     // States
-    D3D11_DEPTH_STENCIL_DESC DSDesc;
-    ZeroMemory( &DSDesc, sizeof( D3D11_DEPTH_STENCIL_DESC ) );
+    D3D11_DEPTH_STENCIL_DESC DSDesc = {};
     DSDesc.DepthEnable = FALSE;
     DSDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
     DSDesc.DepthFunc = D3D11_COMPARISON_LESS;
@@ -2340,9 +2339,7 @@ HRESULT CDXUTDialogResourceManager::OnD3D11CreateDevice( ID3D11Device* pd3dDevic
     V_RETURN( pd3dDevice->CreateRasterizerState( &RSDesc, &m_pRasterizerStateUI11 ) );
     DXUT_SetDebugName( m_pRasterizerStateUI11, "CDXUTDialogResourceManager" );
 
-    D3D11_BLEND_DESC BSDesc;
-    ZeroMemory( &BSDesc, sizeof( D3D11_BLEND_DESC ) );
-    
+    D3D11_BLEND_DESC BSDesc = {};
     BSDesc.RenderTarget[0].BlendEnable = TRUE;
     BSDesc.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
     BSDesc.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
@@ -2355,8 +2352,7 @@ HRESULT CDXUTDialogResourceManager::OnD3D11CreateDevice( ID3D11Device* pd3dDevic
     V_RETURN( pd3dDevice->CreateBlendState( &BSDesc, &m_pBlendStateUI11 ) );
     DXUT_SetDebugName( m_pBlendStateUI11, "CDXUTDialogResourceManager" );
 
-    D3D11_SAMPLER_DESC SSDesc;
-    ZeroMemory( &SSDesc, sizeof( D3D11_SAMPLER_DESC ) );
+    D3D11_SAMPLER_DESC SSDesc = {};
     SSDesc.Filter = D3D11_FILTER_ANISOTROPIC   ;
     SSDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
     SSDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
@@ -6255,10 +6251,8 @@ HRESULT CUniBuffer::Analyse()
     if( m_Analysis )
         (void)ScriptStringFree( &m_Analysis );
 
-    SCRIPT_CONTROL ScriptControl; // For uniscribe
-    SCRIPT_STATE ScriptState;   // For uniscribe
-    ZeroMemory( &ScriptControl, sizeof( ScriptControl ) );
-    ZeroMemory( &ScriptState, sizeof( ScriptState ) );
+    SCRIPT_CONTROL ScriptControl = {}; // For uniscribe
+    SCRIPT_STATE ScriptState = {};   // For uniscribe
 
 #pragma warning(push)
 #pragma warning(disable : 4616 6309 6387 )

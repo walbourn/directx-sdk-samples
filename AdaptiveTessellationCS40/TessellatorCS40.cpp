@@ -360,8 +360,7 @@ HRESULT CTessellator::SetBaseMesh( ID3D11Device* pd3dDevice, ID3D11DeviceContext
     }
 
     // shader resource view of base mesh vertex data 
-    D3D11_SHADER_RESOURCE_VIEW_DESC DescRV;
-    ZeroMemory( &DescRV, sizeof( DescRV ) );
+    D3D11_SHADER_RESOURCE_VIEW_DESC DescRV = {};
     DescRV.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
     DescRV.ViewDimension = D3D11_SRV_DIMENSION_BUFFER;
     DescRV.Buffer.FirstElement = 0;
@@ -370,8 +369,7 @@ HRESULT CTessellator::SetBaseMesh( ID3D11Device* pd3dDevice, ID3D11DeviceContext
     DXUT_SetDebugName( m_pBaseVBSRV, "Base VB" );
 
     // Buffer for edge tessellation factor
-    D3D11_BUFFER_DESC desc;
-    ZeroMemory( &desc, sizeof(desc) );
+    D3D11_BUFFER_DESC desc = {};
     desc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_UNORDERED_ACCESS;
     desc.ByteWidth = sizeof(float) * m_nVertices / 3 * 4;
     desc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
@@ -390,8 +388,7 @@ HRESULT CTessellator::SetBaseMesh( ID3D11Device* pd3dDevice, ID3D11DeviceContext
     DXUT_SetDebugName( m_pEdgeFactorBufSRV, "Edge Tessellation Factor SRV" );
 
     // UAV of the buffer above
-    D3D11_UNORDERED_ACCESS_VIEW_DESC DescUAV;
-    ZeroMemory( &DescUAV, sizeof(DescUAV) );
+    D3D11_UNORDERED_ACCESS_VIEW_DESC DescUAV = {};
     DescUAV.Format = DXGI_FORMAT_UNKNOWN;
     DescUAV.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
     DescUAV.Buffer.FirstElement = 0;
@@ -433,8 +430,7 @@ ID3D11Buffer* CreateAndCopyToDebugBuf( ID3D11Device* pDevice, ID3D11DeviceContex
 {
     ID3D11Buffer* debugbuf = nullptr;
 
-    D3D11_BUFFER_DESC desc;
-    ZeroMemory( &desc, sizeof(desc) );
+    D3D11_BUFFER_DESC desc = {};
     pBuffer->GetDesc( &desc );
     desc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
     desc.Usage = D3D11_USAGE_STAGING;
@@ -582,8 +578,7 @@ void CTessellator::PerEdgeTessellation( CXMMATRIX matWVP,
             SAFE_RELEASE( m_pTessedVerticesBufUAV );
             SAFE_RELEASE( m_pTessedVerticesBufSRV );
             
-            D3D11_BUFFER_DESC desc;
-            ZeroMemory( &desc, sizeof(desc) );
+            D3D11_BUFFER_DESC desc = {};
             desc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_UNORDERED_ACCESS;
             desc.ByteWidth = sizeof(INT) * 2 * *num_tessed_vertices;
             desc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
@@ -592,8 +587,7 @@ void CTessellator::PerEdgeTessellation( CXMMATRIX matWVP,
             V( m_pd3dDevice->CreateBuffer(&desc, nullptr, &m_pScatterVertexBuf) );  
             DXUT_SetDebugName( m_pScatterVertexBuf, "ScatterVB" );
 
-            D3D11_SHADER_RESOURCE_VIEW_DESC DescRV;
-            ZeroMemory( &DescRV, sizeof( DescRV ) );
+            D3D11_SHADER_RESOURCE_VIEW_DESC DescRV = {};
             DescRV.Format = DXGI_FORMAT_UNKNOWN;
             DescRV.ViewDimension = D3D11_SRV_DIMENSION_BUFFER;
             DescRV.Buffer.FirstElement = 0;
@@ -601,8 +595,7 @@ void CTessellator::PerEdgeTessellation( CXMMATRIX matWVP,
             V( m_pd3dDevice->CreateShaderResourceView( m_pScatterVertexBuf, &DescRV, &m_pScatterVertexBufSRV ) );
             DXUT_SetDebugName( m_pScatterVertexBufSRV, "ScatterVB SRV" );
 
-            D3D11_UNORDERED_ACCESS_VIEW_DESC DescUAV;
-            ZeroMemory( &DescUAV, sizeof(DescUAV) );
+            D3D11_UNORDERED_ACCESS_VIEW_DESC DescUAV = {};
             DescUAV.Format = DXGI_FORMAT_UNKNOWN;
             DescUAV.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
             DescUAV.Buffer.FirstElement = 0;
@@ -637,8 +630,7 @@ void CTessellator::PerEdgeTessellation( CXMMATRIX matWVP,
             SAFE_RELEASE( *ppTessedIndicesBuf );
             SAFE_RELEASE( m_pTessedIndicesBufUAV );
             
-            D3D11_BUFFER_DESC desc;
-            ZeroMemory( &desc, sizeof(desc) );
+            D3D11_BUFFER_DESC desc = {};
             desc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_UNORDERED_ACCESS;
             desc.ByteWidth = sizeof(INT) * 2 * *num_tessed_indices;
             desc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
@@ -647,8 +639,7 @@ void CTessellator::PerEdgeTessellation( CXMMATRIX matWVP,
             V( m_pd3dDevice->CreateBuffer(&desc, nullptr, &m_pScatterIndexBuf) ); 
             DXUT_SetDebugName( m_pScatterIndexBuf, "ScatterIB" );
 
-            D3D11_SHADER_RESOURCE_VIEW_DESC DescRV;
-            ZeroMemory( &DescRV, sizeof( DescRV ) );
+            D3D11_SHADER_RESOURCE_VIEW_DESC DescRV = {};
             DescRV.Format = DXGI_FORMAT_UNKNOWN;
             DescRV.ViewDimension = D3D11_SRV_DIMENSION_BUFFER;
             DescRV.Buffer.FirstElement = 0;
@@ -656,8 +647,7 @@ void CTessellator::PerEdgeTessellation( CXMMATRIX matWVP,
             V( m_pd3dDevice->CreateShaderResourceView( m_pScatterIndexBuf, &DescRV, &m_pScatterIndexBufSRV ) );
             DXUT_SetDebugName( m_pScatterIndexBufSRV, "ScatterIB SRV" );
 
-            D3D11_UNORDERED_ACCESS_VIEW_DESC DescUAV;
-            ZeroMemory( &DescUAV, sizeof(DescUAV) );
+            D3D11_UNORDERED_ACCESS_VIEW_DESC DescUAV = {};
             DescUAV.Format = DXGI_FORMAT_UNKNOWN;
             DescUAV.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
             DescUAV.Buffer.FirstElement = 0;

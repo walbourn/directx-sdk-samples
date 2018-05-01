@@ -399,8 +399,7 @@ HRESULT CreateStructuredBuffer( ID3D11Device* pDevice, UINT uElementSize, UINT u
 {
     *ppBufOut = nullptr;
 
-    D3D11_BUFFER_DESC desc;
-    ZeroMemory( &desc, sizeof(desc) );
+    D3D11_BUFFER_DESC desc = {};
     desc.BindFlags = D3D11_BIND_UNORDERED_ACCESS | D3D11_BIND_SHADER_RESOURCE;
     desc.ByteWidth = uElementSize * uCount;
     desc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
@@ -423,8 +422,7 @@ HRESULT CreateRawBuffer( ID3D11Device* pDevice, UINT uSize, void* pInitData, ID3
 {
     *ppBufOut = nullptr;
 
-    D3D11_BUFFER_DESC desc;
-    ZeroMemory( &desc, sizeof(desc) );
+    D3D11_BUFFER_DESC desc = {};
     desc.BindFlags = D3D11_BIND_UNORDERED_ACCESS | D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_INDEX_BUFFER | D3D11_BIND_VERTEX_BUFFER;
     desc.ByteWidth = uSize;
     desc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_ALLOW_RAW_VIEWS;
@@ -444,12 +442,10 @@ HRESULT CreateRawBuffer( ID3D11Device* pDevice, UINT uSize, void* pInitData, ID3
 _Use_decl_annotations_
 HRESULT CreateBufferSRV( ID3D11Device* pDevice, ID3D11Buffer* pBuffer, ID3D11ShaderResourceView** ppSRVOut )
 {
-    D3D11_BUFFER_DESC descBuf;
-    ZeroMemory( &descBuf, sizeof(descBuf) );
+    D3D11_BUFFER_DESC descBuf = {};
     pBuffer->GetDesc( &descBuf );
 
-    D3D11_SHADER_RESOURCE_VIEW_DESC desc;
-    ZeroMemory( &desc, sizeof(desc) );
+    D3D11_SHADER_RESOURCE_VIEW_DESC desc = {};
     desc.ViewDimension = D3D11_SRV_DIMENSION_BUFFEREX;
     desc.BufferEx.FirstElement = 0;
 
@@ -481,12 +477,10 @@ HRESULT CreateBufferSRV( ID3D11Device* pDevice, ID3D11Buffer* pBuffer, ID3D11Sha
 _Use_decl_annotations_
 HRESULT CreateBufferUAV( ID3D11Device* pDevice, ID3D11Buffer* pBuffer, ID3D11UnorderedAccessView** ppUAVOut )
 {
-    D3D11_BUFFER_DESC descBuf;
-    ZeroMemory( &descBuf, sizeof(descBuf) );
+    D3D11_BUFFER_DESC descBuf = {};
     pBuffer->GetDesc( &descBuf );
         
-    D3D11_UNORDERED_ACCESS_VIEW_DESC desc;
-    ZeroMemory( &desc, sizeof(desc) );
+    D3D11_UNORDERED_ACCESS_VIEW_DESC desc = {};
     desc.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
     desc.Buffer.FirstElement = 0;
 
@@ -521,8 +515,7 @@ ID3D11Buffer* CreateAndCopyToDebugBuf( ID3D11Device* pDevice, ID3D11DeviceContex
 {
     ID3D11Buffer* debugbuf = nullptr;
 
-    D3D11_BUFFER_DESC desc;
-    ZeroMemory( &desc, sizeof(desc) );
+    D3D11_BUFFER_DESC desc = {};
     pBuffer->GetDesc( &desc );
     desc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
     desc.Usage = D3D11_USAGE_STAGING;

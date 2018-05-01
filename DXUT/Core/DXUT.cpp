@@ -1976,8 +1976,7 @@ HRESULT DXUTChangeDevice( DXUTDeviceSettings* pNewDeviceSettings,
             // Window is currently minimized. To tell if it needs to resize, 
             // get the client rect of window when its restored the 
             // hard way using GetWindowPlacement()
-            WINDOWPLACEMENT wp;
-            ZeroMemory( &wp, sizeof( WINDOWPLACEMENT ) );
+            WINDOWPLACEMENT wp = {};
             wp.length = sizeof( WINDOWPLACEMENT );
             GetWindowPlacement( DXUTGetHWNDDeviceWindowed(), &wp );
 
@@ -4250,8 +4249,7 @@ DXUTDeviceSettings WINAPI DXUTGetDeviceSettings()
     }
     else
     {
-        DXUTDeviceSettings ds;
-        ZeroMemory( &ds, sizeof( DXUTDeviceSettings ) );
+        DXUTDeviceSettings ds = {};
         return ds;
     }
 }

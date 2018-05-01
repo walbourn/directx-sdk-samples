@@ -90,8 +90,7 @@ HRESULT CGPUBC7Encoder::GPU_Encode( ID3D11Device* pDevice, ID3D11DeviceContext* 
 
     // Create a SRV for input texture        
     {
-        D3D11_SHADER_RESOURCE_VIEW_DESC SRVDesc;
-        ZeroMemory( &SRVDesc, sizeof( D3D11_SHADER_RESOURCE_VIEW_DESC ) );
+        D3D11_SHADER_RESOURCE_VIEW_DESC SRVDesc = {};
         SRVDesc.Texture2D.MipLevels = texSrcDesc.MipLevels;
         SRVDesc.Texture2D.MostDetailedMip = 0;
         SRVDesc.Format = texSrcDesc.Format;
@@ -140,8 +139,7 @@ HRESULT CGPUBC7Encoder::GPU_Encode( ID3D11Device* pDevice, ID3D11DeviceContext* 
 
     // Create UAV of the output texture    
     {
-        D3D11_UNORDERED_ACCESS_VIEW_DESC UAVDesc;
-        ZeroMemory( &UAVDesc, sizeof( D3D11_UNORDERED_ACCESS_VIEW_DESC ) );
+        D3D11_UNORDERED_ACCESS_VIEW_DESC UAVDesc = {};
         UAVDesc.Buffer.FirstElement = 0;
         UAVDesc.Buffer.NumElements = sbOutDesc.ByteWidth / sbOutDesc.StructureByteStride;
         UAVDesc.Format = DXGI_FORMAT_UNKNOWN;
@@ -170,8 +168,7 @@ HRESULT CGPUBC7Encoder::GPU_Encode( ID3D11Device* pDevice, ID3D11DeviceContext* 
     }
     
     {
-        D3D11_SHADER_RESOURCE_VIEW_DESC SRVDesc;     
-        ZeroMemory( &SRVDesc, sizeof( D3D11_SHADER_RESOURCE_VIEW_DESC ) );
+        D3D11_SHADER_RESOURCE_VIEW_DESC SRVDesc = {};
         SRVDesc.Buffer.FirstElement = 0;
         SRVDesc.Buffer.NumElements = texSrcDesc.Height * texSrcDesc.Width / BLOCK_SIZE;
         SRVDesc.Format = DXGI_FORMAT_UNKNOWN;

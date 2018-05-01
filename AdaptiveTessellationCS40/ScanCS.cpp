@@ -48,7 +48,7 @@ HRESULT CScanCS::OnD3D11CreateDevice( ID3D11Device* pd3dDevice )
     SAFE_RELEASE( pBlobCS );
     DXUT_SetDebugName( m_pScan3CS, "CSScanAddBucketResult" );
 
-    D3D11_BUFFER_DESC Desc;
+    D3D11_BUFFER_DESC Desc = {};
     Desc.Usage = D3D11_USAGE_DYNAMIC;
     Desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
     Desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
@@ -66,8 +66,7 @@ HRESULT CScanCS::OnD3D11CreateDevice( ID3D11Device* pd3dDevice )
     V_RETURN( pd3dDevice->CreateBuffer(&Desc, nullptr, &m_pAuxBuf) );
     DXUT_SetDebugName( m_pAuxBuf, "Aux" );
 
-    D3D11_SHADER_RESOURCE_VIEW_DESC DescRV;
-    ZeroMemory( &DescRV, sizeof( DescRV ) );
+    D3D11_SHADER_RESOURCE_VIEW_DESC DescRV = {};
     DescRV.ViewDimension = D3D11_SRV_DIMENSION_BUFFER;
     DescRV.Format = DXGI_FORMAT_UNKNOWN;
     DescRV.Buffer.FirstElement = 0;
@@ -75,8 +74,7 @@ HRESULT CScanCS::OnD3D11CreateDevice( ID3D11Device* pd3dDevice )
     V_RETURN( pd3dDevice->CreateShaderResourceView( m_pAuxBuf, &DescRV, &m_pAuxBufRV ) );
     DXUT_SetDebugName( m_pAuxBufRV, "Aux SRV" );
 
-    D3D11_UNORDERED_ACCESS_VIEW_DESC DescUAV;
-    ZeroMemory( &DescUAV, sizeof(DescUAV) );
+    D3D11_UNORDERED_ACCESS_VIEW_DESC DescUAV = {};
     DescUAV.Format = DXGI_FORMAT_UNKNOWN;
     DescUAV.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
     DescUAV.Buffer.FirstElement = 0;
