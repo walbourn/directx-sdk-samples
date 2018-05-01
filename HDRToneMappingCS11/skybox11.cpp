@@ -101,8 +101,7 @@ HRESULT CSkybox11::OnD3D11CreateDevice( ID3D11Device* pd3dDevice, float fSize,
     DXUT_SetDebugName( m_pcbVSPerObject, "CB_VS_PER_OBJECT" );
     
     // Depth stencil state
-    D3D11_DEPTH_STENCIL_DESC DSDesc;
-    ZeroMemory( &DSDesc, sizeof( D3D11_DEPTH_STENCIL_DESC ) );
+    D3D11_DEPTH_STENCIL_DESC DSDesc = {};
     DSDesc.DepthEnable = FALSE;
     DSDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
     DSDesc.DepthFunc = D3D11_COMPARISON_LESS;

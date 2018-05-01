@@ -174,10 +174,9 @@ HRESULT CreateParticleBuffer( ID3D11Device* pd3dDevice )
         0,
         0
     };
-    D3D11_SUBRESOURCE_DATA vbInitData;
-    ZeroMemory( &vbInitData, sizeof( D3D11_SUBRESOURCE_DATA ) );
+    D3D11_SUBRESOURCE_DATA vbInitData = {};
 
-    auto pVertices = new PARTICLE_VERTEX[ MAX_PARTICLES ];
+    auto pVertices = std::make_unique<PARTICLE_VERTEX[]>(MAX_PARTICLES);;
     if( !pVertices )
         return E_OUTOFMEMORY;
 
@@ -186,10 +185,9 @@ HRESULT CreateParticleBuffer( ID3D11Device* pd3dDevice )
         pVertices[i].Color = XMFLOAT4( 1, 1, 0.2f, 1 );
     }
 
-    vbInitData.pSysMem = pVertices;
+    vbInitData.pSysMem = pVertices.get();
     V_RETURN( pd3dDevice->CreateBuffer( &vbdesc, &vbInitData, &g_pParticleBuffer ) );
     DXUT_SetDebugName( g_pParticleBuffer, "Particles" );
-    SAFE_DELETE_ARRAY( pVertices );
 
     return hr;
 }
@@ -235,8 +233,7 @@ HRESULT CreateParticlePosVeloBuffers( ID3D11Device* pd3dDevice )
 {
     HRESULT hr = S_OK;
 
-    D3D11_BUFFER_DESC desc;
-    ZeroMemory( &desc, sizeof(desc) );
+    D3D11_BUFFER_DESC desc = {};
     desc.BindFlags = D3D11_BIND_UNORDERED_ACCESS | D3D11_BIND_SHADER_RESOURCE;
     desc.ByteWidth = MAX_PARTICLES * sizeof(PARTICLE);
     desc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
@@ -280,8 +277,7 @@ HRESULT CreateParticlePosVeloBuffers( ID3D11Device* pd3dDevice )
     DXUT_SetDebugName( g_pParticlePosVelo1, "PosVelo1" );
     SAFE_DELETE_ARRAY( pData1 );
 
-    D3D11_SHADER_RESOURCE_VIEW_DESC DescRV;
-    ZeroMemory( &DescRV, sizeof( DescRV ) );
+    D3D11_SHADER_RESOURCE_VIEW_DESC DescRV = {};
     DescRV.Format = DXGI_FORMAT_UNKNOWN;
     DescRV.ViewDimension = D3D11_SRV_DIMENSION_BUFFER;
     DescRV.Buffer.FirstElement = 0;
@@ -291,8 +287,7 @@ HRESULT CreateParticlePosVeloBuffers( ID3D11Device* pd3dDevice )
     DXUT_SetDebugName( g_pParticlePosVeloRV0, "PosVelo0 SRV" );
     DXUT_SetDebugName( g_pParticlePosVeloRV1, "PosVelo1 SRV" );
 
-    D3D11_UNORDERED_ACCESS_VIEW_DESC DescUAV;
-    ZeroMemory( &DescUAV, sizeof(D3D11_UNORDERED_ACCESS_VIEW_DESC) );
+    D3D11_UNORDERED_ACCESS_VIEW_DESC DescUAV = {};
     DescUAV.Format = DXGI_FORMAT_UNKNOWN;
     DescUAV.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
     DescUAV.Buffer.FirstElement = 0;
@@ -540,8 +535,7 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
     // Load the Particle Texture
     V_RETURN( DXUTCreateShaderResourceViewFromFile( pd3dDevice, L"misc\\Particle.dds", &g_pParticleTexRV ) );
 
-    D3D11_SAMPLER_DESC SamplerDesc;
-    ZeroMemory( &SamplerDesc, sizeof(SamplerDesc) );
+    D3D11_SAMPLER_DESC SamplerDesc = {};
     SamplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
     SamplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
     SamplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
@@ -549,8 +543,7 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
     V_RETURN( pd3dDevice->CreateSamplerState( &SamplerDesc, &g_pSampleStateLinear ) );
     DXUT_SetDebugName( g_pSampleStateLinear, "Linear" );
 
-    D3D11_BLEND_DESC BlendStateDesc;
-    ZeroMemory( &BlendStateDesc, sizeof(BlendStateDesc) );
+    D3D11_BLEND_DESC BlendStateDesc = {};
     BlendStateDesc.RenderTarget[0].BlendEnable = TRUE;
     BlendStateDesc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
     BlendStateDesc.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
@@ -562,8 +555,7 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
     V_RETURN( pd3dDevice->CreateBlendState( &BlendStateDesc, &g_pBlendingStateParticle ) );
     DXUT_SetDebugName( g_pBlendingStateParticle, "Blending" );
 
-    D3D11_DEPTH_STENCIL_DESC DepthStencilDesc;
-    ZeroMemory( &DepthStencilDesc, sizeof(DepthStencilDesc) );
+    D3D11_DEPTH_STENCIL_DESC DepthStencilDesc = {};
     DepthStencilDesc.DepthEnable = FALSE;
     DepthStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
     pd3dDevice->CreateDepthStencilState( &DepthStencilDesc, &g_pDepthStencilState );

@@ -113,8 +113,7 @@ HRESULT OIT::OnD3D11CreateDevice( ID3D11Device* pDevice )
     DXUT_SetDebugName( m_pPS_CB, "PS_CB" );
 
     // Create depth/stencil state
-    D3D11_DEPTH_STENCIL_DESC DSDesc;
-    ZeroMemory( &DSDesc, sizeof( D3D11_DEPTH_STENCIL_DESC ) );
+    D3D11_DEPTH_STENCIL_DESC DSDesc = {};
     DSDesc.DepthEnable = FALSE;
     DSDesc.StencilEnable = FALSE;
     V_RETURN( pDevice->CreateDepthStencilState( &DSDesc, &m_pDepthStencilState ) );
@@ -138,8 +137,7 @@ HRESULT OIT::OnD3D11ResizedSwapChain( const DXGI_SURFACE_DESC* pBackBufferSurfac
     m_nFrameHeight = pBackBufferSurfaceDesc->Height;
 
     // Create buffers
-    D3D11_BUFFER_DESC descBuf;
-    ZeroMemory( &descBuf, sizeof( D3D11_BUFFER_DESC) );
+    D3D11_BUFFER_DESC descBuf = {};
     descBuf.BindFlags = D3D11_BIND_UNORDERED_ACCESS | D3D11_BIND_SHADER_RESOURCE;
 
     // Create the deep frame buffer.
@@ -166,8 +164,7 @@ HRESULT OIT::OnD3D11ResizedSwapChain( const DXGI_SURFACE_DESC* pBackBufferSurfac
 
 #ifdef DEBUG_CS
     // Create debug buffers
-    D3D11_BUFFER_DESC descDebugBuf;
-    ZeroMemory( &descDebugBuf, sizeof( D3D11_BUFFER_DESC) );
+    D3D11_BUFFER_DESC descDebugBuf = {};
     descDebugBuf.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
     descDebugBuf.Usage = D3D11_USAGE_STAGING;
 
@@ -191,8 +188,7 @@ HRESULT OIT::OnD3D11ResizedSwapChain( const DXGI_SURFACE_DESC* pBackBufferSurfac
 #endif
 
     // Create fragment count buffer
-    D3D11_TEXTURE2D_DESC desc2D;
-    ZeroMemory( &desc2D, sizeof( D3D11_TEXTURE2D_DESC ) );
+    D3D11_TEXTURE2D_DESC desc2D = {};
     desc2D.ArraySize = 1;
     desc2D.BindFlags = D3D11_BIND_UNORDERED_ACCESS | D3D11_BIND_SHADER_RESOURCE;
     desc2D.Usage = D3D11_USAGE_DEFAULT;

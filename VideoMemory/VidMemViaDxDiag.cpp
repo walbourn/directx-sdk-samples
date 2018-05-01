@@ -56,8 +56,7 @@ HRESULT GetVideoMemoryViaDxDiag( HMONITOR hMonitor, DWORD* pdwDisplayMemory )
                            ( LPVOID* )&pDxDiagProvider );
     if( SUCCEEDED( hr ) ) // if FAILED(hr) then it is likely DirectX 9 is not installed
     {
-        DXDIAG_INIT_PARAMS dxDiagInitParam;
-        ZeroMemory( &dxDiagInitParam, sizeof( DXDIAG_INIT_PARAMS ) );
+        DXDIAG_INIT_PARAMS dxDiagInitParam = {};
         dxDiagInitParam.dwSize = sizeof( DXDIAG_INIT_PARAMS );
         dxDiagInitParam.dwDxDiagHeaderVersion = DXDIAG_DX9_SDK_VERSION;
         dxDiagInitParam.bAllowWHQLChecks = FALSE;

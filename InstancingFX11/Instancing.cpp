@@ -950,8 +950,7 @@ HRESULT CreateQuadMesh( ID3D11Device* pd3dDevice, QUAD_MESH* pMesh, float fWidth
         pMesh->dwNumVerts * sizeof( QUAD_VERTEX ),
         D3D11_USAGE_DEFAULT, D3D11_BIND_VERTEX_BUFFER, 0, 0
     };
-    D3D11_SUBRESOURCE_DATA vbInitData;
-    ZeroMemory( &vbInitData, sizeof( D3D11_SUBRESOURCE_DATA ) );
+    D3D11_SUBRESOURCE_DATA vbInitData = {};
     vbInitData.pSysMem = quadVertices;
     V_RETURN( pd3dDevice->CreateBuffer( &bufferDesc, &vbInitData, &pMesh->pVB ) );
 
@@ -968,8 +967,7 @@ HRESULT CreateQuadMesh( ID3D11Device* pd3dDevice, QUAD_MESH* pMesh, float fWidth
         0,2,1,
         0,3,2,
     };
-    D3D11_SUBRESOURCE_DATA ibInitData;
-    ZeroMemory( &ibInitData, sizeof( D3D11_SUBRESOURCE_DATA ) );
+    D3D11_SUBRESOURCE_DATA ibInitData = {};
     ibInitData.pSysMem = wIndices;
 
     V_RETURN( pd3dDevice->CreateBuffer( &bufferDesc, &ibInitData, &pMesh->pIB ) );
@@ -1094,10 +1092,9 @@ HRESULT LoadTextureArray( ID3D11Device* pd3dDevice, LPCTSTR* szTextureNames, int
                           ID3D11Texture2D** ppTex2D, ID3D11ShaderResourceView** ppSRV )
 {
     HRESULT hr = S_OK;
-    D3D11_TEXTURE2D_DESC desc;
-    ZeroMemory( &desc, sizeof( D3D11_TEXTURE2D_DESC ) );
+    D3D11_TEXTURE2D_DESC desc = {};
 
-    WCHAR str[MAX_PATH];
+    WCHAR str[MAX_PATH] = {};
     for( int i = 0; i < iNumTextures; i++ )
     {
         V_RETURN( DXUTFindDXSDKMediaFileCch( str, MAX_PATH, szTextureNames[i] ) );
@@ -1152,8 +1149,7 @@ HRESULT LoadTextureArray( ID3D11Device* pd3dDevice, LPCTSTR* szTextureNames, int
         }
     }
 
-    D3D11_SHADER_RESOURCE_VIEW_DESC SRVDesc;
-    ZeroMemory( &SRVDesc, sizeof( SRVDesc ) );
+    D3D11_SHADER_RESOURCE_VIEW_DESC SRVDesc = {};
     SRVDesc.Format = MAKE_SRGB( desc.Format );
     SRVDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2DARRAY;
     SRVDesc.Texture2DArray.MipLevels = desc.MipLevels;
@@ -1200,8 +1196,7 @@ HRESULT CreateRandomTexture( ID3D11Device* pd3dDevice )
     SAFE_DELETE_ARRAY( InitData.pSysMem );
 
     // Create the resource view
-    D3D11_SHADER_RESOURCE_VIEW_DESC SRVDesc;
-    ZeroMemory( &SRVDesc, sizeof( SRVDesc ) );
+    D3D11_SHADER_RESOURCE_VIEW_DESC SRVDesc = {};
     SRVDesc.Format = dstex.Format;
     SRVDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE1D;
     SRVDesc.Texture1D.MipLevels = dstex.MipLevels;

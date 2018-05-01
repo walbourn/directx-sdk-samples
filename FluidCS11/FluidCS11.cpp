@@ -467,30 +467,26 @@ HRESULT CreateStructuredBuffer(ID3D11Device* pd3dDevice, UINT iNumElements, ID3D
     HRESULT hr = S_OK;
 
     // Create SB
-    D3D11_BUFFER_DESC bufferDesc;
-    ZeroMemory( &bufferDesc, sizeof(bufferDesc) );
+    D3D11_BUFFER_DESC bufferDesc = {};
     bufferDesc.ByteWidth = iNumElements * sizeof(T);
     bufferDesc.Usage = D3D11_USAGE_DEFAULT;
     bufferDesc.BindFlags = D3D11_BIND_UNORDERED_ACCESS | D3D11_BIND_SHADER_RESOURCE;
     bufferDesc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
     bufferDesc.StructureByteStride = sizeof(T);
 
-    D3D11_SUBRESOURCE_DATA bufferInitData;
-    ZeroMemory( &bufferInitData, sizeof(bufferInitData) );
+    D3D11_SUBRESOURCE_DATA bufferInitData = {};
     bufferInitData.pSysMem = pInitialData;
     V_RETURN( pd3dDevice->CreateBuffer( &bufferDesc, (pInitialData)? &bufferInitData : nullptr, ppBuffer ) );
 
     // Create SRV
-    D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
-    ZeroMemory( &srvDesc, sizeof(srvDesc) );
+    D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
     srvDesc.Format = DXGI_FORMAT_UNKNOWN;
     srvDesc.ViewDimension = D3D11_SRV_DIMENSION_BUFFER;
     srvDesc.Buffer.ElementWidth = iNumElements;
     V_RETURN( pd3dDevice->CreateShaderResourceView( *ppBuffer, &srvDesc, ppSRV ) );
 
     // Create UAV
-    D3D11_UNORDERED_ACCESS_VIEW_DESC uavDesc;
-    ZeroMemory( &uavDesc, sizeof(uavDesc) );
+    D3D11_UNORDERED_ACCESS_VIEW_DESC uavDesc = {};
     uavDesc.Format = DXGI_FORMAT_UNKNOWN;
     uavDesc.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
     uavDesc.Buffer.NumElements = iNumElements;
@@ -539,8 +535,9 @@ HRESULT CreateSimulationBuffers( ID3D11Device* pd3dDevice )
     // Create the initial particle positions
     // This is only used to populate the GPU buffers on creation
     const UINT iStartingWidth = (UINT)sqrt( (FLOAT)g_iNumParticles );
-    Particle* particles = new Particle[ g_iNumParticles ];
-    ZeroMemory( particles, sizeof(Particle) * g_iNumParticles );
+
+    auto particles = std::make_unique<Particle[]>(g_iNumParticles);
+    ZeroMemory( particles.get(), sizeof(Particle) * g_iNumParticles );
     for ( UINT i = 0 ; i < g_iNumParticles ; i++ )
     {
         // Arrange the particles in a nice square
@@ -550,12 +547,12 @@ HRESULT CreateSimulationBuffers( ID3D11Device* pd3dDevice )
     }
 
     // Create Structured Buffers
-    V_RETURN( CreateStructuredBuffer< Particle >( pd3dDevice, g_iNumParticles, &g_pParticles, &g_pParticlesSRV, &g_pParticlesUAV, particles ) );
+    V_RETURN( CreateStructuredBuffer< Particle >( pd3dDevice, g_iNumParticles, &g_pParticles, &g_pParticlesSRV, &g_pParticlesUAV, particles.get() ) );
     DXUT_SetDebugName( g_pParticles, "Particles" );
     DXUT_SetDebugName( g_pParticlesSRV, "Particles SRV" );
     DXUT_SetDebugName( g_pParticlesUAV, "Particles UAV" );
 
-    V_RETURN( CreateStructuredBuffer< Particle >( pd3dDevice, g_iNumParticles, &g_pSortedParticles, &g_pSortedParticlesSRV, &g_pSortedParticlesUAV, particles ) );
+    V_RETURN( CreateStructuredBuffer< Particle >( pd3dDevice, g_iNumParticles, &g_pSortedParticles, &g_pSortedParticlesSRV, &g_pSortedParticlesUAV, particles.get()) );
     DXUT_SetDebugName( g_pSortedParticles, "Sorted" );
     DXUT_SetDebugName( g_pSortedParticlesSRV, "Sorted SRV" );
     DXUT_SetDebugName( g_pSortedParticlesUAV, "Sorted UAV" );
@@ -584,8 +581,6 @@ HRESULT CreateSimulationBuffers( ID3D11Device* pd3dDevice )
     DXUT_SetDebugName( g_pGridIndices, "Indices" );
     DXUT_SetDebugName( g_pGridIndicesSRV, "Indices SRV" );
     DXUT_SetDebugName( g_pGridIndicesUAV, "Indices UAV" );
-
-    delete[] particles;
 
     return S_OK;
 }

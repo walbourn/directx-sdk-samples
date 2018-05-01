@@ -68,8 +68,7 @@ HRESULT GetVideoMemoryViaDirectDraw( HMONITOR hMonitor, DWORD* pdwAvailableVidMe
     hInstDDraw = LoadLibrary( L"ddraw.dll" );
     if( hInstDDraw )
     {
-        DDRAW_MATCH match;
-        ZeroMemory( &match, sizeof( DDRAW_MATCH ) );
+        DDRAW_MATCH match = {};
         match.hMonitor = hMonitor;
 
         pDirectDrawEnumerateEx = ( LPDIRECTDRAWENUMERATEEXA )GetProcAddress( hInstDDraw, "DirectDrawEnumerateExA" );
@@ -87,8 +86,7 @@ HRESULT GetVideoMemoryViaDirectDraw( HMONITOR hMonitor, DWORD* pdwAvailableVidMe
             LPDIRECTDRAW7 pDDraw7;
             if( SUCCEEDED( pDDraw->QueryInterface( IID_IDirectDraw7, ( VOID** )&pDDraw7 ) ) )
             {
-                DDSCAPS2 ddscaps;
-                ZeroMemory( &ddscaps, sizeof( DDSCAPS2 ) );
+                DDSCAPS2 ddscaps = {};
                 ddscaps.dwCaps = DDSCAPS_VIDEOMEMORY | DDSCAPS_LOCALVIDMEM;
                 hr = pDDraw7->GetAvailableVidMem( &ddscaps, pdwAvailableVidMem, nullptr );
                 if( SUCCEEDED( hr ) )
@@ -117,8 +115,7 @@ HRESULT GetDeviceIDFromHMonitor( HMONITOR hm, WCHAR* strDeviceID, int cchDeviceI
     hInstDDraw = LoadLibrary( L"ddraw.dll" );
     if( hInstDDraw )
     {
-        DDRAW_MATCH match;
-        ZeroMemory( &match, sizeof( DDRAW_MATCH ) );
+        DDRAW_MATCH match = {};
         match.hMonitor = hm;
 
         LPDIRECTDRAWENUMERATEEXA pDirectDrawEnumerateEx = nullptr;
@@ -130,9 +127,7 @@ HRESULT GetDeviceIDFromHMonitor( HMONITOR hm, WCHAR* strDeviceID, int cchDeviceI
         if( match.bFound )
         {
             LONG iDevice = 0;
-            DISPLAY_DEVICEA dispdev;
-
-            ZeroMemory( &dispdev, sizeof( dispdev ) );
+            DISPLAY_DEVICEA dispdev = {};
             dispdev.cb = sizeof( dispdev );
 
             while( EnumDisplayDevicesA( nullptr, iDevice, ( DISPLAY_DEVICEA* )&dispdev, 0 ) )

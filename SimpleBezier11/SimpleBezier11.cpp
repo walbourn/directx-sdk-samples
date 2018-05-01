@@ -400,8 +400,7 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
     DXUT_SetDebugName( g_pcbPerFrame, "CB_PER_FRAME_CONSTANTS" );
 
     // Create solid and wireframe rasterizer state objects
-    D3D11_RASTERIZER_DESC RasterDesc;
-    ZeroMemory( &RasterDesc, sizeof(D3D11_RASTERIZER_DESC) );
+    D3D11_RASTERIZER_DESC RasterDesc = {};
     RasterDesc.FillMode = D3D11_FILL_SOLID;
     RasterDesc.CullMode = D3D11_CULL_NONE;
     RasterDesc.DepthClipEnable = TRUE;
@@ -412,14 +411,12 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
     V_RETURN( pd3dDevice->CreateRasterizerState( &RasterDesc, &g_pRasterizerStateWireframe ) );
     DXUT_SetDebugName( g_pRasterizerStateWireframe, "Wireframe" );
 
-    D3D11_BUFFER_DESC vbDesc;
-    ZeroMemory( &vbDesc, sizeof(D3D11_BUFFER_DESC) );
+    D3D11_BUFFER_DESC vbDesc = {};
     vbDesc.ByteWidth = sizeof(BEZIER_CONTROL_POINT) * ARRAYSIZE(g_MobiusStrip);
     vbDesc.Usage = D3D11_USAGE_DEFAULT;
     vbDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 
-    D3D11_SUBRESOURCE_DATA vbInitData;
-    ZeroMemory( &vbInitData, sizeof(vbInitData) );
+    D3D11_SUBRESOURCE_DATA vbInitData = {};
     vbInitData.pSysMem = g_MobiusStrip;
     V_RETURN( pd3dDevice->CreateBuffer( &vbDesc, &vbInitData, &g_pControlPointVB ) );
     DXUT_SetDebugName( g_pControlPointVB, "Control Points" );

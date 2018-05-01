@@ -2618,7 +2618,7 @@ HRESULT CEffectLoader::GrabShaderData(SShaderBlock *pShaderBlock)
                             }
                             else
                             {
-                                DPF(0, "%s: Sampler %s[%Iu] does not have a texture bound to it, even though the sampler array is used in a DX9-style texture load instruction", g_szEffectLoadArea, pName, j);
+                                DPF(0, "%s: Sampler %s[%zu] does not have a texture bound to it, even though the sampler array is used in a DX9-style texture load instruction", g_szEffectLoadArea, pName, j);
                             }
                         
                             VH( E_FAIL );

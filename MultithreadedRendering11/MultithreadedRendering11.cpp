@@ -1287,8 +1287,7 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
         UINT iDiffuseSlot,
         UINT iNormalSlot,
         UINT iSpecularSlot );
-    MDC_SDKMESH_CALLBACKS11 MeshCallbacks;
-    ZeroMemory( &MeshCallbacks, sizeof(MeshCallbacks) ); 
+    MDC_SDKMESH_CALLBACKS11 MeshCallbacks = {};
     MeshCallbacks.pRenderMesh = RenderMesh;
 
     // Load the mesh

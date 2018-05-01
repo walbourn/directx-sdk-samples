@@ -537,8 +537,7 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
     DXUT_SetDebugName( g_pcbFilterCS, "CB_filter" );
 
     // Samplers
-    D3D11_SAMPLER_DESC SamplerDesc;
-    ZeroMemory( &SamplerDesc, sizeof(SamplerDesc) );
+    D3D11_SAMPLER_DESC SamplerDesc = {};
     SamplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
     SamplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
     SamplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
@@ -596,8 +595,7 @@ HRESULT CALLBACK OnD3D11ResizedSwapChain( ID3D11Device* pd3dDevice, IDXGISwapCha
 
     // Create the render target texture
     // Our skybox will be rendered to this texture for later post-process
-    D3D11_TEXTURE2D_DESC Desc;
-    ZeroMemory( &Desc, sizeof( D3D11_TEXTURE2D_DESC ) );
+    D3D11_TEXTURE2D_DESC Desc = {};
     Desc.ArraySize = 1;
     Desc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
     Desc.Usage = D3D11_USAGE_DEFAULT;
@@ -648,8 +646,7 @@ HRESULT CALLBACK OnD3D11ResizedSwapChain( ID3D11Device* pd3dDevice, IDXGISwapCha
         DXUT_SetDebugName( g_pMSDS11, "MSAA Depth RT" );
 
         // Depth stencil view for multi-sampling
-        D3D11_DEPTH_STENCIL_VIEW_DESC DescDS;
-        ZeroMemory( &DescDS, sizeof(DescDS) );
+        D3D11_DEPTH_STENCIL_VIEW_DESC DescDS = {};
         DescDS.Format = DXGI_FORMAT_D32_FLOAT;
         DescDS.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DMS;
         V_RETURN( pd3dDevice->CreateDepthStencilView( g_pMSDS11, &DescDS, &g_pMSDSV11 ) );
@@ -670,8 +667,7 @@ HRESULT CALLBACK OnD3D11ResizedSwapChain( ID3D11Device* pd3dDevice, IDXGISwapCha
 
     // Create the buffers used in full screen blur for CS path
     {
-        D3D11_BUFFER_DESC DescBuffer;
-        ZeroMemory( &DescBuffer, sizeof(DescBuffer) );
+        D3D11_BUFFER_DESC DescBuffer = {};
         DescBuffer.BindFlags = D3D11_BIND_UNORDERED_ACCESS | D3D11_BIND_SHADER_RESOURCE;
         DescBuffer.ByteWidth = sizeof(XMFLOAT4) * pBackBufferSurfaceDesc->Width * pBackBufferSurfaceDesc->Height;
         DescBuffer.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
@@ -683,8 +679,7 @@ HRESULT CALLBACK OnD3D11ResizedSwapChain( ID3D11Device* pd3dDevice, IDXGISwapCha
         DXUT_SetDebugName( g_pBufferBlur0, "Blur0" );
         DXUT_SetDebugName( g_pBufferBlur1, "Blur1" );
 
-        D3D11_UNORDERED_ACCESS_VIEW_DESC DescUAV;
-        ZeroMemory( &DescUAV, sizeof(D3D11_UNORDERED_ACCESS_VIEW_DESC) );
+        D3D11_UNORDERED_ACCESS_VIEW_DESC DescUAV = {};
         DescUAV.Format = DXGI_FORMAT_UNKNOWN;
         DescUAV.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
         DescUAV.Buffer.FirstElement = 0;
@@ -695,8 +690,7 @@ HRESULT CALLBACK OnD3D11ResizedSwapChain( ID3D11Device* pd3dDevice, IDXGISwapCha
         DXUT_SetDebugName( g_pBlurUAView0, "Blur0 UAV" );
         DXUT_SetDebugName( g_pBlurUAView1, "Blur1 UAV" );
 
-        D3D11_SHADER_RESOURCE_VIEW_DESC DescRV2;
-        ZeroMemory( &DescRV2, sizeof( DescRV2 ) );
+        D3D11_SHADER_RESOURCE_VIEW_DESC DescRV2 = {};
         DescRV2.Format = DXGI_FORMAT_UNKNOWN;
         DescRV2.ViewDimension = D3D11_SRV_DIMENSION_BUFFER;
         DescRV2.Buffer.FirstElement = DescUAV.Buffer.FirstElement;
@@ -709,8 +703,7 @@ HRESULT CALLBACK OnD3D11ResizedSwapChain( ID3D11Device* pd3dDevice, IDXGISwapCha
     }
 
     // Create two buffers for ping-ponging in the reduction operation used for calculating luminance
-    D3D11_BUFFER_DESC DescBuffer;
-    ZeroMemory( &DescBuffer, sizeof(D3D11_BUFFER_DESC) );
+    D3D11_BUFFER_DESC DescBuffer = {};
     DescBuffer.BindFlags = D3D11_BIND_UNORDERED_ACCESS | D3D11_BIND_SHADER_RESOURCE;
     DescBuffer.ByteWidth = int(ceil(pBackBufferSurfaceDesc->Width / 8.0f) * ceil(pBackBufferSurfaceDesc->Height / 8.0f)) * sizeof(float);
     DescBuffer.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
@@ -730,8 +723,7 @@ HRESULT CALLBACK OnD3D11ResizedSwapChain( ID3D11Device* pd3dDevice, IDXGISwapCha
     DXUT_SetDebugName( g_pBufferCPURead, "CPU Read" );
     
     // Create UAV on the above two buffers object
-    D3D11_UNORDERED_ACCESS_VIEW_DESC DescUAV;
-    ZeroMemory( &DescUAV, sizeof(D3D11_UNORDERED_ACCESS_VIEW_DESC) );
+    D3D11_UNORDERED_ACCESS_VIEW_DESC DescUAV = {};
     DescUAV.Format = DXGI_FORMAT_UNKNOWN;
     DescUAV.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
     DescUAV.Buffer.FirstElement = 0;
@@ -758,8 +750,7 @@ HRESULT CALLBACK OnD3D11ResizedSwapChain( ID3D11Device* pd3dDevice, IDXGISwapCha
     int nSampleLen = 1;
     for( int i = 0; i < NUM_TONEMAP_TEXTURES; i++ )
     {
-        D3D11_TEXTURE2D_DESC tmdesc;
-        ZeroMemory( &tmdesc, sizeof( D3D11_TEXTURE2D_DESC ) );
+        D3D11_TEXTURE2D_DESC tmdesc = {};
         tmdesc.ArraySize = 1;
         tmdesc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
         tmdesc.Usage = D3D11_USAGE_DEFAULT;
@@ -795,8 +786,7 @@ HRESULT CALLBACK OnD3D11ResizedSwapChain( ID3D11Device* pd3dDevice, IDXGISwapCha
     for( int i = 0; i < NUM_BLOOM_TEXTURES; i++ )
     {
         // Texture for blooming effect in PS path
-        D3D11_TEXTURE2D_DESC bmdesc;
-        ZeroMemory( &bmdesc, sizeof( D3D11_TEXTURE2D_DESC ) );
+        D3D11_TEXTURE2D_DESC bmdesc = {};
         bmdesc.ArraySize = 1;
         bmdesc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
         bmdesc.Usage = D3D11_USAGE_DEFAULT;
@@ -826,8 +816,7 @@ HRESULT CALLBACK OnD3D11ResizedSwapChain( ID3D11Device* pd3dDevice, IDXGISwapCha
         DXUT_SetDebugName( g_apTexBloomRV11[i], "PSBloom SRV" );
 
         // Buffers for blooming effect in CS path
-        D3D11_BUFFER_DESC bufdesc;
-        ZeroMemory( &bufdesc, sizeof(bufdesc) );
+        D3D11_BUFFER_DESC bufdesc = {};
         bufdesc.BindFlags = D3D11_BIND_UNORDERED_ACCESS | D3D11_BIND_SHADER_RESOURCE;
         bufdesc.ByteWidth = pBackBufferSurfaceDesc->Width / 8 * pBackBufferSurfaceDesc->Height / 8 * sizeof(XMFLOAT4);
         bufdesc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
@@ -844,8 +833,7 @@ HRESULT CALLBACK OnD3D11ResizedSwapChain( ID3D11Device* pd3dDevice, IDXGISwapCha
         V_RETURN( pd3dDevice->CreateShaderResourceView( g_apBufBloom11[i], &DescRV2, &g_apBufBloomRV11[i] ) );
         DXUT_SetDebugName( g_apBufBloomRV11[i], "CSBloom RTV" );
 
-        D3D11_UNORDERED_ACCESS_VIEW_DESC DescUAV2;
-        ZeroMemory( &DescUAV2, sizeof(D3D11_UNORDERED_ACCESS_VIEW_DESC) );
+        D3D11_UNORDERED_ACCESS_VIEW_DESC DescUAV2 = {};
         DescUAV2.Format = DXGI_FORMAT_UNKNOWN;
         DescUAV2.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
         DescUAV2.Buffer.FirstElement = 0;
@@ -1231,8 +1219,7 @@ ID3D11Buffer* CreateAndCopyToDebugBuf( ID3D11Device* pDevice, ID3D11DeviceContex
 {
     ID3D11Buffer* debugbuf = nullptr;
 
-    D3D11_BUFFER_DESC desc;
-    ZeroMemory( &desc, sizeof(desc) );
+    D3D11_BUFFER_DESC desc = {};
     pBuffer->GetDesc( &desc );
     desc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
     desc.Usage = D3D11_USAGE_STAGING;

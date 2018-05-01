@@ -702,8 +702,7 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
     g_Camera.SetViewParams( vEye, vCenter );
 
     // Create solid and wireframe rasterizer state objects
-    D3D11_RASTERIZER_DESC RasterDesc;
-    ZeroMemory( &RasterDesc, sizeof(D3D11_RASTERIZER_DESC) );
+    D3D11_RASTERIZER_DESC RasterDesc = {};
     RasterDesc.FillMode = D3D11_FILL_SOLID;
     RasterDesc.CullMode = D3D11_CULL_NONE;
     RasterDesc.DepthClipEnable = TRUE;
@@ -715,8 +714,7 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
     DXUT_SetDebugName( g_pRasterizerStateWireframe, "Wireframe" );
 
     // Create sampler state for heightmap and normal map
-    D3D11_SAMPLER_DESC SSDesc;
-    ZeroMemory( &SSDesc, sizeof( D3D11_SAMPLER_DESC ) );
+    D3D11_SAMPLER_DESC SSDesc = {};
     SSDesc.Filter = D3D11_FILTER_ANISOTROPIC;
     SSDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
     SSDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;

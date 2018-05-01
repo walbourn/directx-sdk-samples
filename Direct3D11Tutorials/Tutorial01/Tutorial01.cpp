@@ -238,8 +238,7 @@ HRESULT InitDevice()
             (void) g_pImmediateContext->QueryInterface( __uuidof(ID3D11DeviceContext1), reinterpret_cast<void**>(&g_pImmediateContext1) );
         }
 
-        DXGI_SWAP_CHAIN_DESC1 sd;
-        ZeroMemory(&sd, sizeof(sd));
+        DXGI_SWAP_CHAIN_DESC1 sd = {};
         sd.Width = width;
         sd.Height = height;
         sd.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
@@ -259,8 +258,7 @@ HRESULT InitDevice()
     else
     {
         // DirectX 11.0 systems
-        DXGI_SWAP_CHAIN_DESC sd;
-        ZeroMemory(&sd, sizeof(sd));
+        DXGI_SWAP_CHAIN_DESC sd = {};
         sd.BufferCount = 1;
         sd.BufferDesc.Width = width;
         sd.BufferDesc.Height = height;
