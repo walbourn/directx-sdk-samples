@@ -13,10 +13,6 @@
 #include <d3d11.h>
 #include <d3dcompiler.h>
 
-#if D3D_COMPILER_VERSION < 46
-#include <d3dx11.h>
-#endif
-
 #ifndef SAFE_RELEASE
 #define SAFE_RELEASE(p)      { if (p) { (p)->Release(); (p)=nullptr; } }
 #endif
@@ -352,19 +348,8 @@ HRESULT CreateComputeShader( LPCWSTR pSrcFile, LPCSTR pFunctionName,
 
     ID3DBlob* pErrorBlob = nullptr;
     ID3DBlob* pBlob = nullptr;
-
-#if D3D_COMPILER_VERSION >= 46
-
     hr = D3DCompileFromFile( str, defines, D3D_COMPILE_STANDARD_FILE_INCLUDE, pFunctionName, pProfile, 
                              dwShaderFlags, 0, &pBlob, &pErrorBlob );
-
-#else
-
-    hr = D3DX11CompileFromFile( str, defines, nullptr, pFunctionName, pProfile, 
-                                dwShaderFlags, 0, nullptr, &pBlob, &pErrorBlob, nullptr );
-
-#endif
-
     if ( FAILED(hr) )
     {
         if ( pErrorBlob )

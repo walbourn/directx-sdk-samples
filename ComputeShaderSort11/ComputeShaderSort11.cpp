@@ -17,10 +17,6 @@
 #include <algorithm>
 #include <random>
 
-#if D3D_COMPILER_VERSION < 46
-#include <d3dx11.h>
-#endif
-
 #ifndef SAFE_RELEASE
 #define SAFE_RELEASE(p)      { if (p) { (p)->Release(); (p)=nullptr; } }
 #endif
@@ -150,19 +146,8 @@ HRESULT CompileShaderFromFile( const WCHAR* szFileName, LPCSTR szEntryPoint, LPC
 #endif
 
     ID3DBlob* pErrorBlob = nullptr;
-
-#if D3D_COMPILER_VERSION >= 46
-
     hr = D3DCompileFromFile( str, nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, szEntryPoint, szShaderModel, 
                              dwShaderFlags, 0, ppBlobOut, &pErrorBlob );
-
-#else
-
-    hr = D3DX11CompileFromFile( str, nullptr, nullptr, szEntryPoint, szShaderModel, 
-                                dwShaderFlags, 0, nullptr, ppBlobOut, &pErrorBlob, nullptr );
-
-#endif
-
     if( FAILED(hr) )
     {
         if( pErrorBlob )
