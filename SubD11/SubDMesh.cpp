@@ -124,8 +124,7 @@ ID3D11Buffer* CreateAndCopyToDebugBuf( ID3D11Device* pDevice, ID3D11DeviceContex
 {
     ID3D11Buffer* debugbuf = nullptr;
 
-    D3D11_BUFFER_DESC desc;
-    ZeroMemory( &desc, sizeof(desc) );
+    D3D11_BUFFER_DESC desc = {};
     pBuffer->GetDesc( &desc );
     desc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
     desc.Usage = D3D11_USAGE_STAGING;

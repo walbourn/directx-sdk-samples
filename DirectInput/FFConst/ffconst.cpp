@@ -256,8 +256,7 @@ HRESULT InitDirectInput( HWND hDlg )
     LONG rglDirection[2] = { 0, 0 };
     DICONSTANTFORCE cf = { 0 };
 
-    DIEFFECT eff;
-    ZeroMemory( &eff, sizeof( eff ) );
+    DIEFFECT eff = {};
     eff.dwSize = sizeof( DIEFFECT );
     eff.dwFlags = DIEFF_CARTESIAN | DIEFF_OBJECTOFFSETS;
     eff.dwDuration = INFINITE;
@@ -553,8 +552,7 @@ HRESULT SetDeviceForcesXY()
                                        ( double )g_nYForce * ( double )g_nYForce );
     }
 
-    DIEFFECT eff;
-    ZeroMemory( &eff, sizeof( eff ) );
+    DIEFFECT eff = {};
     eff.dwSize = sizeof( DIEFFECT );
     eff.dwFlags = DIEFF_CARTESIAN | DIEFF_OBJECTOFFSETS;
     eff.cAxes = g_dwNumForceFeedbackAxis;

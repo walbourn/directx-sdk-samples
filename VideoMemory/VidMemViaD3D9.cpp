@@ -45,8 +45,7 @@ HRESULT GetVideoMemoryViaD3D9( HMONITOR hMonitor, UINT* pdwAvailableTextureMem )
 
             HWND hWnd = GetDesktopWindow();
 
-            D3DPRESENT_PARAMETERS pp;
-            ZeroMemory( &pp, sizeof( D3DPRESENT_PARAMETERS ) );
+            D3DPRESENT_PARAMETERS pp = {};
             pp.BackBufferWidth = 800;
             pp.BackBufferHeight = 600;
             pp.BackBufferFormat = D3DFMT_R5G6B5;

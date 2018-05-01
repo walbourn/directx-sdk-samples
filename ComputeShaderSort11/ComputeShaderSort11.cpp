@@ -17,25 +17,8 @@
 #include <algorithm>
 #include <random>
 
-#if D3D_COMPILER_VERSION < 46
-#include <d3dx11.h>
-#endif
-
 #ifndef SAFE_RELEASE
 #define SAFE_RELEASE(p)      { if (p) { (p)->Release(); (p)=nullptr; } }
-#endif
-
-#if defined(_MSC_VER) && (_MSC_VER<1610) && !defined(_In_reads_)
-#define _Outptr_
-#define _Outptr_opt_ 
-#define _In_reads_(exp)
-#define _In_reads_opt_(exp)
-#define _Out_writes_(exp)
-#define _Analysis_assume_
-#endif
-
-#ifndef _Use_decl_annotations_
-#define _Use_decl_annotations_
 #endif
 
 // The number of elements to sort is limited to an even power of 2
@@ -163,19 +146,8 @@ HRESULT CompileShaderFromFile( const WCHAR* szFileName, LPCSTR szEntryPoint, LPC
 #endif
 
     ID3DBlob* pErrorBlob = nullptr;
-
-#if D3D_COMPILER_VERSION >= 46
-
     hr = D3DCompileFromFile( str, nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, szEntryPoint, szShaderModel, 
                              dwShaderFlags, 0, ppBlobOut, &pErrorBlob );
-
-#else
-
-    hr = D3DX11CompileFromFile( str, nullptr, nullptr, szEntryPoint, szShaderModel, 
-                                dwShaderFlags, 0, nullptr, ppBlobOut, &pErrorBlob, nullptr );
-
-#endif
-
     if( FAILED(hr) )
     {
         if( pErrorBlob )
@@ -229,8 +201,7 @@ HRESULT CreateResources()
 #endif
 
     // Create the Const Buffer
-    D3D11_BUFFER_DESC constant_buffer_desc;
-    ZeroMemory( &constant_buffer_desc, sizeof(constant_buffer_desc) );
+    D3D11_BUFFER_DESC constant_buffer_desc = {};
     constant_buffer_desc.ByteWidth = sizeof(CB);
     constant_buffer_desc.Usage = D3D11_USAGE_DEFAULT;
     constant_buffer_desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
@@ -244,8 +215,7 @@ HRESULT CreateResources()
 
     // Create the Buffer of Elements
     // Create 2 buffers for switching between when performing the transpose
-    D3D11_BUFFER_DESC buffer_desc;
-    ZeroMemory( &buffer_desc, sizeof(buffer_desc) );
+    D3D11_BUFFER_DESC buffer_desc = {};
     buffer_desc.ByteWidth = NUM_ELEMENTS * sizeof(UINT);
     buffer_desc.Usage = D3D11_USAGE_DEFAULT;
     buffer_desc.BindFlags = D3D11_BIND_UNORDERED_ACCESS | D3D11_BIND_SHADER_RESOURCE;
@@ -267,8 +237,7 @@ HRESULT CreateResources()
 
     // Create the Shader Resource View for the Buffers
     // This is used for reading the buffer during the transpose
-    D3D11_SHADER_RESOURCE_VIEW_DESC srvbuffer_desc;
-    ZeroMemory( &srvbuffer_desc, sizeof(srvbuffer_desc) );
+    D3D11_SHADER_RESOURCE_VIEW_DESC srvbuffer_desc = {};
     srvbuffer_desc.Format = DXGI_FORMAT_UNKNOWN;
     srvbuffer_desc.ViewDimension = D3D11_SRV_DIMENSION_BUFFER;
     srvbuffer_desc.Buffer.ElementWidth = NUM_ELEMENTS;
@@ -288,8 +257,7 @@ HRESULT CreateResources()
 
     // Create the Unordered Access View for the Buffers
     // This is used for writing the buffer during the sort and transpose
-    D3D11_UNORDERED_ACCESS_VIEW_DESC uavbuffer_desc;
-    ZeroMemory( &uavbuffer_desc, sizeof(uavbuffer_desc) );
+    D3D11_UNORDERED_ACCESS_VIEW_DESC uavbuffer_desc = {};
     uavbuffer_desc.Format = DXGI_FORMAT_UNKNOWN;
     uavbuffer_desc.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
     uavbuffer_desc.Buffer.NumElements = NUM_ELEMENTS;
@@ -309,8 +277,7 @@ HRESULT CreateResources()
 
     // Create the Readback Buffer
     // This is used to read the results back to the CPU
-    D3D11_BUFFER_DESC readback_buffer_desc;
-    ZeroMemory( &readback_buffer_desc, sizeof(readback_buffer_desc) );
+    D3D11_BUFFER_DESC readback_buffer_desc = {};
     readback_buffer_desc.ByteWidth = NUM_ELEMENTS * sizeof(UINT);
     readback_buffer_desc.Usage = D3D11_USAGE_STAGING;
     readback_buffer_desc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;

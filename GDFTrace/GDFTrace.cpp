@@ -11,7 +11,6 @@
 #include <rpcsal.h>
 #include <gameux.h>
 #include <shellapi.h>
-#include <stdio.h>
 #include <shlobj.h>
 #include <wbemidl.h>
 #include <objbase.h>
@@ -22,6 +21,9 @@
 #include "RatingsDB.h"
 #include "GDFData.h"
 #include "WICImage.h"
+
+#include <stdio.h>
+#include <memory>
 
 struct SETTINGS
 {
@@ -783,10 +785,10 @@ HRESULT ProcessGDF( WCHAR* strGDFPath, bool bMuteWarnings, bool bMuteGDF, bool b
 
     CGDFParse gdfParse;
 
-    GDFData* pGDFData = new GDFData;
-    ZeroMemory( pGDFData, sizeof(GDFData) );
+    auto pGDFData = std::make_unique<GDFData>();
+    ZeroMemory( pGDFData.get(), sizeof(GDFData) );
 
-    hr = GetGDFDataFromGDF( pGDFData, strGDFPath );
+    hr = GetGDFDataFromGDF( pGDFData.get(), strGDFPath );
     if( FAILED(hr) )
     {
         wprintf( L"Couldn't load GDF XML data from: %s\n", strGDFPath );
@@ -794,19 +796,16 @@ HRESULT ProcessGDF( WCHAR* strGDFPath, bool bMuteWarnings, bool bMuteGDF, bool b
         {
             wprintf( L"%s\n", pGDFData->strValidation );
         }
-        delete pGDFData;
         return E_FAIL;
     }
 
     if( !bMuteGDF )
     {
-        OutputGDFData( pGDFData, nullptr );
+        OutputGDFData( pGDFData.get(), nullptr );
     }
 
     if( !bMuteWarnings )
-        ScanForWarnings( pGDFData, nullptr, nullptr, nullptr, 1, bQuiet, bStore, false );
-
-    delete pGDFData;
+        ScanForWarnings( pGDFData.get(), nullptr, nullptr, nullptr, 1, bQuiet, bStore, false );
 
     return S_OK;
 }
@@ -841,8 +840,8 @@ HRESULT ProcessBIN( WCHAR* strGDFBinPath, bool bMuteWarnings, bool bMuteGDF, boo
     const int nLangs = gdfParse.GetNumLangs();
 
     // Load GDF XML data
-    GDFData* pGDFDataList = new GDFData[nLangs];
-    ZeroMemory( pGDFDataList, sizeof(GDFData)*nLangs );
+    auto pGDFDataList = std::make_unique <GDFData[]>(nLangs);
+    ZeroMemory( pGDFDataList.get(), sizeof(GDFData)*nLangs );
 
     for( int iLang=0; iLang < nLangs; iLang++ )
     {
@@ -861,8 +860,8 @@ HRESULT ProcessBIN( WCHAR* strGDFBinPath, bool bMuteWarnings, bool bMuteGDF, boo
     }
 
     // Load GDF Thumbnail data
-    ImageInfo* pImageList = new ImageInfo[ nLangs ];
-    ZeroMemory( pImageList, sizeof(ImageInfo)*nLangs );
+    auto pImageList = std::make_unique<ImageInfo[]>(nLangs);
+    ZeroMemory( pImageList.get(), sizeof(ImageInfo)*nLangs );
     
     for( int iLang=0; iLang < nLangs; iLang++ )
     {
@@ -901,15 +900,12 @@ HRESULT ProcessBIN( WCHAR* strGDFBinPath, bool bMuteWarnings, bool bMuteGDF, boo
 
     if( !bMuteWarnings )
     {
-        ScanForWarnings( pGDFDataList, pImageList, ppIconEightBits, ppIconThirtyTwoBits, nLangs, bQuiet, bStore, true );
+        ScanForWarnings( pGDFDataList.get(), pImageList.get(), ppIconEightBits, ppIconThirtyTwoBits, nLangs, bQuiet, bStore, true );
 
         if ( !bStore && !gdfParse.IsIconPresent( strGDFBinPath ) )
             OutputWarning( L"\tWarning: Icon not found. Adding one is highly recommended!\n" );
     }
     
-    delete [] pGDFDataList;
-    delete [] pImageList;
-
     for( int iLang=0; iLang < nLangs; iLang++ )
     {
         delete [] ppIconEightBits[iLang];

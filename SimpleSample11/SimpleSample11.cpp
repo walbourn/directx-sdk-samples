@@ -237,8 +237,7 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
     SAFE_RELEASE( pPixelShaderBuffer );
 
     // Create state objects
-    D3D11_SAMPLER_DESC samDesc;
-    ZeroMemory( &samDesc, sizeof(samDesc) );
+    D3D11_SAMPLER_DESC samDesc = {};
     samDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
     samDesc.AddressU = samDesc.AddressV = samDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
     samDesc.MaxAnisotropy = 1;
@@ -248,8 +247,7 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
     DXUT_SetDebugName( g_pSamLinear, "Linear" );
 
     // Create constant buffers
-    D3D11_BUFFER_DESC cbDesc;
-    ZeroMemory( &cbDesc, sizeof(cbDesc) );
+    D3D11_BUFFER_DESC cbDesc = {};
     cbDesc.Usage = D3D11_USAGE_DYNAMIC;
     cbDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
     cbDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;

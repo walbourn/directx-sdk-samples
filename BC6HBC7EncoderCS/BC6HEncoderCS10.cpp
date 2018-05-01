@@ -83,8 +83,7 @@ HRESULT CGPUBC6HEncoder::GPU_Encode( ID3D11Device* pDevice, ID3D11DeviceContext*
 
     // Create a SRV for input texture
     {
-        D3D11_SHADER_RESOURCE_VIEW_DESC SRVDesc;
-        ZeroMemory( &SRVDesc, sizeof( SRVDesc ) );
+        D3D11_SHADER_RESOURCE_VIEW_DESC SRVDesc = {};
         SRVDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
         SRVDesc.Format = DXGI_FORMAT_UNKNOWN;
         SRVDesc.Texture2D.MipLevels = 1;
@@ -97,9 +96,8 @@ HRESULT CGPUBC6HEncoder::GPU_Encode( ID3D11Device* pDevice, ID3D11DeviceContext*
     }
 
     // Create output buffer with its size identical to input texture
-    D3D11_BUFFER_DESC sbOutDesc;
+    D3D11_BUFFER_DESC sbOutDesc = {};
     {
-        ZeroMemory( &sbOutDesc, sizeof( sbOutDesc ) );
         sbOutDesc.BindFlags = D3D11_BIND_UNORDERED_ACCESS | D3D11_BIND_SHADER_RESOURCE;
         sbOutDesc.CPUAccessFlags = 0;
         sbOutDesc.Usage = D3D11_USAGE_DEFAULT;
@@ -124,8 +122,7 @@ HRESULT CGPUBC6HEncoder::GPU_Encode( ID3D11Device* pDevice, ID3D11DeviceContext*
 
     // Create UAV of the output resources    
     {
-        D3D11_UNORDERED_ACCESS_VIEW_DESC UAVDesc;
-        ZeroMemory( &UAVDesc, sizeof( UAVDesc ) );
+        D3D11_UNORDERED_ACCESS_VIEW_DESC UAVDesc = {};
         UAVDesc.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
         UAVDesc.Format = DXGI_FORMAT_UNKNOWN;
         UAVDesc.Buffer.FirstElement = 0;
@@ -155,8 +152,7 @@ HRESULT CGPUBC6HEncoder::GPU_Encode( ID3D11Device* pDevice, ID3D11DeviceContext*
 
     // Create SRV of the pErrBestModeBuffer
     {
-        D3D11_SHADER_RESOURCE_VIEW_DESC SRVDesc;
-        ZeroMemory( &SRVDesc, sizeof( SRVDesc ) );
+        D3D11_SHADER_RESOURCE_VIEW_DESC SRVDesc = {};
         SRVDesc.ViewDimension = D3D11_SRV_DIMENSION_BUFFER;
         SRVDesc.Format = DXGI_FORMAT_UNKNOWN;
         SRVDesc.Buffer.FirstElement = 0;

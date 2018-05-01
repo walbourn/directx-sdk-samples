@@ -785,9 +785,8 @@ CEffect::~CEffect()
 
     if (pInfoQueue)
     {
-        D3D11_INFO_QUEUE_FILTER filter;
+        D3D11_INFO_QUEUE_FILTER filter = {};
         D3D11_MESSAGE_CATEGORY messageCategory = D3D11_MESSAGE_CATEGORY_STATE_SETTING;
-        ZeroMemory(&filter, sizeof(filter));
 
         filter.DenyList.NumCategories = 1;
         filter.DenyList.pCategoryList = &messageCategory;

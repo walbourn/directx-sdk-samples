@@ -65,7 +65,7 @@ void EnumerateUsingDXGI( IDXGIFactory* pDXGIFactory )
             }
 
             wprintf(
-                L"\tGetVideoMemoryViaDXGI\n\t\tDedicatedVideoMemory: %Iu MB (%Iu)\n\t\tDedicatedSystemMemory: %Iu MB (%Iu)\n\t\tSharedSystemMemory: %Iu MB (%Iu)\n",
+                L"\tGetVideoMemoryViaDXGI\n\t\tDedicatedVideoMemory: %zu MB (%zu)\n\t\tDedicatedSystemMemory: %zu MB (%zu)\n\t\tSharedSystemMemory: %zu MB (%zu)\n",
                 desc.DedicatedVideoMemory / 1024 / 1024, desc.DedicatedVideoMemory,
                 desc.DedicatedSystemMemory / 1024 / 1024, desc.DedicatedSystemMemory,
                 desc.SharedSystemMemory / 1024 / 1024, desc.SharedSystemMemory );
@@ -84,8 +84,7 @@ void EnumerateUsingD3D9( IDirect3D9* pD3D9 )
     UINT dwAdapterCount = pD3D9->GetAdapterCount();
     for( UINT iAdapter = 0; iAdapter < dwAdapterCount; iAdapter++ )
     {
-        D3DADAPTER_IDENTIFIER9 id;
-        ZeroMemory( &id, sizeof( D3DADAPTER_IDENTIFIER9 ) );
+        D3DADAPTER_IDENTIFIER9 id = {};
         pD3D9->GetAdapterIdentifier( iAdapter, 0, &id );
         wprintf( L"\nD3D9 Adapter: %u\nDriver: %S\nDescription: %S\n", iAdapter, id.Driver, id.Description );
 

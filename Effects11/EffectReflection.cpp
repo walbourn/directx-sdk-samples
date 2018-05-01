@@ -2102,7 +2102,7 @@ ID3DX11EffectTechnique * CEffect::GetTechniqueByName(_In_z_ LPCSTR Name)
 
     if( FAILED( strcpy_s( NameCopy, MAX_GROUP_TECHNIQUE_SIZE, Name ) ) )
     {
-        DPF( 0, "Group|Technique name has a length greater than %Iu.", MAX_GROUP_TECHNIQUE_SIZE );
+        DPF( 0, "Group|Technique name has a length greater than %zu.", MAX_GROUP_TECHNIQUE_SIZE );
         return &g_InvalidTechnique;
     }
 

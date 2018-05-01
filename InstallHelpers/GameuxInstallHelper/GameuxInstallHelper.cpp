@@ -1504,8 +1504,7 @@ HRESULT RemoveTasks(WCHAR* strGDFBinPath) // valid GameInstance GUID that was pa
         return hr;
     }
 
-    SHFILEOPSTRUCT fileOp;
-    ZeroMemory(&fileOp, sizeof(SHFILEOPSTRUCT));
+    SHFILEOPSTRUCT fileOp = {};
     fileOp.wFunc = FO_DELETE;
     fileOp.pFrom = strPath;
     fileOp.fFlags = FOF_NOCONFIRMATION | FOF_NOERRORUI | FOF_SILENT;

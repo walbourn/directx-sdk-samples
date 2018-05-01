@@ -523,8 +523,7 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
     pd3dImmediateContext->OMSetDepthStencilState( g_pDepthState, 0 );
   
     // Create constant buffers
-    D3D11_BUFFER_DESC cbDesc;
-    ZeroMemory( &cbDesc, sizeof(cbDesc) );
+    D3D11_BUFFER_DESC cbDesc = {};
     cbDesc.Usage = D3D11_USAGE_DYNAMIC;
     cbDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
     cbDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
