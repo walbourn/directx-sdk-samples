@@ -377,7 +377,7 @@ protected:
                       _In_ UINT iSpecularSlot );
 
 public:
-    CDXUTSDKMesh();
+    CDXUTSDKMesh() noexcept;
     virtual ~CDXUTSDKMesh();
 
     virtual HRESULT Create( _In_ ID3D11Device* pDev11, _In_z_ LPCWSTR szFileName, _In_opt_ SDKMESH_CALLBACKS11* pLoaderCallbacks = nullptr );

@@ -114,7 +114,7 @@ public:
     size_t  GetPosition();
     HRESULT Seek(_In_ size_t offset);
 
-    CMemoryStream();
+    CMemoryStream() noexcept;
     ~CMemoryStream();
 };
 
@@ -196,7 +196,11 @@ protected:
 public:
     HRESULT m_hLastError;
 
-    CEffectVector<T>() : m_hLastError(S_OK), m_pData(nullptr), m_CurSize(0), m_MaxSize(0)
+    CEffectVector<T>() noexcept :
+        m_hLastError(S_OK),
+        m_pData(nullptr),
+        m_CurSize(0),
+        m_MaxSize(0)
     {
 #if _DEBUG
         m_pCastData = nullptr;
@@ -473,7 +477,9 @@ template <class T, T MaxValue> class CheckedNumber
     bool    m_bValid;
 
 public:
-    CheckedNumber<T, MaxValue>() : m_Value(0), m_bValid(true)
+    CheckedNumber<T, MaxValue>() noexcept :
+        m_Value(0),
+        m_bValid(true)
     {
     }
 
@@ -576,7 +582,7 @@ public:
 
     void    EnableAlignment();
 
-    CDataBlock();
+    CDataBlock() noexcept;
     ~CDataBlock();
 
     friend class CDataBlockStore;
@@ -609,7 +615,7 @@ public:
     uint32_t GetSize();
     void    EnableAlignment();
 
-    CDataBlockStore();
+    CDataBlockStore() noexcept;
     ~CDataBlockStore();
 };
 
@@ -834,7 +840,11 @@ public:
         }
     };
 
-    CEffectHashTable() : m_rgpHashEntries(nullptr), m_NumHashSlots(0), m_NumEntries(0), m_bOwnHashEntryArray(false)
+    CEffectHashTable() noexcept :
+        m_rgpHashEntries(nullptr),
+        m_NumHashSlots(0),
+        m_NumEntries(0),
+        m_bOwnHashEntryArray(false)
     {
     }
 
@@ -1230,9 +1240,9 @@ protected:
     CDataBlockStore *m_pPrivateHeap;
 
 public:
-    CEffectHashTableWithPrivateHeap()
+    CEffectHashTableWithPrivateHeap() noexcept :
+        m_pPrivateHeap(nullptr)
     {
-        m_pPrivateHeap = nullptr;
     }
 
     void Cleanup()

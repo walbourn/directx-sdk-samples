@@ -31,7 +31,7 @@ class DXUTLock
 {
 public:
 #pragma prefast( suppress:26166, "g_bThreadSafe controls behavior" )
-    inline _Acquires_lock_(g_cs) DXUTLock()  { if( g_bThreadSafe ) EnterCriticalSection( &g_cs ); }
+    inline _Acquires_lock_(g_cs) DXUTLock() noexcept { if( g_bThreadSafe ) EnterCriticalSection( &g_cs ); }
 #pragma prefast( suppress:26165, "g_bThreadSafe controls behavior" )
     inline _Releases_lock_(g_cs) ~DXUTLock() { if( g_bThreadSafe ) LeaveCriticalSection( &g_cs ); }
 };
@@ -93,11 +93,9 @@ protected:
         ID3D11Device1*          m_D3D11Device1;            // the D3D11.1 rendering device
         ID3D11DeviceContext1*	m_D3D11DeviceContext1;	   // the D3D11.1 immediate device context
 
-#ifdef USE_DIRECT3D11_2
         // D3D11.2 specific
         ID3D11Device2*          m_D3D11Device2;            // the D3D11.2 rendering device
         ID3D11DeviceContext2*	m_D3D11DeviceContext2;	   // the D3D11.2 immediate device context
-#endif
 
 #ifdef USE_DIRECT3D11_3
                                                            // D3D11.3 specific
@@ -253,8 +251,15 @@ protected:
     STATE m_state;
 
 public:
-    DXUTState()  { Create(); }
-    ~DXUTState() { Destroy(); }
+    DXUTState() noexcept : m_state{}
+    {
+        Create();
+    }
+
+    ~DXUTState()
+    {
+        Destroy();
+    }
 
     void Create()
     {
@@ -315,10 +320,8 @@ public:
     GET_SET_ACCESSOR( ID3D11Device1*, D3D11Device1 );
     GET_SET_ACCESSOR( ID3D11DeviceContext1*, D3D11DeviceContext1 );
 
-#ifdef USE_DIRECT3D11_2
     GET_SET_ACCESSOR(ID3D11Device2*, D3D11Device2);
     GET_SET_ACCESSOR(ID3D11DeviceContext2*, D3D11DeviceContext2);
-#endif
 
 #ifdef USE_DIRECT3D11_3
     GET_SET_ACCESSOR(ID3D11Device3*, D3D11Device3);
@@ -490,7 +493,7 @@ void WINAPI DXUTDestroyState()
 class DXUTMemoryHelper
 {
 public:
-    DXUTMemoryHelper()  { DXUTCreateState(); }
+    DXUTMemoryHelper() noexcept { DXUTCreateState(); }
     ~DXUTMemoryHelper() { DXUTDestroyState(); }
 };
 
@@ -617,10 +620,8 @@ ID3D11DeviceContext* WINAPI DXUTGetD3D11DeviceContext()    { return GetDXUTState
 ID3D11Device1* WINAPI DXUTGetD3D11Device1()                { return GetDXUTState().GetD3D11Device1(); }
 ID3D11DeviceContext1* WINAPI DXUTGetD3D11DeviceContext1()  { return GetDXUTState().GetD3D11DeviceContext1(); }
 
-#ifdef USE_DIRECT3D11_2
 ID3D11Device2* WINAPI DXUTGetD3D11Device2()                { return GetDXUTState().GetD3D11Device2(); }
 ID3D11DeviceContext2* WINAPI DXUTGetD3D11DeviceContext2()  { return GetDXUTState().GetD3D11DeviceContext2(); }
-#endif
 
 #ifdef USE_DIRECT3D11_3
 ID3D11Device3* WINAPI DXUTGetD3D11Device3() { return GetDXUTState().GetD3D11Device3(); }
@@ -2600,7 +2601,6 @@ HRESULT DXUTCreate3DEnvironment11()
         }
     }
 
-#ifdef USE_DIRECT3D11_2
     // Direct3D 11.2
     {
         ID3D11Device2* pd3d11Device2 = nullptr;
@@ -2617,7 +2617,6 @@ HRESULT DXUTCreate3DEnvironment11()
             }
         }
     }
-#endif
 
 #ifdef USE_DIRECT3D11_3
     // Direct3D 11.3
@@ -3085,11 +3084,9 @@ void DXUTCleanup3DEnvironment( _In_ bool bReleaseSettings )
         SAFE_RELEASE( pImmediateContext1 );
         GetDXUTState().SetD3D11DeviceContext1( nullptr );
 
-#ifdef USE_DIRECT3D11_2
         auto pImmediateContext2 = DXUTGetD3D11DeviceContext2();
         SAFE_RELEASE(pImmediateContext2);
         GetDXUTState().SetD3D11DeviceContext2(nullptr);
-#endif
 
 #ifdef USE_DIRECT3D11_3
         auto pImmediateContext3 = DXUTGetD3D11DeviceContext3();
@@ -3119,11 +3116,9 @@ void DXUTCleanup3DEnvironment( _In_ bool bReleaseSettings )
             SAFE_RELEASE( pd3dDevice1 );
             GetDXUTState().SetD3D11Device1(nullptr);
 
-#ifdef USE_DIRECT3D11_2
             auto pd3dDevice2 = DXUTGetD3D11Device2();
             SAFE_RELEASE(pd3dDevice2);
             GetDXUTState().SetD3D11Device2(nullptr);
-#endif
 
 #ifdef USE_DIRECT3D11_3
             auto pd3dDevice3 = DXUTGetD3D11Device3();

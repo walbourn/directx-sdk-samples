@@ -35,14 +35,6 @@
 #define USE_DIRECT3D11_3
 #endif
 
-#if (_WIN32_WINNT >= 0x0603) && !defined(USE_DIRECT3D11_2)
-#define USE_DIRECT3D11_2
-#endif
-
-#if defined(USE_DIRECT3D11_3) && !defined(USE_DIRECT3D11_2)
-#define USE_DIRECT3D11_2
-#endif
-
 // #define DXUT_AUTOLIB to automatically include the libs needed for DXUT 
 #ifdef DXUT_AUTOLIB
 #pragma comment( lib, "comctl32.lib" )
@@ -79,11 +71,8 @@
 #include <d3dcommon.h>
 #include <dxgi.h>
 #include <d3d11_1.h>
-#include <d3dcompiler.h>
-
-#ifdef USE_DIRECT3D11_2
 #include <d3d11_2.h>
-#endif
+#include <d3dcompiler.h>
 
 #ifdef USE_DIRECT3D11_3
 #include <d3d11_3.h>
@@ -142,7 +131,7 @@
     ((DWORD)((((a)&0xff)<<24)|(((r)&0xff)<<16)|(((g)&0xff)<<8)|((b)&0xff)))
 #endif
 
-#define DXUT_VERSION 1118
+#define DXUT_VERSION 1119
 
 //--------------------------------------------------------------------------------------
 // Structs
@@ -294,10 +283,8 @@ ID3D11DeviceContext*     WINAPI DXUTGetD3D11DeviceContext();
 ID3D11Device1*           WINAPI DXUTGetD3D11Device1();
 ID3D11DeviceContext1*	 WINAPI DXUTGetD3D11DeviceContext1();
 
-#ifdef USE_DIRECT3D11_2
 ID3D11Device2*           WINAPI DXUTGetD3D11Device2();
 ID3D11DeviceContext2*	 WINAPI DXUTGetD3D11DeviceContext2();
-#endif
 
 #ifdef USE_DIRECT3D11_3
 ID3D11Device3*           WINAPI DXUTGetD3D11Device3();

@@ -77,7 +77,7 @@ HRESULT DXUTSnapD3D11Screenshot( _In_z_ LPCWSTR szFileName, _In_ bool usedds = t
 class CDXUTTimer
 {
 public:
-    CDXUTTimer();
+    CDXUTTimer() noexcept;
 
     void            Reset(); // resets the timer
     void            Start(); // starts the timer
@@ -96,7 +96,6 @@ public:
 protected:
     LARGE_INTEGER   GetAdjustedCurrentTime() const;
 
-    bool m_bUsingQPF;
     bool m_bTimerStopped;
     LONGLONG m_llQPFTicksPerSec;
 

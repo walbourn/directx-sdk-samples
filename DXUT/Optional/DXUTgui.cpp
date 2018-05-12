@@ -401,34 +401,34 @@ void EndText11( ID3D11Device* pd3dDevice, ID3D11DeviceContext* pd3d11DeviceConte
 // CDXUTDialog class
 //======================================================================================
 
-CDXUTDialog::CDXUTDialog() :
+CDXUTDialog::CDXUTDialog() noexcept :
+    m_bNonUserEvents(false),
+    m_bKeyboardInput(false),
+    m_bMouseInput(true),
+    m_nDefaultControlID(0xffff),
+    m_fTimeLastRefresh(0),
+    m_pControlMouseOver(nullptr),
+    m_bVisible(true),
+    m_bCaption(false),
+    m_bMinimized(false),
+    m_bDrag(false),
+    m_wszCaption{},
     m_x( 0 ),
     m_y( 0 ),
     m_width( 0 ),
     m_height( 0 ),
+    m_nCaptionHeight(18),
+    m_colorTopLeft(0),
+    m_colorTopRight(0),
+    m_colorBottomLeft(0),
+    m_colorBottomRight(0),
     m_pManager( nullptr ),
-    m_bVisible( true ),
-    m_bCaption( false ),
-    m_bMinimized( false ),
-    m_bDrag( false ),
-    m_nCaptionHeight( 18 ),
-    m_colorTopLeft( 0 ),
-    m_colorTopRight( 0 ),
-    m_colorBottomLeft( 0 ),
-    m_colorBottomRight( 0 ),
     m_pCallbackEvent( nullptr ),
     m_pCallbackEventUserContext( nullptr ),
-    m_fTimeLastRefresh( 0 ),
-    m_pControlMouseOver( nullptr ),
-    m_nDefaultControlID( 0xffff ),
-    m_bNonUserEvents( false ),
-    m_bKeyboardInput( false ),
-    m_bMouseInput( true )
+    m_CapElement{},
+    m_pNextDialog(this),
+    m_pPrevDialog(this)
 {
-    m_wszCaption[0] = L'\0';
-
-    m_pNextDialog = this;
-    m_pPrevDialog = this;
 }
 
 
@@ -2238,7 +2238,7 @@ void CDXUTDialog::InitDefaultElements()
 //======================================================================================
 
 //--------------------------------------------------------------------------------------
-CDXUTDialogResourceManager::CDXUTDialogResourceManager() :
+CDXUTDialogResourceManager::CDXUTDialogResourceManager() noexcept :
     m_pVSRenderUI11(nullptr),
     m_pPSRenderUI11(nullptr),
     m_pPSRenderUIUntex11(nullptr),
@@ -2247,13 +2247,20 @@ CDXUTDialogResourceManager::CDXUTDialogResourceManager() :
     m_pBlendStateUI11(nullptr),
     m_pSamplerStateUI11(nullptr),
     m_pDepthStencilStateStored11(nullptr),
+    m_StencilRefStored11(0),
     m_pRasterizerStateStored11(nullptr),
     m_pBlendStateStored11(nullptr),
+    m_BlendFactorStored11{},
+    m_SampleMaskStored11(0),
     m_pSamplerStateStored11(nullptr),
     m_pInputLayout11(nullptr),
     m_pVBScreenQuad11(nullptr),
     m_pSpriteBuffer11(nullptr),
-    m_SpriteBufferBytes11(0)
+    m_SpriteBufferBytes11(0),
+    m_nBackBufferWidth(0),
+    m_nBackBufferHeight(0),
+    m_pd3d11Device(nullptr),
+    m_pd3d11DeviceContext(nullptr)
 {
 }
 
@@ -2827,7 +2834,7 @@ HRESULT CDXUTDialogResourceManager::CreateTexture11( _In_ UINT iTexture )
 // CDXUTControl class
 //======================================================================================
 
-CDXUTControl::CDXUTControl( _In_opt_ CDXUTDialog* pDialog )
+CDXUTControl::CDXUTControl( _In_opt_ CDXUTDialog* pDialog ) noexcept
 {
     m_Type = DXUT_CONTROL_BUTTON;
     m_pDialog = pDialog;
@@ -2924,7 +2931,7 @@ void CDXUTControl::UpdateRects()
 //======================================================================================
 
 //--------------------------------------------------------------------------------------
-CDXUTStatic::CDXUTStatic( _In_opt_ CDXUTDialog* pDialog )
+CDXUTStatic::CDXUTStatic( _In_opt_ CDXUTDialog* pDialog ) noexcept
 {
     m_Type = DXUT_CONTROL_STATIC;
     m_pDialog = pDialog;
@@ -2995,7 +3002,7 @@ HRESULT CDXUTStatic::SetText( _In_z_ LPCWSTR strText )
 // CDXUTButton class
 //======================================================================================
 
-CDXUTButton::CDXUTButton( _In_opt_ CDXUTDialog* pDialog )
+CDXUTButton::CDXUTButton( _In_opt_ CDXUTDialog* pDialog ) noexcept
 {
     m_Type = DXUT_CONTROL_BUTTON;
     m_pDialog = pDialog;
@@ -3169,12 +3176,13 @@ void CDXUTButton::Render( _In_ float fElapsedTime )
 // CDXUTCheckBox class
 //======================================================================================
 
-CDXUTCheckBox::CDXUTCheckBox( _In_opt_ CDXUTDialog* pDialog )
+CDXUTCheckBox::CDXUTCheckBox( _In_opt_ CDXUTDialog* pDialog ) noexcept :
+    m_bChecked(false),
+    m_rcButton{},
+    m_rcText{}
 {
     m_Type = DXUT_CONTROL_CHECKBOX;
     m_pDialog = pDialog;
-
-    m_bChecked = false;
 }
 
 
@@ -3342,7 +3350,8 @@ void CDXUTCheckBox::Render( _In_ float fElapsedTime )
 // CDXUTRadioButton class
 //======================================================================================
 
-CDXUTRadioButton::CDXUTRadioButton( _In_opt_ CDXUTDialog* pDialog )
+CDXUTRadioButton::CDXUTRadioButton( _In_opt_ CDXUTDialog* pDialog ) noexcept :
+    m_nButtonGroup(0)
 {
     m_Type = DXUT_CONTROL_RADIOBUTTON;
     m_pDialog = pDialog;
@@ -3465,17 +3474,20 @@ void CDXUTRadioButton::SetCheckedInternal( bool bChecked, bool bClearGroup, bool
 // CDXUTComboBox class
 //======================================================================================
 
-CDXUTComboBox::CDXUTComboBox( _In_opt_ CDXUTDialog* pDialog ) : m_ScrollBar( pDialog )
+CDXUTComboBox::CDXUTComboBox( _In_opt_ CDXUTDialog* pDialog ) noexcept :
+    m_iSelected(-1),
+    m_iFocused(-1),
+    m_nDropHeight(100),
+    m_ScrollBar( pDialog ),
+    m_nSBWidth(16),
+    m_bOpened(false),
+    m_rcText{},
+    m_rcButton{},
+    m_rcDropdown{},
+    m_rcDropdownText{}
 {
     m_Type = DXUT_CONTROL_COMBOBOX;
-    m_pDialog = pDialog;
-
-    m_nDropHeight = 100;
-
-    m_nSBWidth = 16;
-    m_bOpened = false;
-    m_iSelected = -1;
-    m_iFocused = -1;
+    m_pDialog = pDialog; 
 }
 
 
@@ -4162,16 +4174,18 @@ HRESULT CDXUTComboBox::SetSelectedByData( _In_ void* pData )
 // CDXUTSlider class
 //======================================================================================
 
-CDXUTSlider::CDXUTSlider( _In_opt_ CDXUTDialog* pDialog )
+CDXUTSlider::CDXUTSlider( _In_opt_ CDXUTDialog* pDialog ) noexcept :
+    m_nValue(50),
+    m_nMin(0),
+    m_nMax(100),
+    m_nDragX(0),
+    m_nDragOffset(0),
+    m_nButtonX(0),
+    m_bPressed(false),
+    m_rcButton{}
 {
     m_Type = DXUT_CONTROL_SLIDER;
     m_pDialog = pDialog;
-
-    m_nMin = 0;
-    m_nMax = 100;
-    m_nValue = 50;
-
-    m_bPressed = false;
 }
 
 
@@ -4436,24 +4450,23 @@ void CDXUTSlider::Render( _In_ float fElapsedTime )
 // CDXUTScrollBar class
 //======================================================================================
 
-CDXUTScrollBar::CDXUTScrollBar( _In_opt_ CDXUTDialog* pDialog )
+CDXUTScrollBar::CDXUTScrollBar( _In_opt_ CDXUTDialog* pDialog ) noexcept :
+    m_bShowThumb(true),
+    m_bDrag(false),
+    m_rcUpButton{},
+    m_rcDownButton{},
+    m_rcTrack{},
+    m_rcThumb{},
+    m_nPosition(0),
+    m_nPageSize(1),
+    m_nStart(0),
+    m_nEnd(1),
+    m_LastMouse{ 0, 0 },
+    m_Arrow(CLEAR),
+    m_dArrowTS(0.0)
 {
     m_Type = DXUT_CONTROL_SCROLLBAR;
     m_pDialog = pDialog;
-
-    m_bShowThumb = true;
-    m_bDrag = false;
-
-    SetRect( &m_rcUpButton, 0, 0, 0, 0 );
-    SetRect( &m_rcDownButton, 0, 0, 0, 0 );
-    SetRect( &m_rcTrack, 0, 0, 0, 0 );
-    SetRect( &m_rcThumb, 0, 0, 0, 0 );
-    m_nPosition = 0;
-    m_nPageSize = 1;
-    m_nStart = 0;
-    m_nEnd = 1;
-    m_Arrow = CLEAR;
-    m_dArrowTS = 0.0;
 }
 
 
@@ -4816,19 +4829,21 @@ void CDXUTScrollBar::Cap()  // Clips position at boundaries. Ensures it stays wi
 // CDXUTListBox class
 //======================================================================================
 
-CDXUTListBox::CDXUTListBox( _In_opt_ CDXUTDialog* pDialog ) : m_ScrollBar( pDialog )
+CDXUTListBox::CDXUTListBox( _In_opt_ CDXUTDialog* pDialog ) noexcept :
+    m_rcText{},
+    m_rcSelection{},
+    m_ScrollBar(pDialog),
+    m_nSBWidth(16),
+    m_nBorder(6),
+    m_nMargin(5),
+    m_nTextHeight(0),
+    m_dwStyle(0),
+    m_nSelected(-1),
+    m_nSelStart(0),
+    m_bDrag(false)
 {
     m_Type = DXUT_CONTROL_LISTBOX;
     m_pDialog = pDialog;
-
-    m_dwStyle = 0;
-    m_nSBWidth = 16;
-    m_nSelected = -1;
-    m_nSelStart = 0;
-    m_bDrag = false;
-    m_nBorder = 6;
-    m_nMargin = 5;
-    m_nTextHeight = 0;
 }
 
 
@@ -5460,27 +5475,29 @@ bool CDXUTEditBox::s_bHideCaret;   // If true, we don't render the caret.
 #define EDITBOX_SCROLLEXTENT 4
 
 //--------------------------------------------------------------------------------------
-CDXUTEditBox::CDXUTEditBox( _In_opt_ CDXUTDialog* pDialog )
+CDXUTEditBox::CDXUTEditBox( _In_opt_ CDXUTDialog* pDialog ) noexcept :
+    m_nBorder(5),
+    m_nSpacing(4),
+    m_rcText{},
+    m_rcRender{},
+    m_bCaretOn(true),
+    m_nCaret(0),
+    m_bInsertMode(true),
+    m_nSelStart(0),
+    m_nFirstVisible(0),
+    m_bMouseDrag(false)
 {
     m_Type = DXUT_CONTROL_EDITBOX;
     m_pDialog = pDialog;
 
-    m_nBorder = 5;  // Default border width
-    m_nSpacing = 4;  // Default spacing
-
-    m_bCaretOn = true;
-    m_dfBlink = GetCaretBlinkTime() * 0.001f;
+    m_dfBlink = double(GetCaretBlinkTime()) * 0.001;
     m_dfLastBlink = DXUTGetGlobalTimer()->GetAbsoluteTime();
     s_bHideCaret = false;
-    m_nFirstVisible = 0;
+
     m_TextColor = D3DCOLOR_ARGB( 255, 16, 16, 16 );
     m_SelTextColor = D3DCOLOR_ARGB( 255, 255, 255, 255 );
     m_SelBkColor = D3DCOLOR_ARGB( 255, 40, 50, 92 );
     m_CaretColor = D3DCOLOR_ARGB( 255, 0, 0, 0 );
-    m_nCaret = m_nSelStart = 0;
-    m_bInsertMode = true;
-
-    m_bMouseDrag = false;
 }
 
 
@@ -6285,7 +6302,7 @@ HRESULT CUniBuffer::Analyse()
 
 
 //--------------------------------------------------------------------------------------
-CUniBuffer::CUniBuffer( _In_ int nInitialSize )
+CUniBuffer::CUniBuffer( _In_ int nInitialSize ) noexcept
 {
     m_nBufferSize = 0;
     m_pwszBuffer = nullptr;

@@ -110,12 +110,13 @@ void CDXUTIMEEditBox::InitDefaultElements( _In_ CDXUTDialog* pDialog )
 
 
 //--------------------------------------------------------------------------------------
-CDXUTIMEEditBox::CDXUTIMEEditBox( _In_opt_ CDXUTDialog* pDialog )
+CDXUTIMEEditBox::CDXUTIMEEditBox( _In_opt_ CDXUTDialog* pDialog ) noexcept :
+    m_nIndicatorWidth(0),
+    m_rcIndicator{}
 {
     m_Type = DXUT_CONTROL_IMEEDITBOX;
     m_pDialog = pDialog;
 
-    m_nIndicatorWidth = 0;
     m_ReadingColor = D3DCOLOR_ARGB( 188, 255, 255, 255 );
     m_ReadingWinColor = D3DCOLOR_ARGB( 128, 0, 0, 0 );
     m_ReadingSelColor = D3DCOLOR_ARGB( 255, 255, 0, 0 );

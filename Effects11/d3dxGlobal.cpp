@@ -23,7 +23,10 @@ namespace D3DX11Core
 // CMemoryStream - A class to simplify reading binary data
 //////////////////////////////////////////////////////////////////////////
 
-CMemoryStream::CMemoryStream() : m_pData(nullptr), m_cbData(0), m_readPtr(0)
+CMemoryStream::CMemoryStream() noexcept :
+    m_pData(nullptr),
+    m_cbData(0),
+    m_readPtr(0)
 {
 }
 
@@ -124,7 +127,7 @@ HRESULT CMemoryStream::Seek(_In_ size_t offset)
 // CDataBlock - used to dynamically build up the effect file in memory
 //////////////////////////////////////////////////////////////////////////
 
-CDataBlock::CDataBlock() :
+CDataBlock::CDataBlock() noexcept :
     m_size(0),
     m_maxSize(0),
     m_pData(nullptr),
@@ -251,7 +254,7 @@ void* CDataBlock::Allocate(uint32_t bufferSize, CDataBlock **ppBlock)
 
 //////////////////////////////////////////////////////////////////////////
 
-CDataBlockStore::CDataBlockStore() :
+CDataBlockStore::CDataBlockStore() noexcept :
     m_pFirst(nullptr),
     m_pLast(nullptr),
     m_Size(0),

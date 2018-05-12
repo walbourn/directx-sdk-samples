@@ -57,7 +57,7 @@
 class CD3DSettingsDlg
 {
 public:
-    CD3DSettingsDlg();
+    CD3DSettingsDlg() noexcept;
     ~CD3DSettingsDlg();
 
     void Init( _In_ CDXUTDialogResourceManager* pManager );

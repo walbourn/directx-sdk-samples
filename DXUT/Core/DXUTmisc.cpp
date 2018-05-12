@@ -25,15 +25,13 @@ CDXUTTimer* WINAPI DXUTGetGlobalTimer()
 
 
 //--------------------------------------------------------------------------------------
-CDXUTTimer::CDXUTTimer()
+CDXUTTimer::CDXUTTimer() noexcept :
+    m_bTimerStopped(true),
+    m_llQPFTicksPerSec{},
+    m_llStopTime{},
+    m_llLastElapsedTime{},
+    m_llBaseTime{}
 {
-    m_bTimerStopped = true;
-    m_llQPFTicksPerSec = 0;
-
-    m_llStopTime = 0;
-    m_llLastElapsedTime = 0;
-    m_llBaseTime = 0;
-
     // Use QueryPerformanceFrequency to get the frequency of the counter
     LARGE_INTEGER qwTicksPerSec = {};
     QueryPerformanceFrequency( &qwTicksPerSec );

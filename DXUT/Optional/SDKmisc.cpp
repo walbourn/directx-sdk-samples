@@ -904,9 +904,16 @@ HRESULT CDXUTResourceCache::OnDestroyDevice()
 //======================================================================================
 
 _Use_decl_annotations_
-CDXUTTextHelper::CDXUTTextHelper( ID3D11Device* pd3d11Device, ID3D11DeviceContext* pd3d11DeviceContext, CDXUTDialogResourceManager* pManager, int nLineHeight )
+CDXUTTextHelper::CDXUTTextHelper( ID3D11Device* pd3d11Device, ID3D11DeviceContext* pd3d11DeviceContext, CDXUTDialogResourceManager* pManager, int nLineHeight ) :
+    m_clr(0, 0, 0, 0),
+    m_pt{ 0, 0 },
+    m_nLineHeight{},
+    m_pd3d11Device(nullptr),
+    m_pd3d11DeviceContext(nullptr),
+    m_pManager(nullptr)
 {
     Init( nLineHeight );
+
     m_pd3d11Device = pd3d11Device;
     m_pd3d11DeviceContext = pd3d11DeviceContext;
     m_pManager = pManager;

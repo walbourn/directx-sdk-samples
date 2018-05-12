@@ -31,7 +31,7 @@ public:
     static HRESULT CreateIMEEditBox( _In_ CDXUTDialog* pDialog, _In_ int ID, _In_z_ LPCWSTR strText, _In_ int x, _In_ int y, _In_ int width,
                                      _In_ int height, _In_ bool bIsDefault=false, _Outptr_opt_ CDXUTIMEEditBox** ppCreated=nullptr );
 
-    CDXUTIMEEditBox( _In_opt_ CDXUTDialog* pDialog = nullptr );
+    CDXUTIMEEditBox( _In_opt_ CDXUTDialog* pDialog = nullptr ) noexcept;
     virtual ~CDXUTIMEEditBox();
 
     static void InitDefaultElements( _In_ CDXUTDialog* pDialog );
@@ -97,6 +97,12 @@ protected:
         int nFirstSelected; // First character position of the selected string in HoriCand
         int nHoriSelectedLen; // Length of the selected string in HoriCand
         RECT rcCandidate;   // Candidate rectangle computed and filled each time before rendered
+
+        CCandList() noexcept :
+            nFirstSelected(0),
+            nHoriSelectedLen(0),
+            rcCandidate{}
+        {}
     };
 
     static POINT s_ptCompString;        // Composition string position. Updated every frame.

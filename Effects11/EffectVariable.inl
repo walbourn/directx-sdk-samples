@@ -1181,7 +1181,8 @@ struct TTopLevelVariable : public SVariable, public IBaseInterface
         return pEffect;
     }
 
-    TTopLevelVariable() : pEffect (nullptr)
+    TTopLevelVariable() noexcept :
+        pEffect(nullptr)
     {
     }
 
@@ -1220,10 +1221,10 @@ struct TMember : public SVariable, public IBaseInterface
     // Required to create member/element variable interfaces
     TTopLevelVariable<ID3DX11EffectVariable>    *pTopLevelEntity;
 
-    TMember()
+    TMember() noexcept :
+        IsSingleElement(false),
+        pTopLevelEntity(nullptr)
     {
-        IsSingleElement = false;
-        pTopLevelEntity = nullptr;
     }
 
     CEffect* GetEffect()
@@ -1390,10 +1391,10 @@ struct TGlobalVariable : public TVariable<TTopLevelVariable<IBaseInterface> >
     // if numeric, pointer to the constant buffer where this variable lives
     SConstantBuffer *pCB;
 
-    uint32_t            AnnotationCount;
+    uint32_t        AnnotationCount;
     SAnnotation     *pAnnotations;
 
-    TGlobalVariable() :
+    TGlobalVariable() noexcept :
         LastModifiedTime(0),
         pCB(nullptr),
         AnnotationCount(0),

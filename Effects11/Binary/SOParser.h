@@ -32,11 +32,11 @@ class CSOParser
     char                                        m_pError[ MAX_ERROR_SIZE + 1 ];                 // Error buffer
 
 public:
-    CSOParser()
+    CSOParser() noexcept :
+        m_newEntry{},
+        m_SemanticString{},
+        m_pError{}
     {
-        ZeroMemory(&m_newEntry, sizeof(m_newEntry));
-        ZeroMemory(m_SemanticString, sizeof(m_SemanticString));
-        m_pError[0] = 0;
     }
 
     ~CSOParser()
