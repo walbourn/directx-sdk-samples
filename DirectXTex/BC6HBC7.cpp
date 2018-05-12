@@ -512,9 +512,9 @@ namespace
 
         INTColor& SignExtend(_In_ const LDRColorA& Prec)
         {
-            r = SIGN_EXTEND(r, Prec.r);
-            g = SIGN_EXTEND(g, Prec.g);
-            b = SIGN_EXTEND(b, Prec.b);
+            r = SIGN_EXTEND(r, int(Prec.r));
+            g = SIGN_EXTEND(g, int(Prec.g));
+            b = SIGN_EXTEND(b, int(Prec.b));
             return *this;
         }
 
@@ -715,7 +715,7 @@ namespace
             INTColor aIPixels[NUM_PIXELS_PER_BLOCK];
 
             EncodeParams(const HDRColorA* const aOriginal, bool bSignedFormat) :
-                fBestErr(FLT_MAX), bSigned(bSignedFormat), aHDRPixels(aOriginal)
+                fBestErr(FLT_MAX), bSigned(bSignedFormat), uMode(0), uShape(0), aHDRPixels(aOriginal), aUnqEndPts{}, aIPixels{}
             {
                 for (size_t i = 0; i < NUM_PIXELS_PER_BLOCK; ++i)
                 {
@@ -791,7 +791,7 @@ namespace
             LDRColorA aLDRPixels[NUM_PIXELS_PER_BLOCK];
             const HDRColorA* const aHDRPixels;
 
-            EncodeParams(const HDRColorA* const aOriginal) : aHDRPixels(aOriginal) {}
+            EncodeParams(const HDRColorA* const aOriginal) : uMode(0), aEndPts{}, aLDRPixels{}, aHDRPixels(aOriginal) {}
         };
 #pragma warning(pop)
 
@@ -1188,7 +1188,7 @@ namespace
         _In_reads_(NUM_PIXELS_PER_BLOCK) const HDRColorA* const pPoints,
         _Out_ HDRColorA* pX,
         _Out_ HDRColorA* pY,
-        _In_range_(3, 4) size_t cSteps,
+        _In_range_(3, 4) uint32_t cSteps,
         size_t cPixels,
         _In_reads_(cPixels) const size_t* pIndex)
     {
@@ -1320,13 +1320,13 @@ namespace
                     (pPoints[pIndex[iPoint]].g - X.g) * Dir.g +
                     (pPoints[pIndex[iPoint]].b - X.b) * Dir.b;
 
-                size_t iStep;
+                uint32_t iStep;
                 if (fDot <= 0.0f)
                     iStep = 0;
                 if (fDot >= fSteps)
                     iStep = cSteps - 1;
                 else
-                    iStep = size_t(fDot + 0.5f);
+                    iStep = uint32_t(fDot + 0.5f);
 
                 HDRColorA Diff;
                 Diff.r = pSteps[iStep].r - pPoints[pIndex[iPoint]].r;
@@ -1384,7 +1384,7 @@ namespace
         _In_reads_(NUM_PIXELS_PER_BLOCK) const HDRColorA* const pPoints,
         _Out_ HDRColorA* pX,
         _Out_ HDRColorA* pY,
-        _In_range_(3, 4) size_t cSteps,
+        _In_range_(3, 4) uint32_t cSteps,
         size_t cPixels,
         _In_reads_(cPixels) const size_t* pIndex)
     {
@@ -1505,13 +1505,14 @@ namespace
             for (size_t iPoint = 0; iPoint < cPixels; ++iPoint)
             {
                 float fDot = (pPoints[pIndex[iPoint]] - X) * Dir;
-                size_t iStep;
+
+                uint32_t iStep;
                 if (fDot <= 0.0f)
                     iStep = 0;
                 if (fDot >= fSteps)
                     iStep = cSteps - 1;
                 else
-                    iStep = size_t(fDot + 0.5f);
+                    iStep = uint32_t(fDot + 0.5f);
 
                 HDRColorA Diff = pSteps[iStep] - pPoints[pIndex[iPoint]];
                 float fC = pC[iStep] * (1.0f / 8.0f);
@@ -1671,8 +1672,7 @@ void D3DX_BC6H::Decode(bool bSigned, HDRColorA* pOut) const
         _Analysis_assume_(ms_aModeToInfo[uMode] < ARRAYSIZE(ms_aDesc));
         const ModeInfo& info = ms_aInfo[ms_aModeToInfo[uMode]];
 
-        INTEndPntPair aEndPts[BC6H_MAX_REGIONS];
-        memset(aEndPts, 0, BC6H_MAX_REGIONS * 2 * sizeof(INTColor));
+        INTEndPntPair aEndPts[BC6H_MAX_REGIONS] = {};
         uint32_t uShape = 0;
 
         // Read header
@@ -2539,7 +2539,7 @@ void D3DX_BC7::Decode(HDRColorA* pOut) const
         const uint8_t uIndexPrec = ms_aInfo[uMode].uIndexPrec;
         const uint8_t uIndexPrec2 = ms_aInfo[uMode].uIndexPrec2;
         size_t i;
-        size_t uStartBit = uMode + 1;
+        size_t uStartBit = size_t(uMode) + 1;
         uint8_t P[6];
         uint8_t uShape = GetBits(uStartBit, ms_aInfo[uMode].uPartitionBits);
         assert(uShape < BC7_MAX_SHAPES);
@@ -3162,7 +3162,7 @@ void D3DX_BC7::EmitBlock(const EncodeParams* pEP, size_t uShape, size_t uRotatio
 
     if (uPBits)
     {
-        const size_t uNumEP = size_t(1 + uPartitions) << 1;
+        const size_t uNumEP = (size_t(uPartitions) + 1) << 1;
         uint8_t aPVote[BC7_MAX_REGIONS << 1] = { 0,0,0,0,0,0 };
         uint8_t aCount[BC7_MAX_REGIONS << 1] = { 0,0,0,0,0,0 };
         for (uint8_t ch = 0; ch < BC7_NUM_CHANNELS; ch++)

@@ -237,7 +237,7 @@ namespace TriangleFilter
         TriangleRow*                next;
         ScopedAlignedArrayXMVECTOR  scanline;
 
-        TriangleRow() throw() : remaining(0), next(nullptr) {}
+        TriangleRow() noexcept : remaining(0), next(nullptr) {}
     };
 
     static const size_t TF_FILTER_SIZE = sizeof(Filter) - sizeof(FilterFrom);
@@ -263,8 +263,8 @@ namespace TriangleFilter
             float src = float(u) - 0.5f;
             float destMin = src * scale;
             float destMax = destMin + scale;
-
-            totalSize += TF_FROM_SIZE + TF_TO_SIZE + size_t(destMax - destMin + repeat + 1.f) * TF_TO_SIZE * 2;
+            float t = destMax - destMin + repeat + 1.f;
+            totalSize += TF_FROM_SIZE + TF_TO_SIZE + size_t(t) * TF_TO_SIZE * 2;
         }
 
         uint8_t* pFilter = nullptr;

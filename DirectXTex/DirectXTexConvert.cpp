@@ -1281,13 +1281,13 @@ _Use_decl_annotations_ bool DirectX::_LoadScanline(
 
                 // http://msdn.microsoft.com/en-us/library/windows/desktop/dd206750.aspx
 
-                // Y’  = Y - 16
-                // Cb’ = Cb - 128
-                // Cr’ = Cr - 128
+                // Y'  = Y - 16
+                // Cb' = Cb - 128
+                // Cr' = Cr - 128
 
-                // R = 1.1644Y’ + 1.5960Cr’
-                // G = 1.1644Y’ - 0.3917Cb’ - 0.8128Cr’
-                // B = 1.1644Y’ + 2.0172Cb’
+                // R = 1.1644Y' + 1.5960Cr'
+                // G = 1.1644Y' - 0.3917Cb' - 0.8128Cr'
+                // B = 1.1644Y' + 2.0172Cb'
 
                 int r = (298 * y + 409 * v + 128) >> 8;
                 int g = (298 * y - 100 * u - 208 * v + 128) >> 8;
@@ -1317,13 +1317,13 @@ _Use_decl_annotations_ bool DirectX::_LoadScanline(
 
                 // http://msdn.microsoft.com/en-us/library/windows/desktop/bb970578.aspx
 
-                // Y’  = Y - 64
-                // Cb’ = Cb - 512
-                // Cr’ = Cr - 512
+                // Y'  = Y - 64
+                // Cb' = Cb - 512
+                // Cr' = Cr - 512
 
-                // R = 1.1678Y’ + 1.6007Cr’
-                // G = 1.1678Y’ - 0.3929Cb’ - 0.8152Cr’
-                // B = 1.1678Y’ + 2.0232Cb’
+                // R = 1.1678Y' + 1.6007Cr'
+                // G = 1.1678Y' - 0.3929Cb' - 0.8152Cr'
+                // B = 1.1678Y' + 2.0232Cb'
 
                 int r = static_cast<int>((76533 * y + 104905 * v + 32768) >> 16);
                 int g = static_cast<int>((76533 * y - 25747 * u - 53425 * v + 32768) >> 16);
@@ -1353,13 +1353,13 @@ _Use_decl_annotations_ bool DirectX::_LoadScanline(
 
                 // http://msdn.microsoft.com/en-us/library/windows/desktop/bb970578.aspx
 
-                // Y’  = Y - 4096
-                // Cb’ = Cb - 32768
-                // Cr’ = Cr - 32768
+                // Y'  = Y - 4096
+                // Cb' = Cb - 32768
+                // Cr' = Cr - 32768
 
-                // R = 1.1689Y’ + 1.6023Cr’
-                // G = 1.1689Y’ - 0.3933Cb’ - 0.8160Cr’
-                // B = 1.1689Y’+ 2.0251Cb’
+                // R = 1.1689Y' + 1.6023Cr'
+                // G = 1.1689Y' - 0.3933Cb' - 0.8160Cr'
+                // B = 1.1689Y'+ 2.0251Cb'
 
                 int r = static_cast<int>((76607 * y + 105006 * v + 32768) >> 16);
                 int g = static_cast<int>((76607 * y - 25772 * u - 53477 * v + 32768) >> 16);
@@ -2882,7 +2882,7 @@ namespace
     };
 
 #pragma prefast( suppress : 25004, "Signature must match bsearch_s" );
-    int __cdecl ConvertCompare(void *context, const void* ptr1, const void *ptr2) throw()
+    int __cdecl ConvertCompare(void *context, const void* ptr1, const void *ptr2) noexcept
     {
         UNREFERENCED_PARAMETER(context);
         auto p1 = static_cast<const ConvertData*>(ptr1);
@@ -4301,6 +4301,7 @@ namespace
             return false;
         }
 
+        // Check for special cases
 #if defined(_XBOX_ONE) && defined(_TITLE)
         if (sformat == DXGI_FORMAT_R16G16B16A16_FLOAT
             || sformat == DXGI_FORMAT_R16_FLOAT
@@ -4312,7 +4313,30 @@ namespace
         }
 #endif
 
-        // Check for special cases
+        switch (sformat)
+        {
+        case DXGI_FORMAT_R32G32B32A32_FLOAT:
+        case DXGI_FORMAT_R32G32B32_FLOAT:
+        case DXGI_FORMAT_R32G32_FLOAT:
+        case DXGI_FORMAT_R32_FLOAT:
+        case DXGI_FORMAT_D32_FLOAT:
+            switch (tformat)
+            {
+            case DXGI_FORMAT_R16G16B16A16_FLOAT:
+            case DXGI_FORMAT_R16G16_FLOAT:
+            case DXGI_FORMAT_R16_FLOAT:
+                // WIC conversions for FP32->FP16 can result in NaN values instead of clamping for min/max value
+                return false;
+
+            default:
+                break;
+            }
+            break;
+
+        default:
+            break;
+        }
+
         switch (sformat)
         {
         case DXGI_FORMAT_R32G32B32A32_FLOAT:

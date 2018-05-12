@@ -64,7 +64,7 @@ namespace
         _Out_ HDRColorA *pX,
         _Out_ HDRColorA *pY,
         _In_reads_(NUM_PIXELS_PER_BLOCK) const HDRColorA *pPoints,
-        size_t cSteps,
+        uint32_t cSteps,
         DWORD flags)
     {
         static const float fEpsilon = (0.25f / 64.0f) * (0.25f / 64.0f);
@@ -252,13 +252,13 @@ namespace
                     (pPoints[iPoint].b - X.b) * Dir.b;
 
 
-                size_t iStep;
+                uint32_t iStep;
                 if (fDot <= 0.0f)
                     iStep = 0;
                 else if (fDot >= fSteps)
                     iStep = cSteps - 1;
                 else
-                    iStep = static_cast<size_t>(fDot + 0.5f);
+                    iStep = uint32_t(fDot + 0.5f);
 
 
                 HDRColorA Diff;
@@ -380,7 +380,7 @@ namespace
         static_assert(sizeof(D3DX_BC1) == 8, "D3DX_BC1 should be 8 bytes");
 
         // Determine if we need to colorkey this block
-        size_t uSteps;
+        uint32_t uSteps;
 
         if (bColorKey)
         {
@@ -628,14 +628,14 @@ namespace
                 }
 
                 float fDot = (Clr.r - Step[0].r) * Dir.r + (Clr.g - Step[0].g) * Dir.g + (Clr.b - Step[0].b) * Dir.b;
-                uint32_t iStep;
 
+                uint32_t iStep;
                 if (fDot <= 0.0f)
                     iStep = 0;
                 else if (fDot >= fSteps)
                     iStep = 1;
                 else
-                    iStep = static_cast<uint32_t>(pSteps[static_cast<size_t>(fDot + 0.5f)]);
+                    iStep = uint32_t(pSteps[uint32_t(fDot + 0.5f)]);
 
                 dw = (iStep << 30) | (dw >> 2);
 
@@ -739,8 +739,7 @@ void DirectX::D3DXEncodeBC1(uint8_t *pBC, const XMVECTOR *pColor, float threshol
 
     if (flags & BC_FLAGS_DITHER_A)
     {
-        float fError[NUM_PIXELS_PER_BLOCK];
-        memset(fError, 0x00, NUM_PIXELS_PER_BLOCK * sizeof(float));
+        float fError[NUM_PIXELS_PER_BLOCK] = {};
 
         for (size_t i = 0; i < NUM_PIXELS_PER_BLOCK; ++i)
         {
@@ -839,10 +838,7 @@ void DirectX::D3DXEncodeBC2(uint8_t *pBC, const XMVECTOR *pColor, DWORD flags)
     pBC2->bitmap[0] = 0;
     pBC2->bitmap[1] = 0;
 
-    float fError[NUM_PIXELS_PER_BLOCK];
-    if (flags & BC_FLAGS_DITHER_A)
-        memset(fError, 0x00, NUM_PIXELS_PER_BLOCK * sizeof(float));
-
+    float fError[NUM_PIXELS_PER_BLOCK] = {};
     for (size_t i = 0; i < NUM_PIXELS_PER_BLOCK; ++i)
     {
         float fAlph = Color[i].a;
@@ -957,14 +953,11 @@ void DirectX::D3DXEncodeBC3(uint8_t *pBC, const XMVECTOR *pColor, DWORD flags)
     // Quantize block to A8, using Floyd Stienberg error diffusion.  This 
     // increases the chance that colors will map directly to the quantized 
     // axis endpoints.
-    float fAlpha[NUM_PIXELS_PER_BLOCK];
-    float fError[NUM_PIXELS_PER_BLOCK];
+    float fAlpha[NUM_PIXELS_PER_BLOCK] = {};
+    float fError[NUM_PIXELS_PER_BLOCK] = {};
 
     float fMinAlpha = Color[0].a;
     float fMaxAlpha = Color[0].a;
-
-    if (flags & BC_FLAGS_DITHER_A)
-        memset(fError, 0x00, NUM_PIXELS_PER_BLOCK * sizeof(float));
 
     for (size_t i = 0; i < NUM_PIXELS_PER_BLOCK; ++i)
     {
@@ -1030,7 +1023,7 @@ void DirectX::D3DXEncodeBC3(uint8_t *pBC, const XMVECTOR *pColor, DWORD flags)
     }
 
     // Optimize and Quantize Min and Max values
-    size_t uSteps = ((0.0f == fMinAlpha) || (1.0f == fMaxAlpha)) ? 6 : 8;
+    uint32_t uSteps = ((0.0f == fMinAlpha) || (1.0f == fMaxAlpha)) ? 6 : 8;
 
     float fAlphaA, fAlphaB;
     OptimizeAlpha<false>(&fAlphaA, &fAlphaB, fAlpha, uSteps);
@@ -1054,7 +1047,7 @@ void DirectX::D3DXEncodeBC3(uint8_t *pBC, const XMVECTOR *pColor, DWORD flags)
     static const size_t pSteps8[] = { 0, 2, 3, 4, 5, 6, 7, 1 };
 
     const size_t *pSteps;
-    float fStep[8];
+    float fStep[8] = {};
 
     if (6 == uSteps)
     {
@@ -1113,7 +1106,7 @@ void DirectX::D3DXEncodeBC3(uint8_t *pBC, const XMVECTOR *pColor, DWORD flags)
             else if (fDot >= fSteps)
                 iStep = ((6 == uSteps) && (fAlph >= (fStep[1] + 1.0f) * 0.5f)) ? 7 : 1;
             else
-                iStep = static_cast<uint32_t>(pSteps[static_cast<size_t>(fDot + 0.5f)]);
+                iStep = uint32_t(pSteps[uint32_t(fDot + 0.5f)]);
 
             dw = (iStep << 21) | (dw >> 3);
 
