@@ -9,10 +9,6 @@
 
 #pragma once
 
-#if defined(WINAPI_FAMILY) && WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
-#error Post-processing not supported for Windows Phone 8.x; requires Direct3D hardware Feature Level 10.0 or better
-#endif
-
 #if defined(_XBOX_ONE) && defined(_TITLE)
 #include <d3d11_x.h>
 #else
@@ -31,9 +27,18 @@ namespace DirectX
     class IPostProcess
     {
     public:
-        virtual ~IPostProcess() { }
+        virtual ~IPostProcess() = default;
+
+        IPostProcess(const IPostProcess&) = delete;
+        IPostProcess& operator=(const IPostProcess&) = delete;
+
+        IPostProcess(IPostProcess&&) = delete;
+        IPostProcess& operator=(IPostProcess&&) = delete;
 
         virtual void __cdecl Process(_In_ ID3D11DeviceContext* deviceContext, _In_opt_ std::function<void __cdecl()> setCustomState = nullptr) = 0;
+
+    protected:
+        IPostProcess() = default;
     };
 
 
@@ -56,8 +61,8 @@ namespace DirectX
         };
 
         explicit BasicPostProcess(_In_ ID3D11Device* device);
-        BasicPostProcess(BasicPostProcess&& moveFrom) throw();
-        BasicPostProcess& operator= (BasicPostProcess&& moveFrom) throw();
+        BasicPostProcess(BasicPostProcess&& moveFrom) noexcept;
+        BasicPostProcess& operator= (BasicPostProcess&& moveFrom) noexcept;
 
         BasicPostProcess(BasicPostProcess const&) = delete;
         BasicPostProcess& operator= (BasicPostProcess const&) = delete;
@@ -103,8 +108,8 @@ namespace DirectX
         };
 
         explicit DualPostProcess(_In_ ID3D11Device* device);
-        DualPostProcess(DualPostProcess&& moveFrom) throw();
-        DualPostProcess& operator= (DualPostProcess&& moveFrom) throw();
+        DualPostProcess(DualPostProcess&& moveFrom) noexcept;
+        DualPostProcess& operator= (DualPostProcess&& moveFrom) noexcept;
 
         DualPostProcess(DualPostProcess const&) = delete;
         DualPostProcess& operator= (DualPostProcess const&) = delete;
@@ -158,8 +163,8 @@ namespace DirectX
         };
 
         explicit ToneMapPostProcess(_In_ ID3D11Device* device);
-        ToneMapPostProcess(ToneMapPostProcess&& moveFrom) throw();
-        ToneMapPostProcess& operator= (ToneMapPostProcess&& moveFrom) throw();
+        ToneMapPostProcess(ToneMapPostProcess&& moveFrom) noexcept;
+        ToneMapPostProcess& operator= (ToneMapPostProcess&& moveFrom) noexcept;
 
         ToneMapPostProcess(ToneMapPostProcess const&) = delete;
         ToneMapPostProcess& operator= (ToneMapPostProcess const&) = delete;

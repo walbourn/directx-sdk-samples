@@ -22,8 +22,6 @@
 
 namespace
 {
-
-//--------------------------------------------------------------------------------------
 #pragma pack(push, 1)
 
     static const size_t DVD_SECTOR_SIZE = 2048;
@@ -379,7 +377,7 @@ namespace
 
                 default:
                     return uint32_t((uint64_t(length) * 8)
-                                    / (uint64_t(data.CompactFormat.BitsPerSample()) * uint64_t(data.CompactFormat.nChannels)));
+                        / (uint64_t(data.CompactFormat.BitsPerSample()) * uint64_t(data.CompactFormat.nChannels)));
             }
         }
     };
@@ -408,8 +406,7 @@ namespace
 
         return reinterpret_cast<const uint32_t*>(seekTable + offset);
     }
-
-};
+}
 
 static_assert(sizeof(REGION) == 8, "Mismatch with xact3wb.h");
 static_assert(sizeof(SAMPLEREGION) == 8, "Mismatch with xact3wb.h");
@@ -426,16 +423,16 @@ using namespace DirectX;
 class WaveBankReader::Impl
 {
 public:
-    Impl() throw() :
+    Impl() noexcept :
         m_async(INVALID_HANDLE_VALUE),
-        m_prepared(false)
+        m_request{},
+        m_prepared(false),
+        m_header{},
+        m_data{}
     #if defined(_XBOX_ONE) && defined(_TITLE)
         , m_xmaMemory(nullptr)
     #endif
     {
-        memset(&m_header, 0, sizeof(HEADER));
-        memset(&m_data, 0, sizeof(BANKDATA));
-        memset(&m_request, 0, sizeof(OVERLAPPED));
     }
 
     ~Impl() { Close(); }
@@ -1247,7 +1244,7 @@ bool WaveBankReader::Impl::UpdatePrepared()
 
 
 //--------------------------------------------------------------------------------------
-WaveBankReader::WaveBankReader() :
+WaveBankReader::WaveBankReader() noexcept(false) :
     pImpl(std::make_unique<Impl>())
 {
 }

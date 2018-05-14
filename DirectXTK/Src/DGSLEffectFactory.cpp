@@ -22,9 +22,7 @@
 using namespace DirectX;
 using Microsoft::WRL::ComPtr;
 
-#if defined(_MSC_VER) && (_MSC_VER >= 1900)
 static_assert(DGSLEffect::MaxTextures == DGSLEffectFactory::DGSLEffectInfo::BaseTextureOffset + _countof(DGSLEffectFactory::DGSLEffectInfo::textures), "DGSL supports 8 textures");
-#endif
 
 // Internal DGSLEffectFactory implementation class. Only one of these helpers is allocated
 // per D3D device, even if there are multiple public facing DGSLEffectFactory instances.
@@ -146,13 +144,14 @@ std::shared_ptr<IEffect> DGSLEffectFactory::Impl::CreateEffect(DGSLEffectFactory
     if (mSharing && info.name && *info.name)
     {
         std::lock_guard<std::mutex> lock(mutex);
+        EffectCache::value_type v(info.name, effect);
         if (info.enableSkinning)
         {
-            mEffectCacheSkinning.insert(EffectCache::value_type(info.name, effect));
+            mEffectCacheSkinning.insert(v);
         }
         else
         {
-            mEffectCache.insert(EffectCache::value_type(info.name, effect));
+            mEffectCache.insert(v);
         }
     }
 
@@ -327,13 +326,14 @@ std::shared_ptr<IEffect> DGSLEffectFactory::Impl::CreateDGSLEffect(DGSLEffectFac
     if (mSharing && info.name && *info.name)
     {
         std::lock_guard<std::mutex> lock(mutex);
+        EffectCache::value_type v(info.name, effect);
         if (info.enableSkinning)
         {
-            mEffectCacheSkinning.insert(EffectCache::value_type(info.name, effect));
+            mEffectCacheSkinning.insert(v);
         }
         else
         {
-            mEffectCache.insert(EffectCache::value_type(info.name, effect));
+            mEffectCache.insert(v);
         }
     }
 
@@ -423,7 +423,8 @@ void DGSLEffectFactory::Impl::CreateTexture(const wchar_t* name, ID3D11DeviceCon
         if (mSharing && *name && it == mTextureCache.end())
         {
             std::lock_guard<std::mutex> lock(mutex);
-            mTextureCache.insert(TextureCache::value_type(name, *textureView));
+            TextureCache::value_type v(name, *textureView);
+            mTextureCache.insert(v);
         }
     }
 }
@@ -478,7 +479,8 @@ void DGSLEffectFactory::Impl::CreatePixelShader(const wchar_t* name, ID3D11Pixel
         if (mSharing && *name && it == mShaderCache.end())
         {
             std::lock_guard<std::mutex> lock(mutex);
-            mShaderCache.insert(ShaderCache::value_type(name, *pixelShader));
+            ShaderCache::value_type v(name, *pixelShader);
+            mShaderCache.insert(v);
         }
     }
 }
@@ -509,12 +511,12 @@ DGSLEffectFactory::~DGSLEffectFactory()
 }
 
 
-DGSLEffectFactory::DGSLEffectFactory(DGSLEffectFactory&& moveFrom) throw()
+DGSLEffectFactory::DGSLEffectFactory(DGSLEffectFactory&& moveFrom) noexcept
     : pImpl(std::move(moveFrom.pImpl))
 {
 }
 
-DGSLEffectFactory& DGSLEffectFactory::operator= (DGSLEffectFactory&& moveFrom) throw()
+DGSLEffectFactory& DGSLEffectFactory::operator= (DGSLEffectFactory&& moveFrom) noexcept
 {
     pImpl = std::move(moveFrom.pImpl);
     return *this;

@@ -4,7 +4,7 @@ DirectXTK - the DirectX Tool Kit for DirectX 11
 
 Copyright (c) Microsoft Corporation. All rights reserved.
 
-April 23, 2018
+May 14, 2018
 
 This package contains the "DirectX Tool Kit", a collection of helper classes for 
 writing Direct3D 11 C++ code for Universal Windows Platform (UWP) apps for Windows 10,
@@ -12,9 +12,9 @@ Windows Store apps, Windows phone 8.1 applications, Xbox One exclusive apps,
 Windows 8.x Win32 desktop applications, Windows 7 Service Pack 1 applications, and
 Windows Vista Service Pack 2 Direct3D 11.0 applications.
 
-This code is designed to build with Visual Studio 2013 Update 5, Visual Studio 2015 Update 3,
-or Visual Studio 2017. It is recommended that you make use of VS 2015 Update 3, Windows Tools
-1.4.1, and the Windows 10 Anniversary Update SDK (14393) or VS 2017 (15.5 update) with the
+This code is designed to build with Visual Studio 2015 Update 3 or Visual Studio 2017.
+It is recommended that you make use of VS 2015 Update 3, Windows Tools 1.4.1, and the
+Windows 10 Anniversary Update SDK (14393) or VS 2017 (15.5 update) or later with the
 Windows 10 Fall Creators Update SDK (16299).
 
 These components are designed to work without requiring any content from the DirectX SDK. For details,
@@ -91,6 +91,11 @@ RELEASE NOTES
 ---------------
 RELEASE HISTORY
 ---------------
+
+May 14, 2018
+    Updated for VS 2017 15.7 update warnings
+    Code and project cleanup
+    Retired VS 2013 projects
 
 April 23, 2018
     AlignUp, AlignDown template functions in DirectXHelpers.h

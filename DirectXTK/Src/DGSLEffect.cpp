@@ -218,6 +218,7 @@ class DGSLEffect::Impl : public AlignedNew<DGSLEffectConstants>
 {
 public:
     Impl(_In_ ID3D11Device* device, _In_opt_ ID3D11PixelShader* pixelShader, _In_ bool enableSkinning) :
+        constants{},
         dirtyFlags(INT_MAX),
         vertexColorEnabled(false),
         textureEnabled(false),
@@ -233,8 +234,6 @@ public:
     {
         static_assert(_countof(DGSLEffectTraits::VertexShaderBytecode) == DGSLEffectTraits::VertexShaderCount, "array/max mismatch");
         static_assert(_countof(DGSLEffectTraits::PixelShaderBytecode) == DGSLEffectTraits::PixelShaderCount, "array/max mismatch");
-
-        memset(&constants, 0, sizeof(constants));
 
         XMMATRIX id = XMMatrixIdentity();
         world = id;
@@ -310,7 +309,12 @@ private:
     class DeviceResources : protected EffectDeviceResources
     {
     public:
-        DeviceResources(_In_ ID3D11Device* device) : EffectDeviceResources(device) {}
+        DeviceResources(_In_ ID3D11Device* device)
+            : EffectDeviceResources(device),
+            mVertexShaders{},
+            mPixelShaders{},
+            mDefaultTexture{}
+        { }
 
         // Gets or lazily creates the vertex shader.
         ID3D11VertexShader* GetVertexShader(int permutation)
@@ -568,13 +572,13 @@ DGSLEffect::DGSLEffect(_In_ ID3D11Device* device, _In_opt_ ID3D11PixelShader* pi
 }
 
 
-DGSLEffect::DGSLEffect(DGSLEffect&& moveFrom) throw()
+DGSLEffect::DGSLEffect(DGSLEffect&& moveFrom) noexcept
     : pImpl(std::move(moveFrom.pImpl))
 {
 }
 
 
-DGSLEffect& DGSLEffect::operator= (DGSLEffect&& moveFrom) throw()
+DGSLEffect& DGSLEffect::operator= (DGSLEffect&& moveFrom) noexcept
 {
     pImpl = std::move(moveFrom.pImpl);
     return *this;
