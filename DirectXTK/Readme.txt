@@ -4,7 +4,7 @@ DirectXTK - the DirectX Tool Kit for DirectX 11
 
 Copyright (c) Microsoft Corporation. All rights reserved.
 
-May 14, 2018
+May 31, 2018
 
 This package contains the "DirectX Tool Kit", a collection of helper classes for 
 writing Direct3D 11 C++ code for Universal Windows Platform (UWP) apps for Windows 10,
@@ -14,8 +14,8 @@ Windows Vista Service Pack 2 Direct3D 11.0 applications.
 
 This code is designed to build with Visual Studio 2015 Update 3 or Visual Studio 2017.
 It is recommended that you make use of VS 2015 Update 3, Windows Tools 1.4.1, and the
-Windows 10 Anniversary Update SDK (14393) or VS 2017 (15.5 update) or later with the
-Windows 10 Fall Creators Update SDK (16299).
+Windows 10 Anniversary Update SDK (14393) or VS 2017 (15.7 update) or later with the
+Windows 10 April 2018 Update SDK (17134).
 
 These components are designed to work without requiring any content from the DirectX SDK. For details,
 see "Where is the DirectX SDK?" <http://msdn.microsoft.com/en-us/library/ee663275.aspx>.
@@ -84,13 +84,17 @@ RELEASE NOTES
 
 * The VS 2017 projects make use of /permissive- for improved C++ standard conformance. Use of a Windows 10 SDK prior to
   the Fall Creators Update (16299) or an Xbox One XDK prior to June 2017 QFE 4 may result in failures due to problems
-  with the system headers. You can work around these by deleting /permissive- from the project files which is found
-  in the <AdditionalOptions> element.
+  with the system headers. You can work around these by disabling this switch in the project files which is found
+  in the <ConformanceMode> or <AdditionalOptions> elements.
 
 
 ---------------
 RELEASE HISTORY
 ---------------
+
+May 31, 2018
+    VS 2017 updated for Windows 10 April 2018 Update SDK (17134)
+    Regenerated shaders using Windows 10 April 2018 Update SDK (17134)
 
 May 14, 2018
     Updated for VS 2017 15.7 update warnings
@@ -124,6 +128,7 @@ December 13, 2017
 
 November 1, 2017
     VS 2017 updated for Windows 10 Fall Creators Update SDK (16299)
+    Regenerated shaders using Windows 10 Fall Creators Update SDK (16299)
 
 September 22, 2017
     Updated for VS 2017 15.3 update /permissive- changes
