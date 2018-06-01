@@ -22,7 +22,7 @@
     <ProjectName>GDFTrace</ProjectName>
     <ProjectGuid>{A0763B6A-73EC-42D1-A283-F07D7613AC3C}</ProjectGuid>
     <RootNamespace>GDFTrace</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">

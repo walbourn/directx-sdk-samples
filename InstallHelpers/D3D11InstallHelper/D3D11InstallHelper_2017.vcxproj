@@ -38,7 +38,7 @@
     <ProjectGuid>{C8052F9A-3A66-48A3-A23A-C6AF85106EEF}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>D3D11InstallHelper</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
