@@ -3,12 +3,8 @@
 //
 // Functions for loading audio data from Wave Banks
 //
-// THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF
-// ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO
-// THE IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A
-// PARTICULAR PURPOSE.
-//
 // Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
 //
 // http://go.microsoft.com/fwlink/?LinkId=248929
 //-------------------------------------------------------------------------------------
@@ -22,114 +18,119 @@
 #include <windows.h>
 
 
-//--------------------------------------------------------------------------------------
+#ifndef MAKEFOURCC
+#define MAKEFOURCC(ch0, ch1, ch2, ch3)                              \
+                ((uint32_t)(uint8_t)(ch0) | ((uint32_t)(uint8_t)(ch1) << 8) |       \
+                ((uint32_t)(uint8_t)(ch2) << 16) | ((uint32_t)(uint8_t)(ch3) << 24 ))
+#endif /* defined(MAKEFOURCC) */
+
 namespace
 {
-    
-struct handle_closer { void operator()(HANDLE h) { if (h) CloseHandle(h); } };
-
-typedef public std::unique_ptr<void, handle_closer> ScopedHandle;
-
-inline HANDLE safe_handle( HANDLE h ) { return (h == INVALID_HANDLE_VALUE) ? 0 : h; }
-
-//--------------------------------------------------------------------------------------
 #pragma pack(push, 1)
 
-static const size_t DVD_SECTOR_SIZE = 2048;
-static const size_t DVD_BLOCK_SIZE = DVD_SECTOR_SIZE * 16;
+    struct handle_closer { void operator()(HANDLE h) { if (h) CloseHandle(h); } };
 
-static const size_t ALIGNMENT_MIN = 4;
-static const size_t ALIGNMENT_DVD = DVD_SECTOR_SIZE;
+    typedef std::unique_ptr<void, handle_closer> ScopedHandle;
 
-static const size_t MAX_DATA_SEGMENT_SIZE = 0xFFFFFFFF;
-static const size_t MAX_COMPACT_DATA_SEGMENT_SIZE = 0x001FFFFF;
+    inline HANDLE safe_handle(HANDLE h) { return (h == INVALID_HANDLE_VALUE) ? 0 : h; }
 
-struct REGION
-{
-    uint32_t    dwOffset;   // Region offset, in bytes.
-    uint32_t    dwLength;   // Region length, in bytes.
-};
+    //---------------------------------------------------------------------------------
 
-struct SAMPLEREGION
-{
-    uint32_t    dwStartSample;  // Start sample for the region.
-    uint32_t    dwTotalSamples; // Region length in samples.
-};
+    static const size_t DVD_SECTOR_SIZE = 2048;
+    static const size_t DVD_BLOCK_SIZE = DVD_SECTOR_SIZE * 16;
 
-struct HEADER
-{
-    static const uint32_t SIGNATURE = 'DNBW';
-    static const uint32_t BE_SIGNATURE = 'WBND';
-    static const uint32_t VERSION = 44;
+    static const size_t ALIGNMENT_MIN = 4;
+    static const size_t ALIGNMENT_DVD = DVD_SECTOR_SIZE;
 
-    enum SEGIDX
+    static const size_t MAX_DATA_SEGMENT_SIZE = 0xFFFFFFFF;
+    static const size_t MAX_COMPACT_DATA_SEGMENT_SIZE = 0x001FFFFF;
+
+    struct REGION
     {
-        SEGIDX_BANKDATA = 0,       // Bank data
-        SEGIDX_ENTRYMETADATA,      // Entry meta-data
-        SEGIDX_SEEKTABLES,         // Storage for seek tables for the encoded waves.
-        SEGIDX_ENTRYNAMES,         // Entry friendly names
-        SEGIDX_ENTRYWAVEDATA,      // Entry wave data
-        SEGIDX_COUNT
+        uint32_t    dwOffset;   // Region offset, in bytes.
+        uint32_t    dwLength;   // Region length, in bytes.
     };
 
-    uint32_t    dwSignature;            // File signature
-    uint32_t    dwVersion;              // Version of the tool that created the file
-    uint32_t    dwHeaderVersion;        // Version of the file format
-    REGION      Segments[SEGIDX_COUNT]; // Segment lookup table
-};
+    struct SAMPLEREGION
+    {
+        uint32_t    dwStartSample;  // Start sample for the region.
+        uint32_t    dwTotalSamples; // Region length in samples.
+    };
+
+    struct HEADER
+    {
+        static const uint32_t SIGNATURE = MAKEFOURCC('W', 'B', 'N', 'D');
+        static const uint32_t BE_SIGNATURE = MAKEFOURCC('D', 'N', 'B', 'W');
+        static const uint32_t VERSION = 44;
+
+        enum SEGIDX
+        {
+            SEGIDX_BANKDATA = 0,       // Bank data
+            SEGIDX_ENTRYMETADATA,      // Entry meta-data
+            SEGIDX_SEEKTABLES,         // Storage for seek tables for the encoded waves.
+            SEGIDX_ENTRYNAMES,         // Entry friendly names
+            SEGIDX_ENTRYWAVEDATA,      // Entry wave data
+            SEGIDX_COUNT
+        };
+
+        uint32_t    dwSignature;            // File signature
+        uint32_t    dwVersion;              // Version of the tool that created the file
+        uint32_t    dwHeaderVersion;        // Version of the file format
+        REGION      Segments[SEGIDX_COUNT]; // Segment lookup table
+    };
 
 #pragma warning( disable : 4201 4203 )
 
-union MINIWAVEFORMAT
-{
-    static const uint32_t TAG_PCM   = 0x0;
-    static const uint32_t TAG_XMA   = 0x1;
-    static const uint32_t TAG_ADPCM = 0x2;
-    static const uint32_t TAG_WMA   = 0x3;
-
-    static const uint32_t BITDEPTH_8 = 0x0; // PCM only
-    static const uint32_t BITDEPTH_16 = 0x1; // PCM only
-
-    static const size_t ADPCM_BLOCKALIGN_CONVERSION_OFFSET = 22;
-    
-    struct
+    union MINIWAVEFORMAT
     {
-        uint32_t       wFormatTag      : 2;        // Format tag
-        uint32_t       nChannels       : 3;        // Channel count (1 - 6)
-        uint32_t       nSamplesPerSec  : 18;       // Sampling rate
-        uint32_t       wBlockAlign     : 8;        // Block alignment.  For WMA, lower 6 bits block alignment index, upper 2 bits bytes-per-second index.
-        uint32_t       wBitsPerSample  : 1;        // Bits per sample (8 vs. 16, PCM only); WMAudio2/WMAudio3 (for WMA)
-    };
+        static const uint32_t TAG_PCM = 0x0;
+        static const uint32_t TAG_XMA = 0x1;
+        static const uint32_t TAG_ADPCM = 0x2;
+        static const uint32_t TAG_WMA = 0x3;
 
-    uint32_t           dwValue;
+        static const uint32_t BITDEPTH_8 = 0x0; // PCM only
+        static const uint32_t BITDEPTH_16 = 0x1; // PCM only
 
-    WORD BitsPerSample() const
-    {
-        if (wFormatTag == TAG_XMA)
-            return 16; // XMA_OUTPUT_SAMPLE_BITS == 16
-        if (wFormatTag == TAG_WMA)
-            return 16;
-        if (wFormatTag == TAG_ADPCM)
-            return 4; // MSADPCM_BITS_PER_SAMPLE == 4
+        static const size_t ADPCM_BLOCKALIGN_CONVERSION_OFFSET = 22;
 
-        // wFormatTag must be TAG_PCM (2 bits can only represent 4 different values)
-        return (wBitsPerSample == BITDEPTH_16) ? 16 : 8;
-    }
-
-    DWORD BlockAlign() const
-    {
-        switch (wFormatTag)
+        struct
         {
-        case TAG_PCM:
-            return wBlockAlign;
-            
-        case TAG_XMA:
-            return (nChannels * 16 / 8); // XMA_OUTPUT_SAMPLE_BITS = 16
+            uint32_t       wFormatTag : 2;        // Format tag
+            uint32_t       nChannels : 3;        // Channel count (1 - 6)
+            uint32_t       nSamplesPerSec : 18;       // Sampling rate
+            uint32_t       wBlockAlign : 8;        // Block alignment.  For WMA, lower 6 bits block alignment index, upper 2 bits bytes-per-second index.
+            uint32_t       wBitsPerSample : 1;        // Bits per sample (8 vs. 16, PCM only); WMAudio2/WMAudio3 (for WMA)
+        };
 
-        case TAG_ADPCM:
-            return (wBlockAlign + ADPCM_BLOCKALIGN_CONVERSION_OFFSET) * nChannels;
+        uint32_t           dwValue;
 
-        case TAG_WMA:
+        WORD BitsPerSample() const
+        {
+            if (wFormatTag == TAG_XMA)
+                return 16; // XMA_OUTPUT_SAMPLE_BITS == 16
+            if (wFormatTag == TAG_WMA)
+                return 16;
+            if (wFormatTag == TAG_ADPCM)
+                return 4; // MSADPCM_BITS_PER_SAMPLE == 4
+
+            // wFormatTag must be TAG_PCM (2 bits can only represent 4 different values)
+            return (wBitsPerSample == BITDEPTH_16) ? 16 : 8;
+        }
+
+        DWORD BlockAlign() const
+        {
+            switch (wFormatTag)
+            {
+            case TAG_PCM:
+                return wBlockAlign;
+
+            case TAG_XMA:
+                return (nChannels * 16 / 8); // XMA_OUTPUT_SAMPLE_BITS = 16
+
+            case TAG_ADPCM:
+                return (wBlockAlign + ADPCM_BLOCKALIGN_CONVERSION_OFFSET) * nChannels;
+
+            case TAG_WMA:
             {
                 static const uint32_t aWMABlockAlign[] =
                 {
@@ -153,26 +154,26 @@ union MINIWAVEFORMAT
                 };
 
                 uint32_t dwBlockAlignIndex = wBlockAlign & 0x1F;
-                if ( dwBlockAlignIndex < _countof(aWMABlockAlign) )
+                if (dwBlockAlignIndex < _countof(aWMABlockAlign))
                     return aWMABlockAlign[dwBlockAlignIndex];
             }
             break;
+            }
+
+            return 0;
         }
 
-        return 0;
-    }
-
-    DWORD AvgBytesPerSec() const
-    {
-        switch (wFormatTag)
+        DWORD AvgBytesPerSec() const
         {
-        case TAG_PCM:
-            return nSamplesPerSec * wBlockAlign;
+            switch (wFormatTag)
+            {
+            case TAG_PCM:
+                return nSamplesPerSec * wBlockAlign;
 
-        case TAG_XMA:
-            return nSamplesPerSec * BlockAlign();
+            case TAG_XMA:
+                return nSamplesPerSec * BlockAlign();
 
-        case TAG_ADPCM:
+            case TAG_ADPCM:
             {
                 uint32_t blockAlign = BlockAlign();
                 uint32_t samplesPerAdpcmBlock = AdpcmSamplesPerBlock();
@@ -180,7 +181,7 @@ union MINIWAVEFORMAT
             }
             break;
 
-        case TAG_WMA:
+            case TAG_WMA:
             {
                 static const uint32_t aWMAAvgBytesPerSec[] =
                 {
@@ -195,176 +196,175 @@ union MINIWAVEFORMAT
                 // bitrate = entry * 8
 
                 uint32_t dwBytesPerSecIndex = wBlockAlign >> 5;
-                if ( dwBytesPerSecIndex < _countof(aWMAAvgBytesPerSec) )
+                if (dwBytesPerSecIndex < _countof(aWMAAvgBytesPerSec))
                     return aWMAAvgBytesPerSec[dwBytesPerSecIndex];
             }
             break;
+            }
+
+            return 0;
         }
 
-        return 0;
-    }
-
-    DWORD AdpcmSamplesPerBlock() const
-    {
-        uint32_t nBlockAlign = (wBlockAlign + ADPCM_BLOCKALIGN_CONVERSION_OFFSET) * nChannels;
-        return nBlockAlign * 2 / (uint32_t)nChannels - 12;
-    }
-
-    void AdpcmFillCoefficientTable(ADPCMWAVEFORMAT *fmt) const
-    {
-        // These are fixed since we are always using MS ADPCM
-        fmt->wNumCoef = 7 /* MSADPCM_NUM_COEFFICIENTS */;
-
-        static ADPCMCOEFSET aCoef[7] = { { 256, 0}, {512, -256}, {0,0}, {192,64}, {240,0}, {460, -208}, {392,-232} };
-        memcpy( &fmt->aCoef, aCoef, sizeof(aCoef) );
-    }
-};
-
-struct BANKDATA
-{
-    static const size_t BANKNAME_LENGTH = 64;
-
-    static const uint32_t TYPE_BUFFER = 0x00000000;
-    static const uint32_t TYPE_STREAMING = 0x00000001;
-    static const uint32_t TYPE_MASK = 0x00000001;
-
-    static const uint32_t FLAGS_ENTRYNAMES = 0x00010000;
-    static const uint32_t FLAGS_COMPACT = 0x00020000;
-    static const uint32_t FLAGS_SYNC_DISABLED = 0x00040000;
-    static const uint32_t FLAGS_SEEKTABLES = 0x00080000;
-    static const uint32_t FLAGS_MASK = 0x000F0000;
-
-    uint32_t        dwFlags;                        // Bank flags
-    uint32_t        dwEntryCount;                   // Number of entries in the bank
-    char            szBankName[BANKNAME_LENGTH];    // Bank friendly name
-    uint32_t        dwEntryMetaDataElementSize;     // Size of each entry meta-data element, in bytes
-    uint32_t        dwEntryNameElementSize;         // Size of each entry name element, in bytes
-    uint32_t        dwAlignment;                    // Entry alignment, in bytes
-    MINIWAVEFORMAT  CompactFormat;                  // Format data for compact bank
-    FILETIME        BuildTime;                      // Build timestamp
-};
-
-struct ENTRY
-{
-    static const uint32_t FLAGS_READAHEAD = 0x00000001;     // Enable stream read-ahead
-    static const uint32_t FLAGS_LOOPCACHE = 0x00000002;     // One or more looping sounds use this wave
-    static const uint32_t FLAGS_REMOVELOOPTAIL = 0x00000004;// Remove data after the end of the loop region
-    static const uint32_t FLAGS_IGNORELOOP = 0x00000008;    // Used internally when the loop region can't be used
-    static const uint32_t FLAGS_MASK = 0x00000008;
-
-    union
-    {
-        struct
+        DWORD AdpcmSamplesPerBlock() const
         {
-            // Entry flags
-            uint32_t                   dwFlags  :  4;
+            uint32_t nBlockAlign = (wBlockAlign + ADPCM_BLOCKALIGN_CONVERSION_OFFSET) * nChannels;
+            return nBlockAlign * 2 / (uint32_t)nChannels - 12;
+        }
 
-            // Duration of the wave, in units of one sample.
-            // For instance, a ten second long wave sampled
-            // at 48KHz would have a duration of 480,000.
-            // This value is not affected by the number of
-            // channels, the number of bits per sample, or the
-            // compression format of the wave.
-            uint32_t                   Duration : 28;
-        };
-        uint32_t dwFlagsAndDuration;
+        void AdpcmFillCoefficientTable(ADPCMWAVEFORMAT *fmt) const
+        {
+            // These are fixed since we are always using MS ADPCM
+            fmt->wNumCoef = 7 /* MSADPCM_NUM_COEFFICIENTS */;
+
+            static ADPCMCOEFSET aCoef[7] = { { 256, 0}, {512, -256}, {0,0}, {192,64}, {240,0}, {460, -208}, {392,-232} };
+            memcpy(&fmt->aCoef, aCoef, sizeof(aCoef));
+        }
     };
 
-    MINIWAVEFORMAT  Format;         // Entry format.
-    REGION          PlayRegion;     // Region within the wave data segment that contains this entry.
-    SAMPLEREGION    LoopRegion;     // Region within the wave data (in samples) that should loop.
-};
-
-struct ENTRYCOMPACT
-{
-    uint32_t       dwOffset            : 21;       // Data offset, in multiplies of the bank alignment
-    uint32_t       dwLengthDeviation   : 11;       // Data length deviation, in bytes
-
-    void ComputeLocations( DWORD& offset, DWORD& length, uint32_t index, const HEADER& header, const BANKDATA& data, const ENTRYCOMPACT* entries ) const
+    struct BANKDATA
     {
-        offset = dwOffset * data.dwAlignment;
+        static const size_t BANKNAME_LENGTH = 64;
 
-        if ( index < ( data.dwEntryCount - 1 ) )
-        {
-            length = ( entries[index + 1].dwOffset * data.dwAlignment ) - offset - dwLengthDeviation;
-        }
-        else
-        {
-            length = header.Segments[HEADER::SEGIDX_ENTRYWAVEDATA].dwLength - offset - dwLengthDeviation;
-        }
-    }
+        static const uint32_t TYPE_BUFFER = 0x00000000;
+        static const uint32_t TYPE_STREAMING = 0x00000001;
+        static const uint32_t TYPE_MASK = 0x00000001;
 
-    static uint32_t GetDuration( DWORD length, const BANKDATA& data, const uint32_t* seekTable )
+        static const uint32_t FLAGS_ENTRYNAMES = 0x00010000;
+        static const uint32_t FLAGS_COMPACT = 0x00020000;
+        static const uint32_t FLAGS_SYNC_DISABLED = 0x00040000;
+        static const uint32_t FLAGS_SEEKTABLES = 0x00080000;
+        static const uint32_t FLAGS_MASK = 0x000F0000;
+
+        uint32_t        dwFlags;                        // Bank flags
+        uint32_t        dwEntryCount;                   // Number of entries in the bank
+        char            szBankName[BANKNAME_LENGTH];    // Bank friendly name
+        uint32_t        dwEntryMetaDataElementSize;     // Size of each entry meta-data element, in bytes
+        uint32_t        dwEntryNameElementSize;         // Size of each entry name element, in bytes
+        uint32_t        dwAlignment;                    // Entry alignment, in bytes
+        MINIWAVEFORMAT  CompactFormat;                  // Format data for compact bank
+        FILETIME        BuildTime;                      // Build timestamp
+    };
+
+    struct ENTRY
     {
-        switch( data.CompactFormat.wFormatTag )
+        static const uint32_t FLAGS_READAHEAD = 0x00000001;     // Enable stream read-ahead
+        static const uint32_t FLAGS_LOOPCACHE = 0x00000002;     // One or more looping sounds use this wave
+        static const uint32_t FLAGS_REMOVELOOPTAIL = 0x00000004;// Remove data after the end of the loop region
+        static const uint32_t FLAGS_IGNORELOOP = 0x00000008;    // Used internally when the loop region can't be used
+        static const uint32_t FLAGS_MASK = 0x00000008;
+
+        union
         {
-        case MINIWAVEFORMAT::TAG_ADPCM:
+            struct
             {
-                uint32_t duration = ( length / data.CompactFormat.BlockAlign() ) * data.CompactFormat.AdpcmSamplesPerBlock();
+                // Entry flags
+                uint32_t                   dwFlags : 4;
+
+                // Duration of the wave, in units of one sample.
+                // For instance, a ten second long wave sampled
+                // at 48KHz would have a duration of 480,000.
+                // This value is not affected by the number of
+                // channels, the number of bits per sample, or the
+                // compression format of the wave.
+                uint32_t                   Duration : 28;
+            };
+            uint32_t dwFlagsAndDuration;
+        };
+
+        MINIWAVEFORMAT  Format;         // Entry format.
+        REGION          PlayRegion;     // Region within the wave data segment that contains this entry.
+        SAMPLEREGION    LoopRegion;     // Region within the wave data (in samples) that should loop.
+    };
+
+    struct ENTRYCOMPACT
+    {
+        uint32_t       dwOffset : 21;       // Data offset, in multiplies of the bank alignment
+        uint32_t       dwLengthDeviation : 11;       // Data length deviation, in bytes
+
+        void ComputeLocations(DWORD& offset, DWORD& length, uint32_t index, const HEADER& header, const BANKDATA& data, const ENTRYCOMPACT* entries) const
+        {
+            offset = dwOffset * data.dwAlignment;
+
+            if (index < (data.dwEntryCount - 1))
+            {
+                length = (entries[index + 1].dwOffset * data.dwAlignment) - offset - dwLengthDeviation;
+            }
+            else
+            {
+                length = header.Segments[HEADER::SEGIDX_ENTRYWAVEDATA].dwLength - offset - dwLengthDeviation;
+            }
+        }
+
+        static uint32_t GetDuration(DWORD length, const BANKDATA& data, const uint32_t* seekTable)
+        {
+            switch (data.CompactFormat.wFormatTag)
+            {
+            case MINIWAVEFORMAT::TAG_ADPCM:
+            {
+                uint32_t duration = (length / data.CompactFormat.BlockAlign()) * data.CompactFormat.AdpcmSamplesPerBlock();
                 uint32_t partial = length % data.CompactFormat.BlockAlign();
-                if ( partial )
+                if (partial)
                 {
-                    if ( partial >= ( 7 * data.CompactFormat.nChannels ) )
-                        duration += ( partial * 2 / data.CompactFormat.nChannels - 12 );
+                    if (partial >= (7u * data.CompactFormat.nChannels))
+                        duration += (partial * 2 / data.CompactFormat.nChannels - 12);
                 }
                 return duration;
             }
 
-        case MINIWAVEFORMAT::TAG_WMA:
-            if ( seekTable )
-            {
-                uint32_t seekCount = *seekTable;
-                if ( seekCount > 0 )
+            case MINIWAVEFORMAT::TAG_WMA:
+                if (seekTable)
                 {
-                   return seekTable[ seekCount ] / uint32_t( 2 * data.CompactFormat.nChannels );
+                    uint32_t seekCount = *seekTable;
+                    if (seekCount > 0)
+                    {
+                        return seekTable[seekCount] / uint32_t(2 * data.CompactFormat.nChannels);
+                    }
                 }
-            }
-            return 0;
+                return 0;
 
-        case MINIWAVEFORMAT::TAG_XMA: 
-            if ( seekTable )
-            {
-                uint32_t seekCount = *seekTable;
-                if ( seekCount > 0 )
+            case MINIWAVEFORMAT::TAG_XMA:
+                if (seekTable)
                 {
-                   return seekTable[ seekCount ];
+                    uint32_t seekCount = *seekTable;
+                    if (seekCount > 0)
+                    {
+                        return seekTable[seekCount];
+                    }
                 }
-            }
-            return 0;
+                return 0;
 
-        default: 
-            return uint32_t( ( uint64_t( length ) * 8 )
-                             / uint64_t( data.CompactFormat.BitsPerSample() * data.CompactFormat.nChannels ) );
-        }        
-    }
-};
+            default:
+                return uint32_t((uint64_t(length) * 8)
+                    / (uint64_t(data.CompactFormat.BitsPerSample()) * uint64_t(data.CompactFormat.nChannels)));
+            }
+        }
+    };
 
 #pragma pack(pop)
 
-inline const uint32_t* FindSeekTable( uint32_t index, const uint8_t* seekTable, const HEADER& header, const BANKDATA& data )
-{
-    if ( !seekTable || index >= data.dwEntryCount )
-        return nullptr;
+    inline const uint32_t* FindSeekTable(uint32_t index, const uint8_t* seekTable, const HEADER& header, const BANKDATA& data)
+    {
+        if (!seekTable || index >= data.dwEntryCount)
+            return nullptr;
 
-    uint32_t seekSize = header.Segments[HEADER::SEGIDX_SEEKTABLES].dwLength;
+        uint32_t seekSize = header.Segments[HEADER::SEGIDX_SEEKTABLES].dwLength;
 
-    if ( ( index * sizeof(uint32_t) ) > seekSize )
-        return nullptr;
+        if ((index * sizeof(uint32_t)) > seekSize)
+            return nullptr;
 
-    auto table = reinterpret_cast<const uint32_t*>( seekTable );
-    uint32_t offset = table[ index ];
-    if ( offset == uint32_t(-1) )
-        return nullptr;
+        auto table = reinterpret_cast<const uint32_t*>(seekTable);
+        uint32_t offset = table[index];
+        if (offset == uint32_t(-1))
+            return nullptr;
 
-    offset += sizeof(uint32_t) * data.dwEntryCount;
+        offset += sizeof(uint32_t) * data.dwEntryCount;
 
-    if ( offset > seekSize )
-        return nullptr;
+        if (offset > seekSize)
+            return nullptr;
 
-    return reinterpret_cast<const uint32_t* >( seekTable + offset );
+        return reinterpret_cast<const uint32_t*>(seekTable + offset);
+    }
 }
-
-};
 
 static_assert( sizeof(REGION)==8, "Mismatch with xact3wb.h" );
 static_assert( sizeof(SAMPLEREGION)==8, "Mismatch with xact3wb.h" );
@@ -381,13 +381,13 @@ using namespace DirectX;
 class WaveBankReader::Impl
 {
 public:
-    Impl() :
+    Impl() noexcept :
         m_async( INVALID_HANDLE_VALUE ),
-        m_prepared(false)
+        m_request{},
+        m_prepared(false),
+        m_header{},
+        m_data{}
     {
-        memset( &m_header, 0, sizeof(HEADER) );
-        memset( &m_data, 0, sizeof(BANKDATA) );
-        memset( &m_request, 0, sizeof(OVERLAPPED) );
     }
 
     ~Impl() { Close(); }
@@ -440,11 +440,7 @@ HRESULT WaveBankReader::Impl::Open( const wchar_t* szFileName )
 
     m_prepared = false;
 
-#if (_WIN32_WINNT >= _WIN32_WINNT_VISTA)
     m_event.reset( CreateEventEx( nullptr, nullptr, CREATE_EVENT_MANUAL_RESET, EVENT_MODIFY_STATE | SYNCHRONIZE ) );
-#else
-    m_event.reset( CreateEvent( nullptr, TRUE, FALSE, nullptr ) );
-#endif
 
     if ( !m_event )
     {
@@ -476,8 +472,7 @@ HRESULT WaveBankReader::Impl::Open( const wchar_t* szFileName )
     }
 
     // Read and verify header
-    OVERLAPPED request;
-    memset( &request, 0, sizeof(request) );
+    OVERLAPPED request = {};
     request.hEvent = m_event.get();
 
     bool wait = false;
@@ -555,6 +550,18 @@ HRESULT WaveBankReader::Impl::Open( const wchar_t* szFileName )
         return HRESULT_FROM_WIN32( ERROR_NO_DATA );
     }
 
+    if (m_data.dwFlags & BANKDATA::TYPE_STREAMING)
+    {
+        if (m_data.dwAlignment < ALIGNMENT_DVD)
+            return E_FAIL;
+        if (m_data.dwAlignment % DVD_SECTOR_SIZE)
+            return E_FAIL;
+    }
+    else if (m_data.dwAlignment < ALIGNMENT_MIN)
+    {
+        return E_FAIL;
+    }
+
     if ( m_data.dwFlags & BANKDATA::FLAGS_COMPACT )
     {
         if ( m_data.dwEntryMetaDataElementSize != sizeof(ENTRYCOMPACT) )
@@ -623,8 +630,8 @@ HRESULT WaveBankReader::Impl::Open( const wchar_t* szFileName )
             {
                 DWORD n = m_data.dwEntryNameElementSize * j;
 
-                char name[ 64 ] = {0};
-                strncpy_s( name, &temp[ n ], 64 );
+                char name[ 64 ] = {};
+                strncpy_s(name, &temp[n], sizeof(name));
 
                 m_names[ name ] = j;
             }
@@ -1030,8 +1037,8 @@ bool WaveBankReader::Impl::UpdatePrepared()
 
 
 //--------------------------------------------------------------------------------------
-WaveBankReader::WaveBankReader() :
-    pImpl( new Impl )
+WaveBankReader::WaveBankReader() noexcept(false) :
+    pImpl(std::make_unique<Impl>())
 {
 }
 
