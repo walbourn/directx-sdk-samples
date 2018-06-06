@@ -44,17 +44,23 @@
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 
+#ifndef MAKEFOURCC
+#define MAKEFOURCC(ch0, ch1, ch2, ch3)                              \
+                ((uint32_t)(uint8_t)(ch0) | ((uint32_t)(uint8_t)(ch1) << 8) |       \
+                ((uint32_t)(uint8_t)(ch2) << 16) | ((uint32_t)(uint8_t)(ch3) << 24 ))
+#endif /* defined(MAKEFOURCC) */
+
 namespace
 {
     struct handle_closer { void operator()(HANDLE h) { if (h) CloseHandle(h); } };
 
-    typedef public std::unique_ptr<void, handle_closer> ScopedHandle;
+    typedef std::unique_ptr<void, handle_closer> ScopedHandle;
 
     inline HANDLE safe_handle(HANDLE h) { return (h == INVALID_HANDLE_VALUE) ? 0 : h; }
 
     struct find_closer { void operator()(HANDLE h) { assert(h != INVALID_HANDLE_VALUE); if (h) FindClose(h); } };
 
-    typedef public std::unique_ptr<void, find_closer> ScopedFindHandle;
+    typedef std::unique_ptr<void, find_closer> ScopedFindHandle;
 
 #define BLOCKALIGNPAD(a, b) \
     ((((a) + ((b) - 1)) / (b)) * (b))
@@ -88,7 +94,7 @@ namespace
 
     struct HEADER
     {
-        static const uint32_t SIGNATURE = 'DNBW';
+        static const uint32_t SIGNATURE = MAKEFOURCC('W', 'B', 'N', 'D');
         static const uint32_t VERSION = 44;
 
         enum SEGIDX
@@ -1448,12 +1454,12 @@ int __cdecl wmain(_In_ int argc, _In_z_count_(argc) wchar_t* argv[])
         }
 
         uint32_t seekoffset = 0;
-        uint32_t index = 0;
-        for (auto it = waves.begin(); it != waves.end(); ++it, ++index)
+        uint32_t windex = 0;
+        for (auto it = waves.begin(); it != waves.end(); ++it, ++windex)
         {
             if (it->miniFmt.wFormatTag == MINIWAVEFORMAT::TAG_WMA)
             {
-                seekTables[index] = seekoffset * sizeof(uint32_t);
+                seekTables[windex] = seekoffset * sizeof(uint32_t);
 
                 uint32_t baseoffset = uint32_t(waves.size() + seekoffset);
                 seekTables[baseoffset] = it->data.seekCount;
@@ -1467,7 +1473,7 @@ int __cdecl wmain(_In_ int argc, _In_z_count_(argc) wchar_t* argv[])
             }
             else
             {
-                seekTables[index] = uint32_t(-1);
+                seekTables[windex] = uint32_t(-1);
             }
         }
 
@@ -1589,8 +1595,8 @@ int __cdecl wmain(_In_ int argc, _In_z_count_(argc) wchar_t* argv[])
 
             fprintf_s(file, "#pragma once\n\nenum XACT_WAVEBANK_%ls\n{\n", wBankName);
 
-            size_t index = 0;
-            for (auto it = waves.begin(); it != waves.end(); ++it, ++index)
+            size_t windex = 0;
+            for (auto it = waves.begin(); it != waves.end(); ++it, ++windex)
             {
                 auto cit = conversion.cbegin();
                 advance(cit, it->conv);
@@ -1600,7 +1606,7 @@ int __cdecl wmain(_In_ int argc, _In_z_count_(argc) wchar_t* argv[])
 
                 FileNameToIdentifier(wEntryName, _MAX_FNAME);
 
-                fprintf_s(file, "    XACT_WAVEBANK_%ls_%ls = %zu,\n", wBankName, wEntryName, index);
+                fprintf_s(file, "    XACT_WAVEBANK_%ls_%ls = %zu,\n", wBankName, wEntryName, windex);
             }
 
             fprintf_s(file, "};\n\n#define XACT_WAVEBANK_%ls_ENTRY_COUNT %zu\n", wBankName, count);
