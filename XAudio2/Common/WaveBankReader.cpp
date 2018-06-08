@@ -30,7 +30,7 @@ struct handle_closer { void operator()(HANDLE h) { if (h) CloseHandle(h); } };
 
 typedef public std::unique_ptr<void, handle_closer> ScopedHandle;
 
-inline HANDLE safe_handle( HANDLE h ) { return (h == INVALID_HANDLE_VALUE) ? 0 : h; }
+inline HANDLE safe_handle( HANDLE h ) { return (h == INVALID_HANDLE_VALUE) ? nullptr : h; }
 
 //--------------------------------------------------------------------------------------
 #pragma pack(push, 1)
