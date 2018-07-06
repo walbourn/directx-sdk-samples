@@ -19,19 +19,18 @@ using namespace DirectX;
 
 namespace
 {
-
     //---------------------------------------------------------------------------------
     // .WAV files
     //---------------------------------------------------------------------------------
-    const uint32_t FOURCC_RIFF_TAG = 'FFIR';
-    const uint32_t FOURCC_FORMAT_TAG = ' tmf';
-    const uint32_t FOURCC_DATA_TAG = 'atad';
-    const uint32_t FOURCC_WAVE_FILE_TAG = 'EVAW';
-    const uint32_t FOURCC_XWMA_FILE_TAG = 'AMWX';
-    const uint32_t FOURCC_DLS_SAMPLE = 'pmsw';
-    const uint32_t FOURCC_MIDI_SAMPLE = 'lpms';
-    const uint32_t FOURCC_XWMA_DPDS = 'sdpd';
-    const uint32_t FOURCC_XMA_SEEK = 'kees';
+    const uint32_t FOURCC_RIFF_TAG = MAKEFOURCC('R', 'I', 'F', 'F');
+    const uint32_t FOURCC_FORMAT_TAG = MAKEFOURCC('f', 'm', 't', ' ');
+    const uint32_t FOURCC_DATA_TAG = MAKEFOURCC('d', 'a', 't', 'a');
+    const uint32_t FOURCC_WAVE_FILE_TAG = MAKEFOURCC('W', 'A', 'V', 'E');
+    const uint32_t FOURCC_XWMA_FILE_TAG = MAKEFOURCC('X', 'W', 'M', 'A');
+    const uint32_t FOURCC_DLS_SAMPLE = MAKEFOURCC('w', 's', 'm', 'p');
+    const uint32_t FOURCC_MIDI_SAMPLE = MAKEFOURCC('s', 'm', 'p', 'l');
+    const uint32_t FOURCC_XWMA_DPDS = MAKEFOURCC('d', 'p', 'd', 's');
+    const uint32_t FOURCC_XMA_SEEK = MAKEFOURCC('s', 'e', 'e', 'k');
 
 #pragma pack(push,1)
     struct RIFFChunk
@@ -240,7 +239,7 @@ namespace
                         }
                         else
                         {
-                            static const GUID s_wfexBase = { 0x00000000, 0x0000, 0x0010, 0x80, 0x00, 0x00, 0xAA, 0x00, 0x38, 0x9B, 0x71 };
+                            static const GUID s_wfexBase = { 0x00000000, 0x0000, 0x0010, { 0x80, 0x00, 0x00, 0xAA, 0x00, 0x38, 0x9B, 0x71 } };
 
                             auto wfex = reinterpret_cast<const WAVEFORMATEXTENSIBLE*>(ptr);
 

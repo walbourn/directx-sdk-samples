@@ -9,7 +9,7 @@
 // http://go.microsoft.com/fwlink/?LinkId=248926
 //-------------------------------------------------------------------------------------
 
-#include "directxtexp.h"
+#include "DirectXTexp.h"
 
 #include "filters.h"
 
@@ -547,7 +547,7 @@ namespace
 
                 if (memcmp(&pfScaler, &pfGUID, sizeof(WICPixelFormatGUID)) == 0)
                 {
-                    hr = scaler->CopyPixels(0, static_cast<UINT>(img->rowPitch), static_cast<UINT>(img->slicePitch), img->pixels);
+                    hr = scaler->CopyPixels(nullptr, static_cast<UINT>(img->rowPitch), static_cast<UINT>(img->slicePitch), img->pixels);
                     if (FAILED(hr))
                         return hr;
                 }
@@ -571,7 +571,7 @@ namespace
                     if (FAILED(hr))
                         return hr;
 
-                    hr = FC->CopyPixels(0, static_cast<UINT>(img->rowPitch), static_cast<UINT>(img->slicePitch), img->pixels);
+                    hr = FC->CopyPixels(nullptr, static_cast<UINT>(img->rowPitch), static_cast<UINT>(img->slicePitch), img->pixels);
                     if (FAILED(hr))
                         return hr;
                 }
@@ -1214,7 +1214,7 @@ namespace
                         {
                             // Steal and reuse scanline from 'free row' list
                             // (it will always be at least as wide as nwidth due to loop decending order)
-                            assert(rowFree->scanline != 0);
+                            assert(rowFree->scanline != nullptr);
                             rowAcc->scanline.reset(rowFree->scanline.release());
                             rowFree = rowFree->next;
                         }
@@ -2368,7 +2368,7 @@ namespace
                         {
                             // Steal and reuse scanline from 'free slice' list
                             // (it will always be at least as large as nwidth*nheight due to loop decending order)
-                            assert(sliceFree->scanline != 0);
+                            assert(sliceFree->scanline != nullptr);
                             sliceAcc->scanline.reset(sliceFree->scanline.release());
                             sliceFree = sliceFree->next;
                         }
@@ -2609,7 +2609,6 @@ HRESULT DirectX::GenerateMipMaps(
                 return _ConvertFromR32G32B32A32(tMipChain.GetImages(), tMipChain.GetImageCount(), tMipChain.GetMetadata(), baseImage.format, mipChain);
             }
         }
-        break;
 
         default:
             return HRESULT_FROM_WIN32(ERROR_NOT_SUPPORTED);
@@ -2815,7 +2814,6 @@ HRESULT DirectX::GenerateMipMaps(
                 return _ConvertFromR32G32B32A32(tMipChain.GetImages(), tMipChain.GetImageCount(), tMipChain.GetMetadata(), metadata.format, mipChain);
             }
         }
-        break;
 
         default:
             return HRESULT_FROM_WIN32(ERROR_NOT_SUPPORTED);

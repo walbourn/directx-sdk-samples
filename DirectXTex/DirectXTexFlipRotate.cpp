@@ -9,7 +9,7 @@
 // http://go.microsoft.com/fwlink/?LinkId=248926
 //-------------------------------------------------------------------------------------
 
-#include "directxtexp.h"
+#include "DirectXTexp.h"
 
 using namespace DirectX;
 using Microsoft::WRL::ComPtr;
@@ -70,7 +70,7 @@ namespace
         if (destImage.width != nwidth || destImage.height != nheight)
             return E_FAIL;
 
-        hr = FR->CopyPixels(0, static_cast<UINT>(destImage.rowPitch), static_cast<UINT>(destImage.slicePitch), destImage.pixels);
+        hr = FR->CopyPixels(nullptr, static_cast<UINT>(destImage.rowPitch), static_cast<UINT>(destImage.slicePitch), destImage.pixels);
         if (FAILED(hr))
             return hr;
 

@@ -50,7 +50,7 @@ namespace
         v = XMConvertVectorIntToFloat(v, 0);
 
         // Convert right/bottom to width/height.
-        v -= XMVectorPermute<0, 1, 4, 5>(XMVectorZero(), v);
+        v = XMVectorSubtract(v, XMVectorPermute<0, 1, 4, 5>(g_XMZero, v));
 
         return v;
     }
@@ -296,8 +296,10 @@ std::vector<short> SpriteBatch::Impl::DeviceResources::CreateIndexValues()
 
     indices.reserve(MaxBatchSize * IndicesPerSprite);
 
-    for (short i = 0; i < MaxBatchSize * VerticesPerSprite; i += VerticesPerSprite)
+    for (size_t j = 0; j < MaxBatchSize * VerticesPerSprite; j += VerticesPerSprite)
     {
+        short i = static_cast<short>(j);
+
         indices.push_back(i);
         indices.push_back(i + 1);
         indices.push_back(i + 2);
@@ -481,7 +483,7 @@ void XM_CALLCONV SpriteBatch::Impl::Draw(ID3D11ShaderResourceView* texture,
         // If the destination size is relative to the source region, convert it to pixels.
         if (!(flags & SpriteInfo::DestSizeInPixels))
         {
-            dest = XMVectorPermute<0, 1, 6, 7>(dest, dest * source); // dest.zw *= source.zw
+            dest = XMVectorPermute<0, 1, 6, 7>(dest, XMVectorMultiply(dest, source)); // dest.zw *= source.zw
         }
 
         flags |= SpriteInfo::SourceInTexels | SpriteInfo::DestSizeInPixels;
@@ -786,8 +788,8 @@ void SpriteBatch::Impl::RenderBatch(ID3D11ShaderResourceView* texture, SpriteInf
 #endif
 
         // Ok lads, the time has come for us draw ourselves some sprites!
-        UINT startIndex = (UINT)mContextResources->vertexBufferPosition * IndicesPerSprite;
-        UINT indexCount = (UINT)batchSize * IndicesPerSprite;
+        auto startIndex = static_cast<UINT>(mContextResources->vertexBufferPosition * IndicesPerSprite);
+        auto indexCount = static_cast<UINT>(batchSize * IndicesPerSprite);
 
         deviceContext->DrawIndexed(indexCount, startIndex, 0);
 
@@ -831,18 +833,18 @@ void XM_CALLCONV SpriteBatch::Impl::RenderSprite(SpriteInfo const* sprite,
     // Convert the source region from texels to mod-1 texture coordinate format.
     if (flags & SpriteInfo::SourceInTexels)
     {
-        source *= inverseTextureSize;
-        sourceSize *= inverseTextureSize;
+        source = XMVectorMultiply(source, inverseTextureSize);
+        sourceSize = XMVectorMultiply(sourceSize, inverseTextureSize);
     }
     else
     {
-        origin *= inverseTextureSize;
+        origin = XMVectorMultiply(origin, inverseTextureSize);
     }
 
     // If the destination size is relative to the source region, convert it to pixels.
     if (!(flags & SpriteInfo::DestSizeInPixels))
     {
-        destinationSize *= textureSize;
+        destinationSize = XMVectorMultiply(destinationSize, textureSize);
     }
 
     // Compute a 2x2 rotation matrix.
@@ -859,7 +861,7 @@ void XM_CALLCONV SpriteBatch::Impl::RenderSprite(SpriteInfo const* sprite,
         XMVECTOR cosV = XMLoadFloat(&cos);
 
         rotationMatrix1 = XMVectorMergeXY(cosV, sinV);
-        rotationMatrix2 = XMVectorMergeXY(-sinV, cosV);
+        rotationMatrix2 = XMVectorMergeXY(XMVectorNegate(sinV), cosV);
     }
     else
     {
@@ -886,13 +888,13 @@ void XM_CALLCONV SpriteBatch::Impl::RenderSprite(SpriteInfo const* sprite,
     static_assert(SpriteEffects_FlipHorizontally == 1 &&
                   SpriteEffects_FlipVertically == 2, "If you change these enum values, the mirroring implementation must be updated to match");
 
-    int mirrorBits = flags & 3;
+    const unsigned int mirrorBits = flags & 3;
 
     // Generate the four output vertices.
-    for (int i = 0; i < VerticesPerSprite; i++)
+    for (size_t i = 0; i < VerticesPerSprite; i++)
     {
         // Calculate position.
-        XMVECTOR cornerOffset = (cornerOffsets[i] - origin) * destinationSize;
+        XMVECTOR cornerOffset = XMVectorMultiply(XMVectorSubtract(cornerOffsets[i], origin), destinationSize);
         
         // Apply 2x2 rotation matrix.
         XMVECTOR position1 = XMVectorMultiplyAdd(XMVectorSplatX(cornerOffset), rotationMatrix1, destination);
@@ -910,7 +912,7 @@ void XM_CALLCONV SpriteBatch::Impl::RenderSprite(SpriteInfo const* sprite,
         XMStoreFloat4(&vertices[i].color, color);
 
         // Compute and write the texture coordinate.
-        XMVECTOR textureCoordinate = XMVectorMultiplyAdd(cornerOffsets[i ^ mirrorBits], sourceSize, source);
+        XMVECTOR textureCoordinate = XMVectorMultiplyAdd(cornerOffsets[static_cast<unsigned int>(i) ^ mirrorBits], sourceSize, source);
 
         XMStoreFloat2(&vertices[i].textureCoordinate, textureCoordinate);
     }

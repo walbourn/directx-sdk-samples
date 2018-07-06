@@ -9,7 +9,7 @@
 // http://go.microsoft.com/fwlink/?LinkId=248926
 //-------------------------------------------------------------------------------------
 
-#include "directxtexp.h"
+#include "DirectXTexp.h"
 
 // Experiemental encoding variants, not enabled by default
 //#define COLOR_WEIGHTS
@@ -35,9 +35,9 @@ namespace
     //-------------------------------------------------------------------------------------
     inline void Decode565(_Out_ HDRColorA *pColor, _In_ const uint16_t w565)
     {
-        pColor->r = (float)((w565 >> 11) & 31) * (1.0f / 31.0f);
-        pColor->g = (float)((w565 >> 5) & 63) * (1.0f / 63.0f);
-        pColor->b = (float)((w565 >> 0) & 31) * (1.0f / 31.0f);
+        pColor->r = static_cast<float>((w565 >> 11) & 31) * (1.0f / 31.0f);
+        pColor->g = static_cast<float>((w565 >> 5) & 63) * (1.0f / 63.0f);
+        pColor->b = static_cast<float>((w565 >> 0) & 31) * (1.0f / 31.0f);
         pColor->a = 1.0f;
     }
 
@@ -48,12 +48,14 @@ namespace
         Color.r = (pColor->r < 0.0f) ? 0.0f : (pColor->r > 1.0f) ? 1.0f : pColor->r;
         Color.g = (pColor->g < 0.0f) ? 0.0f : (pColor->g > 1.0f) ? 1.0f : pColor->g;
         Color.b = (pColor->b < 0.0f) ? 0.0f : (pColor->b > 1.0f) ? 1.0f : pColor->b;
+        Color.a = pColor->a;
 
         uint16_t w;
 
-        w = (uint16_t)((static_cast<int32_t>(Color.r * 31.0f + 0.5f) << 11) |
-            (static_cast<int32_t>(Color.g * 63.0f + 0.5f) << 5) |
-            (static_cast<int32_t>(Color.b * 31.0f + 0.5f) << 0));
+        w = static_cast<uint16_t>(
+            (static_cast<int32_t>(Color.r * 31.0f + 0.5f) << 11)
+            | (static_cast<int32_t>(Color.g * 63.0f + 0.5f) << 5)
+            | (static_cast<int32_t>(Color.b * 31.0f + 0.5f) << 0));
 
         return w;
     }
@@ -107,38 +109,30 @@ namespace
         }
 
         // Diagonal axis
-        HDRColorA AB;
-
-        AB.r = Y.r - X.r;
-        AB.g = Y.g - X.g;
-        AB.b = Y.b - X.b;
+        HDRColorA AB(Y.r - X.r, Y.g - X.g, Y.b - X.b, 0.0f);
 
         float fAB = AB.r * AB.r + AB.g * AB.g + AB.b * AB.b;
 
         // Single color block.. no need to root-find
         if (fAB < FLT_MIN)
         {
-            pX->r = X.r; pX->g = X.g; pX->b = X.b;
-            pY->r = Y.r; pY->g = Y.g; pY->b = Y.b;
+            pX->r = X.r; pX->g = X.g; pX->b = X.b; pX->a = 1.0f;
+            pY->r = Y.r; pY->g = Y.g; pY->b = Y.b; pY->a = 1.0f;
             return;
         }
 
         // Try all four axis directions, to determine which diagonal best fits data
         float fABInv = 1.0f / fAB;
 
-        HDRColorA Dir;
-        Dir.r = AB.r * fABInv;
-        Dir.g = AB.g * fABInv;
-        Dir.b = AB.b * fABInv;
+        HDRColorA Dir(AB.r * fABInv, AB.g * fABInv, AB.b * fABInv, 0.0f);
 
-        HDRColorA Mid;
-        Mid.r = (X.r + Y.r) * 0.5f;
-        Mid.g = (X.g + Y.g) * 0.5f;
-        Mid.b = (X.b + Y.b) * 0.5f;
+        HDRColorA Mid(
+            (X.r + Y.r) * 0.5f,
+            (X.g + Y.g) * 0.5f,
+            (X.b + Y.b) * 0.5f,
+            0.0f);
 
-        float fDir[4];
-        fDir[0] = fDir[1] = fDir[2] = fDir[3] = 0.0f;
-
+        float fDir[4] = {};
 
         for (size_t iPoint = 0; iPoint < NUM_PIXELS_PER_BLOCK; iPoint++)
         {
@@ -146,6 +140,7 @@ namespace
             Pt.r = (pPoints[iPoint].r - Mid.r) * Dir.r;
             Pt.g = (pPoints[iPoint].g - Mid.g) * Dir.g;
             Pt.b = (pPoints[iPoint].b - Mid.b) * Dir.b;
+            Pt.a = 0.0f;
 
             float f;
 
@@ -202,13 +197,13 @@ namespace
         // Two color block.. no need to root-find
         if (fAB < 1.0f / 4096.0f)
         {
-            pX->r = X.r; pX->g = X.g; pX->b = X.b;
-            pY->r = Y.r; pY->g = Y.g; pY->b = Y.b;
+            pX->r = X.r; pX->g = X.g; pX->b = X.b; pX->a = 1.0f;
+            pY->r = Y.r; pY->g = Y.g; pY->b = Y.b; pY->a = 1.0f;
             return;
         }
 
         // Use Newton's Method to find local minima of sum-of-squares error.
-        float fSteps = (float)(cSteps - 1);
+        auto fSteps = static_cast<float>(cSteps - 1);
 
         for (size_t iIteration = 0; iIteration < 8; iIteration++)
         {
@@ -220,6 +215,7 @@ namespace
                 pSteps[iStep].r = X.r * pC[iStep] + Y.r * pD[iStep];
                 pSteps[iStep].g = X.g * pC[iStep] + Y.g * pD[iStep];
                 pSteps[iStep].b = X.b * pC[iStep] + Y.b * pD[iStep];
+                pSteps[iStep].a = 1.0f;
             }
 
 
@@ -241,9 +237,10 @@ namespace
 
 
             // Evaluate function, and derivatives
-            float d2X, d2Y;
-            HDRColorA dX, dY;
-            d2X = d2Y = dX.r = dX.g = dX.b = dY.r = dY.g = dY.b = 0.0f;
+            float d2X = 0.f;
+            float d2Y = 0.f;
+            HDRColorA dX = {};
+            HDRColorA dY = {};
 
             for (size_t iPoint = 0; iPoint < NUM_PIXELS_PER_BLOCK; iPoint++)
             {
@@ -265,6 +262,7 @@ namespace
                 Diff.r = pSteps[iStep].r - pPoints[iPoint].r;
                 Diff.g = pSteps[iStep].g - pPoints[iPoint].g;
                 Diff.b = pSteps[iStep].b - pPoints[iPoint].b;
+                Diff.a = 0.0f;
 
 #ifdef COLOR_WEIGHTS
                 float fC = pC[iStep] * pPoints[iPoint].a * (1.0f / 8.0f);
@@ -311,8 +309,8 @@ namespace
             }
         }
 
-        pX->r = X.r; pX->g = X.g; pX->b = X.b;
-        pY->r = Y.r; pY->g = Y.g; pY->b = Y.b;
+        pX->r = X.r; pX->g = X.g; pX->b = X.b; pX->a = 1.0f;
+        pY->r = Y.r; pY->g = Y.g; pY->b = Y.b; pY->a = 1.0f;
     }
 
 
@@ -423,6 +421,7 @@ namespace
             Clr.r = pColor[i].r;
             Clr.g = pColor[i].g;
             Clr.b = pColor[i].b;
+            Clr.a = 1.0f;
 
             if (flags & BC_FLAGS_DITHER_RGB)
             {
@@ -431,9 +430,9 @@ namespace
                 Clr.b += Error[i].b;
             }
 
-            Color[i].r = (float) static_cast<int32_t>(Clr.r * 31.0f + 0.5f) * (1.0f / 31.0f);
-            Color[i].g = (float) static_cast<int32_t>(Clr.g * 63.0f + 0.5f) * (1.0f / 63.0f);
-            Color[i].b = (float) static_cast<int32_t>(Clr.b * 31.0f + 0.5f) * (1.0f / 31.0f);
+            Color[i].r = static_cast<float>(static_cast<int32_t>(Clr.r * 31.0f + 0.5f) * (1.0f / 31.0f));
+            Color[i].g = static_cast<float>(static_cast<int32_t>(Clr.g * 63.0f + 0.5f) * (1.0f / 63.0f));
+            Color[i].b = static_cast<float>(static_cast<int32_t>(Clr.b * 31.0f + 0.5f) * (1.0f / 31.0f));
 
 #ifdef COLOR_WEIGHTS
             Color[i].a = pColor[i].a;
@@ -447,6 +446,7 @@ namespace
                 Diff.r = Color[i].a * (Clr.r - Color[i].r);
                 Diff.g = Color[i].a * (Clr.g - Color[i].g);
                 Diff.b = Color[i].a * (Clr.b - Color[i].b);
+                Diff.a = 0.0f;
 
                 if (3 != (i & 3))
                 {
@@ -505,10 +505,12 @@ namespace
             ColorC.r = ColorA.r * g_LuminanceInv.r;
             ColorC.g = ColorA.g * g_LuminanceInv.g;
             ColorC.b = ColorA.b * g_LuminanceInv.b;
+            ColorC.a = ColorA.a;
 
             ColorD.r = ColorB.r * g_LuminanceInv.r;
             ColorD.g = ColorB.g * g_LuminanceInv.g;
             ColorD.b = ColorB.b * g_LuminanceInv.b;
+            ColorD.a = ColorB.a;
         }
 
         uint16_t wColorA = Encode565(&ColorC);
@@ -581,12 +583,12 @@ namespace
 
         // Calculate color direction
         HDRColorA Dir;
-
         Dir.r = Step[1].r - Step[0].r;
         Dir.g = Step[1].g - Step[0].g;
         Dir.b = Step[1].b - Step[0].b;
+        Dir.a = 0.0f;
 
-        float fSteps = (float)(uSteps - 1);
+        auto fSteps = static_cast<float>(uSteps - 1);
         float fScale = (wColorA != wColorB) ? (fSteps / (Dir.r * Dir.r + Dir.g * Dir.g + Dir.b * Dir.b)) : 0.0f;
 
         Dir.r *= fScale;
@@ -602,7 +604,7 @@ namespace
         {
             if ((3 == uSteps) && (pColor[i].a < threshold))
             {
-                dw = (3 << 30) | (dw >> 2);
+                dw = (3u << 30) | (dw >> 2);
             }
             else
             {
@@ -619,6 +621,7 @@ namespace
                     Clr.g = pColor[i].g * g_Luminance.g;
                     Clr.b = pColor[i].b * g_Luminance.b;
                 }
+                Clr.a = 1.0f;
 
                 if (flags & BC_FLAGS_DITHER_RGB)
                 {
@@ -645,6 +648,7 @@ namespace
                     Diff.r = Color[i].a * (Clr.r - Step[iStep].r);
                     Diff.g = Color[i].a * (Clr.g - Step[iStep].g);
                     Diff.b = Color[i].a * (Clr.b - Step[iStep].b);
+                    Diff.a = 0.0f;
 
                     if (3 != (i & 3))
                     {
@@ -751,7 +755,7 @@ void DirectX::D3DXEncodeBC1(uint8_t *pBC, const XMVECTOR *pColor, float threshol
             Color[i].r = clr.r;
             Color[i].g = clr.g;
             Color[i].b = clr.b;
-            Color[i].a = (float) static_cast<int32_t>(clr.a + fError[i] + 0.5f);
+            Color[i].a = static_cast<float>(static_cast<int32_t>(clr.a + fError[i] + 0.5f));
 
             float fDiff = fAlph - Color[i].a;
 
@@ -811,13 +815,13 @@ void DirectX::D3DXDecodeBC2(XMVECTOR *pColor, const uint8_t *pBC)
     for (size_t i = 0; i < 8; ++i, dw >>= 4)
     {
 #pragma prefast(suppress:22103, "writing blocks in two halves confuses tool")
-        pColor[i] = XMVectorSetW(pColor[i], (float)(dw & 0xf) * (1.0f / 15.0f));
+        pColor[i] = XMVectorSetW(pColor[i], static_cast<float>(dw & 0xf) * (1.0f / 15.0f));
     }
 
     dw = pBC2->bitmap[1];
 
     for (size_t i = 8; i < NUM_PIXELS_PER_BLOCK; ++i, dw >>= 4)
-        pColor[i] = XMVectorSetW(pColor[i], (float)(dw & 0xf) * (1.0f / 15.0f));
+        pColor[i] = XMVectorSetW(pColor[i], static_cast<float>(dw & 0xf) * (1.0f / 15.0f));
 }
 
 _Use_decl_annotations_
@@ -845,14 +849,14 @@ void DirectX::D3DXEncodeBC2(uint8_t *pBC, const XMVECTOR *pColor, DWORD flags)
         if (flags & BC_FLAGS_DITHER_A)
             fAlph += fError[i];
 
-        uint32_t u = (uint32_t) static_cast<int32_t>(fAlph * 15.0f + 0.5f);
+        auto u = static_cast<uint32_t>(fAlph * 15.0f + 0.5f);
 
         pBC2->bitmap[i >> 3] >>= 4;
         pBC2->bitmap[i >> 3] |= (u << 28);
 
         if (flags & BC_FLAGS_DITHER_A)
         {
-            float fDiff = fAlph - (float)u * (1.0f / 15.0f);
+            float fDiff = fAlph - float(u) * (1.0f / 15.0f);
 
             if (3 != (i & 3))
             {
@@ -908,8 +912,8 @@ void DirectX::D3DXDecodeBC3(XMVECTOR *pColor, const uint8_t *pBC)
     // Adaptive 3-bit alpha part
     float fAlpha[8];
 
-    fAlpha[0] = ((float)pBC3->alpha[0]) * (1.0f / 255.0f);
-    fAlpha[1] = ((float)pBC3->alpha[1]) * (1.0f / 255.0f);
+    fAlpha[0] = static_cast<float>(pBC3->alpha[0]) * (1.0f / 255.0f);
+    fAlpha[1] = static_cast<float>(pBC3->alpha[1]) * (1.0f / 255.0f);
 
     if (pBC3->alpha[0] > pBC3->alpha[1])
     {
@@ -1028,11 +1032,11 @@ void DirectX::D3DXEncodeBC3(uint8_t *pBC, const XMVECTOR *pColor, DWORD flags)
     float fAlphaA, fAlphaB;
     OptimizeAlpha<false>(&fAlphaA, &fAlphaB, fAlpha, uSteps);
 
-    uint8_t bAlphaA = (uint8_t) static_cast<int32_t>(fAlphaA * 255.0f + 0.5f);
-    uint8_t bAlphaB = (uint8_t) static_cast<int32_t>(fAlphaB * 255.0f + 0.5f);
+    auto bAlphaA = static_cast<uint8_t>(static_cast<int32_t>(fAlphaA * 255.0f + 0.5f));
+    auto bAlphaB = static_cast<uint8_t>(static_cast<int32_t>(fAlphaB * 255.0f + 0.5f));
 
-    fAlphaA = (float)bAlphaA * (1.0f / 255.0f);
-    fAlphaB = (float)bAlphaB * (1.0f / 255.0f);
+    fAlphaA = static_cast<float>(bAlphaA) * (1.0f / 255.0f);
+    fAlphaB = static_cast<float>(bAlphaB) * (1.0f / 255.0f);
 
     // Setup block
     if ((8 == uSteps) && (bAlphaA == bAlphaB))
@@ -1080,7 +1084,7 @@ void DirectX::D3DXEncodeBC3(uint8_t *pBC, const XMVECTOR *pColor, DWORD flags)
     }
 
     // Encode alpha bitmap
-    float fSteps = (float)(uSteps - 1);
+    auto fSteps = static_cast<float>(uSteps - 1);
     float fScale = (fStep[0] != fStep[1]) ? (fSteps / (fStep[1] - fStep[0])) : 0.0f;
 
     if (flags & BC_FLAGS_DITHER_A)
@@ -1130,8 +1134,8 @@ void DirectX::D3DXEncodeBC3(uint8_t *pBC, const XMVECTOR *pColor, DWORD flags)
             }
         }
 
-        pBC3->bitmap[0 + iSet * 3] = ((uint8_t *)&dw)[0];
-        pBC3->bitmap[1 + iSet * 3] = ((uint8_t *)&dw)[1];
-        pBC3->bitmap[2 + iSet * 3] = ((uint8_t *)&dw)[2];
+        pBC3->bitmap[0 + iSet * 3] = reinterpret_cast<uint8_t *>(&dw)[0];
+        pBC3->bitmap[1 + iSet * 3] = reinterpret_cast<uint8_t *>(&dw)[1];
+        pBC3->bitmap[2 + iSet * 3] = reinterpret_cast<uint8_t *>(&dw)[2];
     }
 }

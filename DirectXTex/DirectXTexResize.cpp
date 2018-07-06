@@ -9,7 +9,7 @@
 // http://go.microsoft.com/fwlink/?LinkId=248926
 //-------------------------------------------------------------------------------------
 
-#include "directxtexp.h"
+#include "DirectXTexp.h"
 
 #include "filters.h"
 
@@ -87,7 +87,7 @@ namespace
 
             if (memcmp(&pfScaler, &pfGUID, sizeof(WICPixelFormatGUID)) == 0)
             {
-                hr = scaler->CopyPixels(0, static_cast<UINT>(destImage.rowPitch), static_cast<UINT>(destImage.slicePitch), destImage.pixels);
+                hr = scaler->CopyPixels(nullptr, static_cast<UINT>(destImage.rowPitch), static_cast<UINT>(destImage.slicePitch), destImage.pixels);
                 if (FAILED(hr))
                     return hr;
             }
@@ -111,7 +111,7 @@ namespace
                 if (FAILED(hr))
                     return hr;
 
-                hr = FC->CopyPixels(0, static_cast<UINT>(destImage.rowPitch), static_cast<UINT>(destImage.slicePitch), destImage.pixels);
+                hr = FC->CopyPixels(nullptr, static_cast<UINT>(destImage.rowPitch), static_cast<UINT>(destImage.slicePitch), destImage.pixels);
                 if (FAILED(hr))
                     return hr;
             }
@@ -678,7 +678,7 @@ namespace
                     if (rowFree)
                     {
                         // Steal and reuse scanline from 'free row' list
-                        assert(rowFree->scanline != 0);
+                        assert(rowFree->scanline != nullptr);
                         rowAcc->scanline.reset(rowFree->scanline.release());
                         rowFree = rowFree->next;
                     }

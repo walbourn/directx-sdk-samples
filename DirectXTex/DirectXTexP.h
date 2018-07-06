@@ -42,6 +42,15 @@
 // C4986 exception specification does not match previous declaration
 // C5029 nonstandard extension used
 
+// Xbox One XDK related Off by default warnings
+#pragma warning(disable : 4643)
+// C4643 Forward declaring in namespace std is not permitted by the C++ Standard
+
+#ifdef __INTEL_COMPILER
+#pragma warning(disable : 161)
+// warning #161: unrecognized #pragma
+#endif
+
 #pragma warning(push)
 #pragma warning(disable : 4005)
 #define WIN32_LEAN_AND_MEAN
@@ -69,6 +78,8 @@
 #else
 #include <d3d11_1.h>
 #endif
+
+#define _XM_NO_XMVECTOR_OVERLOADS_
 
 #include <directxmath.h>
 #include <directxpackedvector.h>

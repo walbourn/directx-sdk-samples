@@ -61,7 +61,7 @@ public:
 
         CreateIntegerPCM(&mWaveFormat, sampleRate, channels, sampleBits);
 
-        assert(engine != 0);
+        assert(engine != nullptr);
         engine->RegisterNotify(this, true);
 
         mBase.Initialize(engine, &mWaveFormat, flags);
@@ -69,7 +69,7 @@ public:
         mBufferNeeded = bufferNeeded;
     }
 
-    virtual ~Impl()
+    virtual ~Impl() override
     {
         mBase.DestroyVoice();
 
@@ -86,7 +86,7 @@ public:
 
     void SubmitBuffer(_In_reads_bytes_(audioBytes) const uint8_t* pAudioData, uint32_t offset, size_t audioBytes);
 
-    const WAVEFORMATEX* GetFormat() const { return &mWaveFormat; };
+    const WAVEFORMATEX* GetFormat() const { return &mWaveFormat; }
 
     // IVoiceNotify
     virtual void __cdecl OnBufferEnd() override

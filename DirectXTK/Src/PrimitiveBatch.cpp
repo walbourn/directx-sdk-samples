@@ -88,7 +88,7 @@ namespace
     {
         D3D11_BUFFER_DESC desc = {};
 
-        desc.ByteWidth = (UINT)bufferSize;
+        desc.ByteWidth = static_cast<UINT>(bufferSize);
         desc.BindFlags = bindFlag;
         desc.Usage = D3D11_USAGE_DYNAMIC;
         desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
@@ -176,7 +176,7 @@ void PrimitiveBatchBase::Impl::Begin()
 
     // Bind the vertex buffer.
     auto vertexBuffer = mVertexBuffer.Get();
-    UINT vertexStride = (UINT)mVertexSize;
+    UINT vertexStride = static_cast<UINT>(mVertexSize);
     UINT vertexOffset = 0;
 
     mDeviceContext->IASetVertexBuffers(0, 1, &vertexBuffer, &vertexStride, &vertexOffset);
@@ -292,7 +292,7 @@ void PrimitiveBatchBase::Impl::Draw(D3D11_PRIMITIVE_TOPOLOGY topology, bool isIn
     // Copy over the index data.
     if (isIndexed)
     {
-        assert(grfxMemoryIB != 0);
+        assert(grfxMemoryIB != nullptr);
         auto outputIndices = reinterpret_cast<uint16_t*>(grfxMemoryIB) + mCurrentIndex;
 
         for (size_t i = 0; i < indexCount; i++)
@@ -304,7 +304,7 @@ void PrimitiveBatchBase::Impl::Draw(D3D11_PRIMITIVE_TOPOLOGY topology, bool isIn
     }
 
     // Return the output vertex data location.
-    assert(grfxMemoryVB != 0);
+    assert(grfxMemoryVB != nullptr);
     *pMappedVertices = reinterpret_cast<uint8_t*>(grfxMemoryVB) + (mCurrentVertex * mVertexSize);
 
     mCurrentVertex += vertexCount;
@@ -336,7 +336,7 @@ void PrimitiveBatchBase::Impl::Draw(D3D11_PRIMITIVE_TOPOLOGY topology, bool isIn
         
         for (size_t i = 0; i < indexCount; i++)
         {
-            outputIndices[i] = (uint16_t)(indices[i] + mCurrentVertex - mBaseVertex);
+            outputIndices[i] = static_cast<uint16_t>(indices[i] + mCurrentVertex - mBaseVertex);
         }
  
         mCurrentIndex += indexCount;
@@ -385,12 +385,12 @@ void PrimitiveBatchBase::Impl::FlushBatch()
         // Draw indexed geometry.
         mDeviceContext->Unmap(mIndexBuffer.Get(), 0);
 
-        mDeviceContext->DrawIndexed((UINT)(mCurrentIndex - mBaseIndex), (UINT)mBaseIndex, (UINT)mBaseVertex);
+        mDeviceContext->DrawIndexed(static_cast<UINT>(mCurrentIndex - mBaseIndex), static_cast<UINT>(mBaseIndex), static_cast<UINT>(mBaseVertex));
     }
     else
     {
         // Draw non-indexed geometry.
-        mDeviceContext->Draw((UINT)(mCurrentVertex - mBaseVertex), (UINT)mBaseVertex);
+        mDeviceContext->Draw(static_cast<UINT>(mCurrentVertex - mBaseVertex), static_cast<UINT>(mBaseVertex));
     }
 #endif
 

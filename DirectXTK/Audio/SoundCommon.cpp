@@ -308,7 +308,7 @@ bool DirectX::IsValid(_In_ const WAVEFORMATEX* wfx)
             }
             else
             {
-                static const GUID s_wfexBase = { 0x00000000, 0x0000, 0x0010, 0x80, 0x00, 0x00, 0xAA, 0x00, 0x38, 0x9B, 0x71 };
+                static const GUID s_wfexBase = { 0x00000000, 0x0000, 0x0010, { 0x80, 0x00, 0x00, 0xAA, 0x00, 0x38, 0x9B, 0x71 } };
 
                 auto wfex = reinterpret_cast<const WAVEFORMATEXTENSIBLE*>(wfx);
 
@@ -727,7 +727,7 @@ void SoundEffectInstanceBase::Apply3D(const AudioListener& listener, const Audio
     assert(mDSPSettings.DstChannelCount <= 8);
     mDSPSettings.pMatrixCoefficients = matrix;
 
-    assert(engine != 0);
+    assert(engine != nullptr);
     if (rhcoords)
     {
         X3DAUDIO_EMITTER lhEmitter;
@@ -756,7 +756,7 @@ void SoundEffectInstanceBase::Apply3D(const AudioListener& listener, const Audio
     (void)voice->SetFrequencyRatio(mFreqRatio * mDSPSettings.DopplerFactor);
 
     auto direct = mDirectVoice;
-    assert(direct != 0);
+    assert(direct != nullptr);
     (void)voice->SetOutputMatrix(direct, mDSPSettings.SrcChannelCount, mDSPSettings.DstChannelCount, matrix);
 
     if (reverb)

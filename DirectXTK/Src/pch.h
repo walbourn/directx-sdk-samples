@@ -44,6 +44,17 @@
 // C4986 exception specification does not match previous declaration
 // C5029 nonstandard extension used
 
+// Xbox One XDK related Off by default warnings
+#pragma warning(disable : 4643)
+// C4643 Forward declaring in namespace std is not permitted by the C++ Standard
+
+#ifdef __INTEL_COMPILER
+#pragma warning(disable : 161 2960 3280)
+// warning #161: unrecognized #pragma
+// message #2960: allocation may not satisfy the type's alignment; consider using <aligned_new> header
+// message #3280: declaration hides member
+#endif
+
 #pragma warning(push)
 #pragma warning(disable : 4005)
 #define WIN32_LEAN_AND_MEAN
@@ -76,6 +87,8 @@
 #pragma warning(pop)
 #endif
 
+#define _XM_NO_XMVECTOR_OVERLOADS_
+
 #include <DirectXMath.h>
 #include <DirectXPackedVector.h>
 #include <DirectXCollision.h>
@@ -99,6 +112,7 @@
 #pragma warning(pop)
 
 #include <malloc.h>
+#include <stddef.h>
 #include <stdint.h>
 
 #pragma warning(push)
