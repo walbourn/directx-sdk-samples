@@ -83,12 +83,12 @@ VS_OUTPUT RenderSceneVS( float4 vPos : POSITION,
     
     // Compute simple directional lighting equation
     float3 vTotalLightDiffuse = float3(0,0,0);
-    for(int i=0; i<nNumLights; i++ )
-        vTotalLightDiffuse += g_LightDiffuse[i] * max(0,dot(vNormalWorldSpace, g_LightDir[i]));
+    [unroll] for(int i=0; i<nNumLights; i++ )
+        vTotalLightDiffuse += g_LightDiffuse[i].rgb * max(0,dot(vNormalWorldSpace, g_LightDir[i]));
         
-    Output.Diffuse.rgb = g_MaterialDiffuseColor * vTotalLightDiffuse + 
-                         g_MaterialAmbientColor * g_LightAmbient;   
-    Output.Diffuse.a = 1.0f; 
+    Output.Diffuse.rgb = g_MaterialDiffuseColor.rgb * vTotalLightDiffuse + 
+                         g_MaterialAmbientColor.rgb * g_LightAmbient.rgb;   
+    Output.Diffuse.a = g_MaterialDiffuseColor.a;
     
     // Just copy the texture coordinate through
     if( bTexture ) 
