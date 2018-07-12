@@ -11,7 +11,7 @@
 
 #pragma once
 
-#define D3DX11_EFFECTS_VERSION 1124
+#define D3DX11_EFFECTS_VERSION 1125
 
 #if defined(_XBOX_ONE) && defined(_TITLE)
 #include <d3d11_x.h>
@@ -1190,6 +1190,23 @@ HRESULT D3DX11CompileEffectFromFile( _In_z_ LPCWSTR pFileName,
                                      _In_ ID3D11Device *pDevice,
                                      _Out_ ID3DX11Effect **ppEffect,
                                      _Outptr_opt_result_maybenull_ ID3DBlob **ppErrors );
+
+
+//----------------------------------------------------------------------------
+// D3DX11DebugMute
+//
+// Controls the output of diagnostic information in DEBUG builds. No effect
+// in RELEASE builds.
+//
+// Returns the previous state so you can do temporary suppression like:
+//
+//    bool oldmute = D3DX11DebugMute(true);
+//    ...
+//    D3DX11DebugMute(oldmute);
+//
+//----------------------------------------------------------------------------
+
+bool D3DX11DebugMute(bool mute);
 
 #ifdef __cplusplus
 }

@@ -367,14 +367,26 @@ uint32_t CDataBlockStore::GetSize()
 
 //////////////////////////////////////////////////////////////////////////
 
+static bool s_mute = false;
+
+bool D3DX11DebugMute(bool mute)
+{
+    bool previous = s_mute;
+    s_mute = mute;
+    return previous;
+}
+
 #ifdef _DEBUG
 _Use_decl_annotations_
 void __cdecl D3DXDebugPrintf(UINT lvl, LPCSTR szFormat, ...)
 {
+    if (s_mute)
+        return;
+
     UNREFERENCED_PARAMETER(lvl);
 
-    char strA[4096];
-    char strB[4096];
+    char strA[4096] = {};
+    char strB[4096] = {};
 
     va_list ap;
     va_start(ap, szFormat);
