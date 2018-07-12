@@ -71,6 +71,7 @@ HRESULT CGPUBC6HEncoder::GPU_Encode( ID3D11Device* pDevice, ID3D11DeviceContext*
     ID3D11UnorderedAccessView* pErrBestModeUAV[2] = { nullptr, nullptr };
     ID3D11ShaderResourceView* pErrBestModeSRV[2] = { nullptr, nullptr };
     ID3D11Buffer* pCBCS = nullptr;        
+    D3D11_BUFFER_DESC sbOutDesc = {};
 
     if ( !(dstFormat == DXGI_FORMAT_BC6H_SF16 || dstFormat == DXGI_FORMAT_BC6H_UF16) || 
          !ppDstTextureAsBufOut )
@@ -96,7 +97,6 @@ HRESULT CGPUBC6HEncoder::GPU_Encode( ID3D11Device* pDevice, ID3D11DeviceContext*
     }
 
     // Create output buffer with its size identical to input texture
-    D3D11_BUFFER_DESC sbOutDesc = {};
     {
         sbOutDesc.BindFlags = D3D11_BIND_UNORDERED_ACCESS | D3D11_BIND_SHADER_RESOURCE;
         sbOutDesc.CPUAccessFlags = 0;
