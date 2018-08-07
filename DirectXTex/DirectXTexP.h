@@ -178,7 +178,7 @@ namespace DirectX
 
     //---------------------------------------------------------------------------------
     // Image helper functions
-    void __cdecl _DetermineImageArray(
+    _Success_(return != false) bool __cdecl _DetermineImageArray(
         _In_ const TexMetadata& metadata, _In_ DWORD cpFlags,
         _Out_ size_t& nImages, _Out_ size_t& pixelSize);
 
@@ -271,6 +271,10 @@ namespace DirectX
     HRESULT __cdecl _ConvertFromR32G32B32A32(
         _In_reads_(nimages) const Image* srcImages, _In_ size_t nimages, _In_ const TexMetadata& metadata,
         _In_ DXGI_FORMAT format, _Out_ ScratchImage& result);
+
+    HRESULT __cdecl _ConvertToR16G16B16A16(_In_ const Image& srcImage, _Inout_ ScratchImage& image);
+
+    HRESULT __cdecl _ConvertFromR16G16B16A16(_In_ const Image& srcImage, _In_ const Image& destImage);
 
     void __cdecl _ConvertScanline(
         _Inout_updates_all_(count) XMVECTOR* pBuffer, _In_ size_t count,
