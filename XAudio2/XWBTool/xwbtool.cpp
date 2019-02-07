@@ -40,14 +40,21 @@
 
 #include "WAVFileReader.h"
 
+#ifdef __INTEL_COMPILER
+#pragma warning(disable : 161)
+// warning #161: unrecognized #pragma
+#endif
+
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 
 #ifndef MAKEFOURCC
-#define MAKEFOURCC(ch0, ch1, ch2, ch3)                              \
-                ((uint32_t)(uint8_t)(ch0) | ((uint32_t)(uint8_t)(ch1) << 8) |       \
-                ((uint32_t)(uint8_t)(ch2) << 16) | ((uint32_t)(uint8_t)(ch3) << 24 ))
+#define MAKEFOURCC(ch0, ch1, ch2, ch3) \
+                (static_cast<uint32_t>(static_cast<uint8_t>(ch0)) \
+                | (static_cast<uint32_t>(static_cast<uint8_t>(ch1)) << 8) \
+                | (static_cast<uint32_t>(static_cast<uint8_t>(ch2)) << 16) \
+                | (static_cast<uint32_t>(static_cast<uint8_t>(ch3)) << 24))
 #endif /* defined(MAKEFOURCC) */
 
 namespace
@@ -514,7 +521,7 @@ namespace
             }
             else
             {
-                static const GUID s_wfexBase = { 0x00000000, 0x0000, 0x0010, 0x80, 0x00, 0x00, 0xAA, 0x00, 0x38, 0x9B, 0x71 };
+                static const GUID s_wfexBase = { 0x00000000, 0x0000, 0x0010, { 0x80, 0x00, 0x00, 0xAA, 0x00, 0x38, 0x9B, 0x71 } };
 
                 auto wfex = reinterpret_cast<const WAVEFORMATEXTENSIBLE*>(wfx);
 
@@ -774,7 +781,7 @@ namespace
     void SearchForFiles(const wchar_t* path, std::list<SConversion>& files, bool recursive)
     {
         // Process files
-        WIN32_FIND_DATA findData = {};
+        WIN32_FIND_DATAW findData = {};
         ScopedFindHandle hFile(safe_handle(FindFirstFileExW(path,
             FindExInfoBasic, &findData,
             FindExSearchNameMatch, nullptr,
@@ -794,7 +801,7 @@ namespace
                     files.push_back(conv);
                 }
 
-                if (!FindNextFile(hFile.get(), &findData))
+                if (!FindNextFileW(hFile.get(), &findData))
                     break;
             }
         }
@@ -839,7 +846,7 @@ namespace
                     }
                 }
 
-                if (!FindNextFile(hFile.get(), &findData))
+                if (!FindNextFileW(hFile.get(), &findData))
                     break;
             }
         }
@@ -1304,7 +1311,7 @@ int __cdecl wmain(_In_ int argc, _In_z_count_(argc) wchar_t* argv[])
             wchar_t wEntryName[_MAX_FNAME];
             _wsplitpath_s(cit->szSrc, nullptr, 0, nullptr, 0, wEntryName, _MAX_FNAME, nullptr, 0);
 
-            int result = WideCharToMultiByte(CP_ACP, WC_NO_BEST_FIT_CHARS, wEntryName, -1, &entryNames[count * ENTRYNAME_LENGTH], ENTRYNAME_LENGTH, nullptr, FALSE);
+            int result = WideCharToMultiByte(CP_UTF8, WC_NO_BEST_FIT_CHARS, wEntryName, -1, &entryNames[count * ENTRYNAME_LENGTH], ENTRYNAME_LENGTH, nullptr, nullptr);
             if (result <= 0)
             {
                 memset(&entryNames[count * ENTRYNAME_LENGTH], 0, ENTRYNAME_LENGTH);
@@ -1390,7 +1397,7 @@ int __cdecl wmain(_In_ int argc, _In_z_count_(argc) wchar_t* argv[])
         wchar_t wBankName[_MAX_FNAME];
         _wsplitpath_s(szOutputFile, nullptr, 0, nullptr, 0, wBankName, _MAX_FNAME, nullptr, 0);
 
-        int result = WideCharToMultiByte(CP_ACP, WC_NO_BEST_FIT_CHARS, wBankName, -1, data.szBankName, BANKDATA::BANKNAME_LENGTH, nullptr, FALSE);
+        int result = WideCharToMultiByte(CP_UTF8, WC_NO_BEST_FIT_CHARS, wBankName, -1, data.szBankName, BANKDATA::BANKNAME_LENGTH, nullptr, nullptr);
         if (result <= 0)
         {
             memset(data.szBankName, 0, BANKDATA::BANKNAME_LENGTH);
