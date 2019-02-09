@@ -194,6 +194,12 @@ namespace DirectX
         WIC_FLAGS_IGNORE_SRGB           = 0x20,
             // Ignores sRGB metadata if present in the file
 
+        WIC_FLAGS_FORCE_SRGB            = 0x40,
+            // Writes sRGB metadata into the file reguardless of format
+
+        WIC_FLAGS_FORCE_LINEAR          = 0x80,
+            // Writes linear gamma metadata into the file reguardless of format
+
         WIC_FLAGS_DITHER                = 0x10000,
             // Use ordered 4x4 dithering for any required conversions
 
@@ -527,6 +533,11 @@ namespace DirectX
         _In_ DWORD filter, _In_ size_t levels, _Out_ ScratchImage& mipChain);
         // levels of '0' indicates a full mipchain, otherwise is generates that number of total levels (including the source base image)
         // Defaults to Fant filtering which is equivalent to a box filter
+
+    HRESULT __cdecl ScaleMipMapsAlphaForCoverage(
+        _In_reads_(nimages) const Image* srcImages, _In_ size_t nimages, _In_ const TexMetadata& metadata, _In_ size_t item,
+        _In_ float alphaReference, _Inout_ ScratchImage& mipChain);
+
 
     enum TEX_PMALPHA_FLAGS
     {
