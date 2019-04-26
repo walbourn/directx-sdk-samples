@@ -11,11 +11,10 @@
 
 #pragma once
 
-#define D3DX11_EFFECTS_VERSION 1125
+#define D3DX11_EFFECTS_VERSION 1126
 
 #if defined(_XBOX_ONE) && defined(_TITLE)
 #include <d3d11_x.h>
-#define DCOMMON_H_INCLUDED
 #define NO_D3D11_DEBUG_NAME
 #else
 #include <d3d11_1.h>

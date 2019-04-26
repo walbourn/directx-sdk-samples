@@ -50,27 +50,20 @@ static HRESULT LoadBinaryFromFile( _In_z_ LPCWSTR pFileName, _Inout_ std::unique
     }
 
     // Get the file size
-    LARGE_INTEGER FileSize = {};
-
-#if (_WIN32_WINNT >= _WIN32_WINNT_VISTA)
     FILE_STANDARD_INFO fileInfo;
     if ( !GetFileInformationByHandleEx( hFile.get(), FileStandardInfo, &fileInfo, sizeof(fileInfo) ) )
     {
         return HRESULT_FROM_WIN32( GetLastError() );
     }
-    FileSize = fileInfo.EndOfFile;
-#else
-    GetFileSizeEx( hFile.get(), &FileSize );
-#endif
 
     // File is too big for 32-bit allocation or contains no data, so reject read
-    if ( !FileSize.LowPart || FileSize.HighPart > 0)
+    if ( !fileInfo.EndOfFile.LowPart || fileInfo.EndOfFile.HighPart > 0 )
     {
         return E_FAIL;
     }
 
     // create enough space for the file data
-    data.reset( new uint8_t[ FileSize.LowPart ] );
+    data.reset( new uint8_t[ fileInfo.EndOfFile.LowPart ] );
     if (!data)
     {
         return E_OUTOFMEMORY;
@@ -80,7 +73,7 @@ static HRESULT LoadBinaryFromFile( _In_z_ LPCWSTR pFileName, _Inout_ std::unique
     DWORD BytesRead = 0;
     if (!ReadFile( hFile.get(),
                    data.get(),
-                   FileSize.LowPart,
+                   fileInfo.EndOfFile.LowPart,
                    &BytesRead,
                    nullptr
                  ))
@@ -88,7 +81,7 @@ static HRESULT LoadBinaryFromFile( _In_z_ LPCWSTR pFileName, _Inout_ std::unique
         return HRESULT_FROM_WIN32( GetLastError() );
     }
 
-    if (BytesRead < FileSize.LowPart)
+    if (BytesRead < fileInfo.EndOfFile.LowPart)
     {
         return E_FAIL;
     }

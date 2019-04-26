@@ -625,32 +625,25 @@ HRESULT WINAPI DXUTCompileFromFile( LPCWSTR pFileName,
     if ( !hFile )
         return HRESULT_FROM_WIN32( GetLastError() );
 
-    LARGE_INTEGER FileSize = {};
-
-#if (_WIN32_WINNT >= _WIN32_WINNT_VISTA)
     FILE_STANDARD_INFO fileInfo;
     if ( !GetFileInformationByHandleEx( hFile.get(), FileStandardInfo, &fileInfo, sizeof(fileInfo) ) )
     {
         return HRESULT_FROM_WIN32( GetLastError() );
     }
-    FileSize = fileInfo.EndOfFile;
-#else
-    GetFileSizeEx( hFile.get(), &FileSize );
-#endif
 
-    if (!FileSize.LowPart || FileSize.HighPart > 0)
+    if ( !fileInfo.EndOfFile.LowPart || fileInfo.EndOfFile.HighPart > 0 )
         return E_FAIL;
 
     std::unique_ptr<char[]> fxData;
-    fxData.reset( new (std::nothrow) char[ FileSize.LowPart ] );
+    fxData.reset( new (std::nothrow) char[ fileInfo.EndOfFile.LowPart ] );
     if ( !fxData )
         return E_OUTOFMEMORY;
 
     DWORD BytesRead = 0;
-    if ( !ReadFile( hFile.get(), fxData.get(), FileSize.LowPart, &BytesRead, nullptr ) )
+    if ( !ReadFile( hFile.get(), fxData.get(), fileInfo.EndOfFile.LowPart, &BytesRead, nullptr ) )
         return HRESULT_FROM_WIN32( GetLastError() );
 
-    if (BytesRead < FileSize.LowPart)
+    if (BytesRead < fileInfo.EndOfFile.LowPart)
         return E_FAIL;
 
     char pSrcName[MAX_PATH];

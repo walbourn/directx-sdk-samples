@@ -120,7 +120,7 @@ public:
 
 }
 
-#if defined(_DEBUG) && !defined(_M_X64)
+#if defined(_DEBUG) && !defined(_M_X64) && !defined(_M_ARM64)
 
 namespace D3DX11Debug
 {

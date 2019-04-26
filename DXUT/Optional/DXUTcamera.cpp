@@ -18,7 +18,19 @@ using namespace DirectX;
 
 //--------------------------------------------------------------------------------------
 CD3DArcBall::CD3DArcBall() noexcept :
+    m_mRotation{},
+    m_mTranslation{},
+    m_mTranslationDelta{},
     m_Offset{ 0, 0 },
+    m_nWidth(0),
+    m_nHeight(0),
+    m_vCenter{},
+    m_fRadius(0),
+    m_fRadiusTranslation(0),
+    m_qDown{},
+    m_qNow{},
+    m_bDrag(false),
+    m_ptLastMouse{},
     m_vDownPt( 0, 0, 0 ),
     m_vCurrentPt( 0, 0, 0 )
 {
@@ -205,6 +217,10 @@ CBaseCamera::CBaseCamera() noexcept :
     m_fDragTimer(0.0f),
     m_fTotalDragTimeToZero(0.25),
     m_vRotVelocity(0, 0),
+    m_fFOV(0),
+    m_fAspect(0),
+    m_fNearPlane(0),
+    m_fFarPlane(1),
     m_fRotationScaler(0.01f),
     m_fMoveScaler(5.0f),
     m_bMouseLButtonDown(false),

@@ -1,0 +1,70 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns:atg="http://atg.xbox.com" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Inc">
+      <UniqueIdentifier>{b7f31db2-7730-4979-b0dd-660e7862c8d1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src">
+      <UniqueIdentifier>{19d240df-a29a-45ca-a238-448ade961d0e}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <CLInclude Include=".\Inc\d3dx11effect.h">
+      <Filter>Inc</Filter>
+    </CLInclude>
+    <CLInclude Include=".\Inc\d3dxglobal.h">
+      <Filter>Src</Filter>
+    </CLInclude>
+    <CLInclude Include="Effect.h">
+      <Filter>Src</Filter>
+    </CLInclude>
+    <CLInclude Include=".\Binary\EffectBinaryFormat.h">
+      <Filter>Src</Filter>
+    </CLInclude>
+    <CLInclude Include="EffectLoad.h">
+      <Filter>Src</Filter>
+    </CLInclude>
+    <CLInclude Include=".\Binary\EffectStateBase11.h">
+      <Filter>Src</Filter>
+    </CLInclude>
+    <CLInclude Include=".\Binary\EffectStates11.h">
+      <Filter>Src</Filter>
+    </CLInclude>
+    <CLInclude Include="IUnknownImp.h">
+      <Filter>Src</Filter>
+    </CLInclude>
+    <CLInclude Include="pchfx.h">
+      <Filter>Src</Filter>
+    </CLInclude>
+    <CLInclude Include=".\Binary\SOParser.h">
+      <Filter>Src</Filter>
+    </CLInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="d3dxGlobal.cpp">
+      <Filter>Src</Filter>
+    </ClCompile>
+    <ClCompile Include="EffectAPI.cpp">
+      <Filter>Src</Filter>
+    </ClCompile>
+    <ClCompile Include="EffectLoad.cpp">
+      <Filter>Src</Filter>
+    </ClCompile>
+    <ClCompile Include="EffectNonRuntime.cpp">
+      <Filter>Src</Filter>
+    </ClCompile>
+    <ClCompile Include="EffectReflection.cpp">
+      <Filter>Src</Filter>
+    </ClCompile>
+    <ClCompile Include="EffectRuntime.cpp">
+      <Filter>Src</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="EffectVariable.inl">
+      <Filter>Src</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+  </ItemGroup>
+</Project>
