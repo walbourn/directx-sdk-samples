@@ -15,16 +15,13 @@
 
 #include <wrl\client.h>
 
-#if (_WIN32_WINNT >= 0x0602 /*_WIN32_WINNT_WIN8*/)
-#include <xaudio2.h>
-#pragma comment(lib,"xaudio2.lib")
+#include "XAudio2Versions.h"
+
+#ifndef USING_XAUDIO2_7_DIRECTX
 #pragma comment(lib,"runtimeobject.lib")
 #include <Windows.Devices.Enumeration.h>
 #include <wrl.h>
 #include <ppltasks.h>
-#else
-#include <C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Include\comdecl.h>
-#include <C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Include\xaudio2.h>
 #endif
 
 using Microsoft::WRL::ComPtr;
@@ -56,7 +53,7 @@ int main()
         return 0;
     }
 
-#if ( _WIN32_WINNT < 0x0602 /*_WIN32_WINNT_WIN8*/)
+#ifdef USING_XAUDIO2_7_DIRECTX
     // Workaround for XAudio 2.7 known issue
 #ifdef _DEBUG
     HMODULE mXAudioDLL = LoadLibraryExW(L"XAudioD2_7.DLL", nullptr, 0x00000800 /* LOAD_LIBRARY_SEARCH_SYSTEM32 */);
@@ -72,7 +69,7 @@ int main()
 #endif
 
     UINT32 flags = 0;
-#if (_WIN32_WINNT < 0x0602 /*_WIN32_WINNT_WIN8*/) && defined(_DEBUG)
+#if defined(USING_XAUDIO2_7_DIRECTX) && defined(_DEBUG)
     flags |= XAUDIO2_DEBUG_ENGINE;
 #endif
     ComPtr<IXAudio2> pXAudio2;
@@ -84,7 +81,7 @@ int main()
         return 0;
     }
 
-#if (_WIN32_WINNT >= 0x0602 /*_WIN32_WINNT_WIN8*/) && defined(_DEBUG)
+#if !defined(USING_XAUDIO2_7_DIRECTX) && defined(_DEBUG)
     // To see the trace output, you need to view ETW logs for this application:
     //    Go to Control Panel, Administrative Tools, Event Viewer.
     //    View->Show Analytic and Debug Logs.
@@ -138,7 +135,7 @@ int main()
     //
     IXAudio2MasteringVoice* pMasteringVoice = nullptr;
 
-#if (_WIN32_WINNT >= 0x0602 /*_WIN32_WINNT_WIN8*/)
+#ifndef USING_XAUDIO2_7_DIRECTX
     if( FAILED( hr = pXAudio2->CreateMasteringVoice( &pMasteringVoice,
                                                      XAUDIO2_DEFAULT_CHANNELS, XAUDIO2_DEFAULT_SAMPLERATE, 0,
                                                      list[ devindex ].deviceId.c_str() ) ) )
@@ -166,7 +163,7 @@ int main()
     // All XAudio2 interfaces are released when the engine is destroyed, but being tidy
     pMasteringVoice->DestroyVoice();
 
-#if ( _WIN32_WINNT < 0x0602 /*_WIN32_WINNT_WIN8*/)
+#ifdef USING_XAUDIO2_7_DIRECTX
     if (mXAudioDLL)
         FreeLibrary(mXAudioDLL);
 #endif

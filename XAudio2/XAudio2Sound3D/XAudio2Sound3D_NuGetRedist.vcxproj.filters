@@ -16,6 +16,7 @@
     <None Include="XAudio2Sound3D.fx">
       <Filter>Shaders</Filter>
     </None>
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Common\WAVFileReader.h" />

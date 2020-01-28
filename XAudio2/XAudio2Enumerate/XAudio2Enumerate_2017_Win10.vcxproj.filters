@@ -3,4 +3,7 @@
   <ItemGroup>
     <ClCompile Include="XAudio2Enumerate.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\Common\XAudio2Versions.h" />
+  </ItemGroup>
 </Project>

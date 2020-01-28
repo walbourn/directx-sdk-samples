@@ -382,6 +382,7 @@
     </ClCompile>
     <ClCompile Include="audio.cpp" />
     <ClInclude Include="..\Common\WAVFileReader.h" />
+    <ClInclude Include="..\Common\XAudio2Versions.h" />
     <CLInclude Include="audio.h" />
     <ClCompile Include="MonitorAPO.cpp" />
     <CLInclude Include="MonitorAPO.h" />

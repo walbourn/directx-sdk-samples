@@ -7,8 +7,9 @@
 //--------------------------------------------------------------------------------------
 #pragma once
 #include <crtdbg.h>
+#include "XAudio2Versions.h"
 
-#if (_WIN32_WINNT >= 0x0602 /*_WIN32_WINNT_WIN8*/)
+#ifndef USING_XAUDIO2_7_DIRECTX
 #include <xapobase.h>
 #else
 #include <C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Include\xapobase.h>
@@ -146,11 +147,7 @@ template<typename APOClass, typename ParameterClass>
 CSampleXAPOBase<APOClass, ParameterClass>::CSampleXAPOBase( )
 : CXAPOParametersBase( &m_regProps, (BYTE*)m_parameters, sizeof( ParameterClass ), FALSE )
 {
-#ifdef _XBOX_VER
-    XMemSet( (BYTE*)m_parameters, 0, sizeof( m_parameters ) );
-#else
-    ZeroMemory( m_parameters, sizeof( m_parameters ) );
-#endif
+	ZeroMemory( m_parameters, sizeof( m_parameters ) );
 }
 
 

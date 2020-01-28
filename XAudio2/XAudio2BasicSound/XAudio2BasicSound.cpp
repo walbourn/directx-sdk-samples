@@ -12,17 +12,10 @@
 
 #include <wrl\client.h>
 
+#include "XAudio2Versions.h"
 #include "WAVFileReader.h"
 
-#if (_WIN32_WINNT >= 0x0602 /*_WIN32_WINNT_WIN8*/)
-#include <xaudio2.h>
-#pragma comment(lib,"xaudio2.lib")
-#else
-#include <C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Include\comdecl.h>
-#include <C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Include\xaudio2.h>
-#endif
-
-using Microsoft::WRL::ComPtr;;
+using Microsoft::WRL::ComPtr;
 
 //--------------------------------------------------------------------------------------
 // Forward declaration
@@ -46,7 +39,7 @@ int main()
         return 0;
     }
 
-#if ( _WIN32_WINNT < 0x0602 /*_WIN32_WINNT_WIN8*/)
+#ifdef USING_XAUDIO2_7_DIRECTX
     // Workaround for XAudio 2.7 known issue
 #ifdef _DEBUG
     HMODULE mXAudioDLL = LoadLibraryExW(L"XAudioD2_7.DLL", nullptr, 0x00000800 /* LOAD_LIBRARY_SEARCH_SYSTEM32 */);
@@ -59,10 +52,10 @@ int main()
         CoUninitialize();
         return 0;
     }
-#endif
+#endif // USING_XAUDIO2_7_DIRECTX
 
     UINT32 flags = 0;
-#if (_WIN32_WINNT < 0x0602 /*_WIN32_WINNT_WIN8*/) && defined(_DEBUG)
+#if defined(USING_XAUDIO2_7_DIRECTX) && defined(_DEBUG)
     flags |= XAUDIO2_DEBUG_ENGINE;
 #endif
     ComPtr<IXAudio2> pXAudio2;
@@ -74,7 +67,7 @@ int main()
         return 0;
     }
 
-#if (_WIN32_WINNT >= 0x0602 /*_WIN32_WINNT_WIN8*/) && defined(_DEBUG)
+#if !defined(USING_XAUDIO2_7_DIRECTX) && defined(_DEBUG)
     // To see the trace output, you need to view ETW logs for this application:
     //    Go to Control Panel, Administrative Tools, Event Viewer.
     //    View->Show Analytic and Debug Logs.
@@ -135,12 +128,11 @@ int main()
         return 0;
     }
 
-#if (_WIN32_WINNT < 0x0602 /*_WIN32_WINNT_WIN8*/) || (_WIN32_WINNT >= 0x0A00 /*_WIN32_WINNT_WIN10*/ )
+#if defined(USING_XAUDIO2_7_DIRECTX) || defined(USING_XAUDIO2_9)
 
     //
     // Play a mono xWMA wave file
     //
-
     wprintf( L"\nPlaying mono xWMA file..." );
     if( FAILED( hr = PlayWave( pXAudio2.Get(), L"Media\\Wavs\\MusicMono_xwma.wav" ) ) )
     {
@@ -153,7 +145,6 @@ int main()
     //
     // Play a 5.1 xWMA wave file
     //
-
     wprintf( L"\nPlaying 5.1 xWMA file..." );
     if( FAILED( hr = PlayWave( pXAudio2.Get(), L"Media\\Wavs\\MusicSurround_xwma.wav" ) ) )
     {
@@ -175,7 +166,7 @@ int main()
 
     pXAudio2.Reset();
 
-#if ( _WIN32_WINNT < 0x0602 /*_WIN32_WINNT_WIN8*/)
+#ifdef USING_XAUDIO2_7_DIRECTX
     if (mXAudioDLL)
         FreeLibrary(mXAudioDLL);
 #endif
@@ -238,7 +229,7 @@ HRESULT PlayWave( IXAudio2* pXaudio2, LPCWSTR szFilename )
         buffer.LoopCount = 1; // We'll just assume we play the loop twice
     }
 
-#if (_WIN32_WINNT < 0x0602 /*_WIN32_WINNT_WIN8*/) || (_WIN32_WINNT >= 0x0A00 /*_WIN32_WINNT_WIN10*/ )
+#if defined(USING_XAUDIO2_7_DIRECTX) || defined(USING_XAUDIO2_9)
     if ( waveData.seek )
     {
         XAUDIO2_BUFFER_WMA xwmaBuffer = {0};
