@@ -4,14 +4,12 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 //--------------------------------------------------------------------------------------
 
-#if (_WIN32_WINNT >= 0x0602 /*_WIN32_WINNT_WIN8*/)
-#include <xaudio2.h>
+#include "XAudio2Versions.h"
+
+#ifndef USING_XAUDIO2_7_DIRECTX
 #include <xaudio2fx.h>
 #include <x3daudio.h>
-#pragma comment(lib,"xaudio2.lib")
 #else
-#include <C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Include\comdecl.h>
-#include <C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Include\xaudio2.h>
 #include <C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Include\xaudio2fx.h>
 #pragma warning(push)
 #pragma warning( disable : 4005 )
@@ -42,7 +40,7 @@ struct AUDIO_STATE
     bool bInitialized;
 
     // XAudio2
-#if ( _WIN32_WINNT < 0x0602 /*_WIN32_WINNT_WIN8*/)
+#ifdef USING_XAUDIO2_7_DIRECTX
     HMODULE mXAudioDLL;
 #endif
     IXAudio2* pXAudio2;

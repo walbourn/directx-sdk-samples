@@ -393,6 +393,7 @@
   <ItemGroup>
     <ClCompile Include="audio.cpp" />
     <CLInclude Include="audio.h" />
+    <ClInclude Include="..\Common\XAudio2Versions.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="XAudio2Sound3D.fx" />

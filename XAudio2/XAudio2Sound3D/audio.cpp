@@ -87,7 +87,7 @@ HRESULT InitAudio()
     if (FAILED(hr))
         return hr;
 
-#if ( _WIN32_WINNT < 0x0602 /*_WIN32_WINNT_WIN8*/)
+#ifdef USING_XAUDIO2_7_DIRECTX
     // Workaround for XAudio 2.7 known issue
 #ifdef _DEBUG
     g_audioState.mXAudioDLL = LoadLibraryExW(L"XAudioD2_7.DLL", nullptr, 0x00000800 /* LOAD_LIBRARY_SEARCH_SYSTEM32 */);
@@ -99,14 +99,14 @@ HRESULT InitAudio()
 #endif
 
     UINT32 flags = 0;
- #if (_WIN32_WINNT < 0x0602 /*_WIN32_WINNT_WIN8*/) && defined(_DEBUG)
+ #if defined(USING_XAUDIO2_7_DIRECTX) && defined(_DEBUG)
     flags |= XAUDIO2_DEBUG_ENGINE;
  #endif
     hr = XAudio2Create( &g_audioState.pXAudio2, flags );
     if( FAILED( hr ) )
         return hr;
 
-#if (_WIN32_WINNT >= 0x0602 /*_WIN32_WINNT_WIN8*/) && defined(_DEBUG)
+#if !defined(USING_XAUDIO2_7_DIRECTX) && defined(_DEBUG)
     // To see the trace output, you need to view ETW logs for this application:
     //    Go to Control Panel, Administrative Tools, Event Viewer.
     //    View->Show Analytic and Debug Logs.
@@ -131,7 +131,7 @@ HRESULT InitAudio()
     DWORD dwChannelMask;
     UINT32 nSampleRate;
 
-#if (_WIN32_WINNT >= 0x0602 /*_WIN32_WINNT_WIN8*/)
+#ifndef USING_XAUDIO2_7_DIRECTX
 
     XAUDIO2_VOICE_DETAILS details;
     g_audioState.pMasteringVoice->GetVoiceDetails( &details );
@@ -177,7 +177,7 @@ HRESULT InitAudio()
     // Create reverb effect
     //
     UINT32 rflags = 0;
- #if (_WIN32_WINNT < 0x0602 /*_WIN32_WINNT_WIN8*/) && defined(_DEBUG)
+ #if defined(USING_XAUDIO2_7_DIRECTX) && defined(_DEBUG)
     rflags |= XAUDIO2FX_DEBUG;
  #endif
     if( FAILED( hr = XAudio2CreateReverb( &g_audioState.pReverbEffect, rflags ) ) )
@@ -568,7 +568,7 @@ VOID CleanupAudio()
 
     g_audioState.waveData.reset();
 
-#if ( _WIN32_WINNT < 0x0602 /*_WIN32_WINNT_WIN8*/)
+#ifdef USING_XAUDIO2_7_DIRECTX
     if (g_audioState.mXAudioDLL)
     {
         FreeLibrary(g_audioState.mXAudioDLL);

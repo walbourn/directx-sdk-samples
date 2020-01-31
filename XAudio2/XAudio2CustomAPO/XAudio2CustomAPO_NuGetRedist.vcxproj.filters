@@ -15,4 +15,7 @@
   <ItemGroup>
     <ClInclude Include="..\Common\XAudio2Versions.h" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
 </Project>

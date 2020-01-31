@@ -3,4 +3,7 @@
   <ItemGroup>
     <ClCompile Include="XAudio2MFStream.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\Common\XAudio2Versions.h" />
+  </ItemGroup>
 </Project>

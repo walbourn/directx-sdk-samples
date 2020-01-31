@@ -15,15 +15,8 @@
 
 #include <wrl\client.h>
 
+#include "XAudio2Versions.h"
 #include "WaveBankReader.h"
-
-#if (_WIN32_WINNT >= 0x0602 /*_WIN32_WINNT_WIN8*/)
-#include <xaudio2.h>
-#pragma comment(lib,"xaudio2.lib")
-#else
-#include <C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Include\comdecl.h>
-#include <C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Include\xaudio2.h>
-#endif
 
 using namespace DirectX;
 using Microsoft::WRL::ComPtr;
@@ -100,7 +93,7 @@ int main()
         return 0;
     }
 
-#if ( _WIN32_WINNT < 0x0602 /*_WIN32_WINNT_WIN8*/)
+#if defined(USING_XAUDIO2_7_DIRECTX)
     // Workaround for XAudio 2.7 known issue
 #ifdef _DEBUG
     HMODULE mXAudioDLL = LoadLibraryExW(L"XAudioD2_7.DLL", nullptr, 0x00000800 /* LOAD_LIBRARY_SEARCH_SYSTEM32 */);
@@ -116,7 +109,7 @@ int main()
 #endif
 
     UINT32 flags = 0;
-#if (_WIN32_WINNT < 0x0602 /*_WIN32_WINNT_WIN8*/) && defined(_DEBUG)
+#if defined(USING_XAUDIO2_7_DIRECTX) && defined(_DEBUG)
     flags |= XAUDIO2_DEBUG_ENGINE;
 #endif
 
@@ -129,7 +122,7 @@ int main()
         return 0;
     }
 
-#if (_WIN32_WINNT >= 0x0602 /*_WIN32_WINNT_WIN8*/) && defined(_DEBUG)
+#if !defined(USING_XAUDIO2_7_DIRECTX) && defined(_DEBUG)
     // To see the trace output, you need to view ETW logs for this application:
     //    Go to Control Panel, Administrative Tools, Event Viewer.
     //    View->Show Analytic and Debug Logs.
@@ -429,7 +422,7 @@ int main()
 
     pXAudio2.Reset();
 
-#if ( _WIN32_WINNT < 0x0602 /*_WIN32_WINNT_WIN8*/)
+#ifdef USING_XAUDIO2_7_DIRECTX
     if (mXAudioDLL)
         FreeLibrary(mXAudioDLL);
 #endif
