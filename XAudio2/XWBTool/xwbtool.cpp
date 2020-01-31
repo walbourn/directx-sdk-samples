@@ -26,7 +26,7 @@
 #define NOHELP
 #pragma warning(pop)
 
-#include <windows.h>
+#include <Windows.h>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -61,13 +61,13 @@ namespace
 {
     struct handle_closer { void operator()(HANDLE h) { if (h) CloseHandle(h); } };
 
-    typedef std::unique_ptr<void, handle_closer> ScopedHandle;
+    using ScopedHandle = std::unique_ptr<void, handle_closer>;
 
     inline HANDLE safe_handle(HANDLE h) { return (h == INVALID_HANDLE_VALUE) ? nullptr : h; }
 
     struct find_closer { void operator()(HANDLE h) { assert(h != INVALID_HANDLE_VALUE); if (h) FindClose(h); } };
 
-    typedef std::unique_ptr<void, find_closer> ScopedFindHandle;
+    using ScopedFindHandle = std::unique_ptr<void, find_closer>;
 
 #define BLOCKALIGNPAD(a, b) \
     ((((a) + ((b) - 1)) / (b)) * (b))
@@ -77,12 +77,10 @@ namespace
 #pragma pack(push, 1)
 
     static const size_t DVD_SECTOR_SIZE = 2048;
-    static const size_t DVD_BLOCK_SIZE = DVD_SECTOR_SIZE * 16;
 
     static const size_t ALIGNMENT_MIN = 4;
     static const size_t ALIGNMENT_DVD = DVD_SECTOR_SIZE;
 
-    static const size_t MAX_DATA_SEGMENT_SIZE = 0xFFFFFFFF;
     static const size_t MAX_COMPACT_DATA_SEGMENT_SIZE = 0x001FFFFF;
 
     static const size_t ENTRYNAME_LENGTH = 64;
@@ -144,19 +142,6 @@ namespace
         };
 
         uint32_t           dwValue;
-
-        WORD BitsPerSample() const
-        {
-            if (wFormatTag == TAG_XMA)
-                return 16; // XMA_OUTPUT_SAMPLE_BITS == 16
-            if (wFormatTag == TAG_WMA)
-                return 16;
-            if (wFormatTag == TAG_ADPCM)
-                return 4; // MSADPCM_BITS_PER_SAMPLE == 4
-
-            // wFormatTag must be TAG_PCM (2 bits can only represent 4 different values)
-            return (wBitsPerSample == BITDEPTH_16) ? 16 : 8;
-        }
     };
 
     struct ENTRY
@@ -706,6 +691,9 @@ struct WaveFile
         miniFmt{}
         {}
 
+    WaveFile(WaveFile&) = delete;
+    WaveFile& operator= (WaveFile&) = delete;
+
     WaveFile(WaveFile&&) = default;
     WaveFile& operator= (WaveFile&&) = default;
 };
@@ -750,7 +738,9 @@ const SValue g_pOptions [] =
 
 namespace
 {
+#ifdef _PREFAST_
 #pragma prefast(disable : 26018, "Only used with static internal arrays")
+#endif
 
     DWORD LookupByName(const wchar_t *pName, const SValue *pArray)
     {
@@ -763,19 +753,6 @@ namespace
         }
 
         return 0;
-    }
-
-    const wchar_t* LookupByValue(DWORD pValue, const SValue *pArray)
-    {
-        while (pArray->pName)
-        {
-            if (pValue == pArray->dwValue)
-                return pArray->pName;
-
-            pArray++;
-        }
-
-        return L"";
     }
 
     void SearchForFiles(const wchar_t* path, std::list<SConversion>& files, bool recursive)
@@ -904,7 +881,7 @@ namespace
     {
         switch (dwChannelMask)
         {
-        case 0x00000004 /*SPEAKER_MONO*/: return "Mono"; // 
+        case 0x00000004 /*SPEAKER_MONO*/: return "Mono";
         case 0x00000003 /* SPEAKER_STEREO */: return "Stereo";
         case 0x0000000B /* SPEAKER_2POINT1 */: return "2.1";
         case 0x00000107 /* SPEAKER_SURROUND */: return "Surround";
@@ -920,7 +897,17 @@ namespace
 
     void PrintInfo(const WaveFile& wave)
     {
-        wprintf(L" (%hs %u channels, %u-bit, %u Hz)", GetFormatTagName(wave.data.wfx->wFormatTag), wave.data.wfx->nChannels, wave.data.wfx->wBitsPerSample, wave.data.wfx->nSamplesPerSec);
+        if (wave.data.wfx->wFormatTag == WAVE_FORMAT_EXTENSIBLE
+            && (wave.data.wfx->cbSize >= (sizeof(WAVEFORMATEXTENSIBLE) - sizeof(WAVEFORMATEX))))
+        {
+            auto wext = reinterpret_cast<const WAVEFORMATEXTENSIBLE*>(&wave.data.wfx);
+
+            wprintf(L" (%hs %u channels, %u-bit, %lu Hz, CMask:%hs)", GetFormatTagName(wave.data.wfx->wFormatTag), wave.data.wfx->nChannels, wave.data.wfx->wBitsPerSample, wave.data.wfx->nSamplesPerSec, ChannelDesc(wext->dwChannelMask));
+        }
+        else
+        {
+            wprintf(L" (%hs %u channels, %u-bit, %lu Hz)", GetFormatTagName(wave.data.wfx->wFormatTag), wave.data.wfx->nChannels, wave.data.wfx->wBitsPerSample, wave.data.wfx->nSamplesPerSec);
+        }
     }
 
     bool FileExists(const wchar_t* pszFilename)
@@ -945,7 +932,9 @@ namespace
 //--------------------------------------------------------------------------------------
 // Entry-point
 //--------------------------------------------------------------------------------------
+#ifdef _PREFAST_
 #pragma prefast(disable : 28198, "Command-line tool, frees all memory on exit")
+#endif
 
 int __cdecl wmain(_In_ int argc, _In_z_count_(argc) wchar_t* argv[])
 {
@@ -1138,7 +1127,7 @@ int __cdecl wmain(_In_ int argc, _In_z_count_(argc) wchar_t* argv[])
         HRESULT hr = DirectX::LoadWAVAudioFromFileEx(pConv->szSrc, waveData, wave.data);
         if (FAILED(hr))
         {
-            wprintf(L"\nERROR: Failed to load file (%08X)\n", hr);
+            wprintf(L"\nERROR: Failed to load file (%08X)\n", static_cast<unsigned int>(hr));
             return 1;
         }
 
@@ -1163,7 +1152,7 @@ int __cdecl wmain(_In_ int argc, _In_z_count_(argc) wchar_t* argv[])
 
     for (auto it = waves.begin(); it != waves.end(); ++it)
     {
-        if (!ConvertToMiniFormat(it->data.wfx, it->data.seek != 0, it->miniFmt))
+        if (!ConvertToMiniFormat(it->data.wfx, it->data.seek != nullptr, it->miniFmt))
         {
             auto cit = conversion.cbegin();
             advance(cit, it->conv);
@@ -1215,7 +1204,7 @@ int __cdecl wmain(_In_ int argc, _In_z_count_(argc) wchar_t* argv[])
         }
         if (reason & 0x4)
         {
-            wprintf(L"- Audio wave data is too large to encode in compact wavebank (%llu > %llu).\n", waveOffset, (MAX_COMPACT_DATA_SEGMENT_SIZE * uint64_t(dwAlignment)));
+            wprintf(L"- Audio wave data is too large to encode in compact wavebank (%llu > %llu).\n", waveOffset, (uint64_t(MAX_COMPACT_DATA_SEGMENT_SIZE) * uint64_t(dwAlignment)));
         }
         return 1;
     }
@@ -1259,7 +1248,7 @@ int __cdecl wmain(_In_ int argc, _In_z_count_(argc) wchar_t* argv[])
         case MINIWAVEFORMAT::TAG_WMA:
             if (it->data.seekCount > 0)
             {
-                seekEntries += it->data.seekCount + 1;
+                seekEntries += size_t(it->data.seekCount) + 1u;
                 duration = it->data.seek[it->data.seekCount - 1] / uint32_t(2 * wfx->nChannels);
             }
             break;
@@ -1350,7 +1339,7 @@ int __cdecl wmain(_In_ int argc, _In_z_count_(argc) wchar_t* argv[])
     hFile.reset(safe_handle(CreateFileW(szOutputFile, GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr)));
     if (!hFile)
     {
-        wprintf(L"ERROR: Failed opening output file %ls, %u\n", szOutputFile, GetLastError());
+        wprintf(L"ERROR: Failed opening output file %ls, %lu\n", szOutputFile, GetLastError());
         return 1;
     }
 
@@ -1404,9 +1393,9 @@ int __cdecl wmain(_In_ int argc, _In_z_count_(argc) wchar_t* argv[])
         }
     }
 
-    if (SetFilePointer(hFile.get(), segmentOffset, 0, FILE_BEGIN) == INVALID_SET_FILE_POINTER)
+    if (SetFilePointer(hFile.get(), LONG(segmentOffset), nullptr, FILE_BEGIN) == INVALID_SET_FILE_POINTER)
     {
-        wprintf(L"ERROR: Failed writing bank data to %ls, SFP %u\n", szOutputFile, GetLastError());
+        wprintf(L"ERROR: Failed writing bank data to %ls, SFP %lu\n", szOutputFile, GetLastError());
         return 1;
     }
 
@@ -1414,7 +1403,7 @@ int __cdecl wmain(_In_ int argc, _In_z_count_(argc) wchar_t* argv[])
     if (!WriteFile(hFile.get(), &data, sizeof(data), &bytesWritten, nullptr)
         || bytesWritten != sizeof(data))
     {
-        wprintf(L"ERROR: Failed writing bank data to %ls, %u\n", szOutputFile, GetLastError());
+        wprintf(L"ERROR: Failed writing bank data to %ls, %lu\n", szOutputFile, GetLastError());
         return 1;
     }
 
@@ -1425,9 +1414,9 @@ int __cdecl wmain(_In_ int argc, _In_z_count_(argc) wchar_t* argv[])
     // Write entry metadata
     assert((segmentOffset % 4) == 0);
 
-    if (SetFilePointer(hFile.get(), segmentOffset, 0, FILE_BEGIN) == INVALID_SET_FILE_POINTER)
+    if (SetFilePointer(hFile.get(), LONG(segmentOffset), nullptr, FILE_BEGIN) == INVALID_SET_FILE_POINTER)
     {
-        wprintf(L"ERROR: Failed writing entry metadata to %ls, SFP %u\n", szOutputFile, GetLastError());
+        wprintf(L"ERROR: Failed writing entry metadata to %ls, SFP %lu\n", szOutputFile, GetLastError());
         return 1;
     }
 
@@ -1435,7 +1424,7 @@ int __cdecl wmain(_In_ int argc, _In_z_count_(argc) wchar_t* argv[])
     if (!WriteFile(hFile.get(), entries.get(), entryBytes, &bytesWritten, nullptr)
         || bytesWritten != entryBytes)
     {
-        wprintf(L"ERROR: Failed writing entry metadata to %ls, %u\n", szOutputFile, GetLastError());
+        wprintf(L"ERROR: Failed writing entry metadata to %ls, %lu\n", szOutputFile, GetLastError());
         return 1;
     }
 
@@ -1452,11 +1441,11 @@ int __cdecl wmain(_In_ int argc, _In_z_count_(argc) wchar_t* argv[])
     {
         seekEntries += waves.size(); // Room for an offset per entry
 
-        std::unique_ptr<uint32_t[]> seekTables(new uint32_t[seekEntries]);
+        auto seekTables = std::make_unique<uint32_t[]>(seekEntries);
 
-        if (SetFilePointer(hFile.get(), segmentOffset, 0, FILE_BEGIN) == INVALID_SET_FILE_POINTER)
+        if (SetFilePointer(hFile.get(), LONG(segmentOffset), nullptr, FILE_BEGIN) == INVALID_SET_FILE_POINTER)
         {
-            wprintf(L"ERROR: Failed writing seek tables to %ls, SFP %u\n", szOutputFile, GetLastError());
+            wprintf(L"ERROR: Failed writing seek tables to %ls, SFP %lu\n", szOutputFile, GetLastError());
             return 1;
         }
 
@@ -1473,10 +1462,10 @@ int __cdecl wmain(_In_ int argc, _In_z_count_(argc) wchar_t* argv[])
 
                 for (uint32_t j = 0; j < it->data.seekCount; ++j)
                 {
-                    seekTables[baseoffset + j + 1] = it->data.seek[j];
+                    seekTables[size_t(baseoffset) + size_t(j) + 1u] = it->data.seek[j];
                 }
 
-                seekoffset += it->data.seekCount + 1;
+                seekoffset += size_t(it->data.seekCount) + 1u;
             }
             else
             {
@@ -1489,7 +1478,7 @@ int __cdecl wmain(_In_ int argc, _In_z_count_(argc) wchar_t* argv[])
         if (!WriteFile(hFile.get(), seekTables.get(), seekLen, &bytesWritten, nullptr)
             || bytesWritten != seekLen)
         {
-            wprintf(L"ERROR: Failed writing seek tables to %ls, %u\n", szOutputFile, GetLastError());
+            wprintf(L"ERROR: Failed writing seek tables to %ls, %lu\n", szOutputFile, GetLastError());
             return 1;
         }
 
@@ -1507,9 +1496,9 @@ int __cdecl wmain(_In_ int argc, _In_z_count_(argc) wchar_t* argv[])
     {
         assert((segmentOffset % 4) == 0);
 
-        if (SetFilePointer(hFile.get(), segmentOffset, 0, FILE_BEGIN) == INVALID_SET_FILE_POINTER)
+        if (SetFilePointer(hFile.get(), LONG(segmentOffset), nullptr, FILE_BEGIN) == INVALID_SET_FILE_POINTER)
         {
-            wprintf(L"ERROR: Failed writing friendly entry names to %ls, SFP %u\n", szOutputFile, GetLastError());
+            wprintf(L"ERROR: Failed writing friendly entry names to %ls, SFP %lu\n", szOutputFile, GetLastError());
             return 1;
         }
 
@@ -1517,7 +1506,7 @@ int __cdecl wmain(_In_ int argc, _In_z_count_(argc) wchar_t* argv[])
         if (!WriteFile(hFile.get(), entryNames.get(), entryNamesBytes, &bytesWritten, nullptr)
             || bytesWritten != entryNamesBytes)
         {
-            wprintf(L"ERROR: Failed writing friendly entry names to %ls, %u\n", szOutputFile, GetLastError());
+            wprintf(L"ERROR: Failed writing friendly entry names to %ls, %lu\n", szOutputFile, GetLastError());
             return 1;
         }
 
@@ -1534,16 +1523,16 @@ int __cdecl wmain(_In_ int argc, _In_z_count_(argc) wchar_t* argv[])
 
     for (auto it = waves.begin(); it != waves.end(); ++it)
     {
-        if (SetFilePointer(hFile.get(), segmentOffset, 0, FILE_BEGIN) == INVALID_SET_FILE_POINTER)
+        if (SetFilePointer(hFile.get(), LONG(segmentOffset), nullptr, FILE_BEGIN) == INVALID_SET_FILE_POINTER)
         {
-            wprintf(L"ERROR: Failed writing audio data to %ls, SFP %u\n", szOutputFile, GetLastError());
+            wprintf(L"ERROR: Failed writing audio data to %ls, SFP %lu\n", szOutputFile, GetLastError());
             return 1;
         }
 
         if (!WriteFile(hFile.get(), it->data.startAudio, it->data.audioBytes, &bytesWritten, nullptr)
             || bytesWritten != it->data.audioBytes)
         {
-            wprintf(L"ERROR: Failed writing audio data to %ls, %u\n", szOutputFile, GetLastError());
+            wprintf(L"ERROR: Failed writing audio data to %ls, %lu\n", szOutputFile, GetLastError());
             return 1;
         }
 
@@ -1561,28 +1550,28 @@ int __cdecl wmain(_In_ int argc, _In_z_count_(argc) wchar_t* argv[])
     assert(segmentOffset == (header.Segments[HEADER::SEGIDX_ENTRYWAVEDATA].dwOffset + waveOffset));
 
     // Commit wave bank
-    if (SetFilePointer(hFile.get(), segmentOffset, 0, FILE_BEGIN) == INVALID_SET_FILE_POINTER)
+    if (SetFilePointer(hFile.get(), LONG(segmentOffset), nullptr, FILE_BEGIN) == INVALID_SET_FILE_POINTER)
     {
-        wprintf(L"ERROR: Failed committing output file %ls, EOF %u\n", szOutputFile, GetLastError());
+        wprintf(L"ERROR: Failed committing output file %ls, EOF %lu\n", szOutputFile, GetLastError());
         return 1;
     }
 
     if (!SetEndOfFile(hFile.get()))
     {
-        wprintf(L"ERROR: Failed committing output file %ls, EOF %u\n", szOutputFile, GetLastError());
+        wprintf(L"ERROR: Failed committing output file %ls, EOF %lu\n", szOutputFile, GetLastError());
         return 1;
     }
 
-    if (SetFilePointer(hFile.get(), 0, 0, FILE_BEGIN) == INVALID_SET_FILE_POINTER)
+    if (SetFilePointer(hFile.get(), 0, nullptr, FILE_BEGIN) == INVALID_SET_FILE_POINTER)
     {
-        wprintf(L"ERROR: Failed committing output file %ls, HDR %u\n", szOutputFile, GetLastError());
+        wprintf(L"ERROR: Failed committing output file %ls, HDR %lu\n", szOutputFile, GetLastError());
         return 1;
     }
 
     if (!WriteFile(hFile.get(), &header, sizeof(header), &bytesWritten, nullptr)
         || bytesWritten != sizeof(header))
     {
-        wprintf(L"ERROR: Failed committing output file %ls, HDR %u\n", szOutputFile, GetLastError());
+        wprintf(L"ERROR: Failed committing output file %ls, HDR %lu\n", szOutputFile, GetLastError());
         return 1;
     }
 
