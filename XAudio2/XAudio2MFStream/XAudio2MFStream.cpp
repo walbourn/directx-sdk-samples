@@ -25,31 +25,11 @@
 
 #include "XAudio2Versions.h"
 
-#if (_WIN32_WINNT < _WIN32_WINNT_WIN7 )
-#error This code needs _WIN32_WINNT set to 0x0601 or higher. It is compatible with Windows Vista with KB 2117917 installed
-#endif
-
-#ifndef USING_XAUDIO2_7_DIRECTX
-#include <initguid.h>
 #include <mfidl.h>
 #include <mfapi.h>
 #include <mfreadwrite.h>
 #pragma comment(lib,"mfplat.lib")
 #pragma comment(lib,"mfreadwrite.lib")
-#else
-#include <C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Include\comdecl.h>
-#include <C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Include\xaudio2.h>
-
-#define MF_SDK_VERSION 0x0001  
-#define MF_API_VERSION 0x0070 
-#define MF_VERSION (MF_SDK_VERSION << 16 | MF_API_VERSION)  
-#include <initguid.h>
-#include <mfidl.h>
-#include <mfapi.h>
-#include <mfreadwrite.h>
-#pragma comment(lib,"mfplat_vista.lib")
-#pragma comment(lib,"mfreadwrite.lib")
-#endif
 
 using Microsoft::WRL::ComPtr;
 
