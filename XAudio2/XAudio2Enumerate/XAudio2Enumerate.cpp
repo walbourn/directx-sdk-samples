@@ -17,16 +17,17 @@
 
 #include "XAudio2Versions.h"
 
-#ifdef USING_XAUDIO2_9
-#include <mmdeviceapi.h>
-#include <Functiondiscoverykeys_devpkey.h>
-#elif defined(USING_XAUDIO2_8)
+#ifndef USING_XAUDIO2_7_DIRECTX
 #pragma comment(lib,"runtimeobject.lib")
 #include <Windows.Devices.Enumeration.h>
 #include <wrl.h>
 #include <ppltasks.h>
 #endif
 
+#ifdef USING_XAUDIO2_REDIST
+#include <mmdeviceapi.h>
+#include <Functiondiscoverykeys_devpkey.h>
+#endif
 
 using Microsoft::WRL::ComPtr;
 
@@ -182,67 +183,13 @@ int main()
 //--------------------------------------------------------------------------------------
 HRESULT EnumerateAudio( _In_ IXAudio2* pXaudio2, _Inout_ std::vector<AudioDevice>& list )
 {
-#ifdef USING_XAUDIO2_9
-
-    ComPtr<IMMDeviceEnumerator> devEnum;
-    HRESULT hr = CoCreateInstance(__uuidof(MMDeviceEnumerator), nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(devEnum.GetAddressOf()));
-    if (FAILED(hr))
-        return hr;
-
-    ComPtr<IMMDeviceCollection> devices;
-    hr = devEnum->EnumAudioEndpoints(eRender, DEVICE_STATE_ACTIVE, &devices);
-    if (FAILED(hr))
-        return hr;
-
-    UINT count = 0;
-    hr = devices->GetCount(&count);
-    if (FAILED(hr))
-        return hr;
-
-    if (!count)
-        return S_FALSE;
-
-    for (UINT j = 0; j < count; ++j)
-    {
-        ComPtr<IMMDevice> endpoint;
-        hr = devices->Item(j, endpoint.GetAddressOf());
-        if (FAILED(hr))
-            return hr;
-
-        LPWSTR id = nullptr;
-        hr = endpoint->GetId(&id);
-        if (FAILED(hr))
-            return hr;
-
-        AudioDevice device;
-        device.deviceId = id;
-        CoTaskMemFree(id);
-
-        ComPtr<IPropertyStore> props;
-        hr = endpoint->OpenPropertyStore(STGM_READ, props.GetAddressOf());
-        if (FAILED(hr))
-            return hr;
-
-        PROPVARIANT var;
-        PropVariantInit(&var);
-
-        hr = props->GetValue(PKEY_Device_FriendlyName, &var);
-        if (FAILED(hr) || var.vt != VT_LPWSTR)
-            return hr;
-
-        device.description = var.pwszVal;
-        PropVariantClear(&var);
-
-        list.emplace_back(device);
-    }
-
-#elif defined(USING_XAUDIO2_8)
+#if (_WIN32_WINNT >= 0x0602 /*_WIN32_WINNT_WIN8*/)
 
     UNREFERENCED_PARAMETER( pXaudio2 );
 
 #if defined(__cplusplus_winrt )
 
-    // Enumerating with Windows Runtime using C++/CX
+    // Enumerating with WinRT using C++/CX
     using namespace concurrency;
     using Windows::Devices::Enumeration::DeviceClass;
     using Windows::Devices::Enumeration::DeviceInformation;
@@ -274,7 +221,7 @@ HRESULT EnumerateAudio( _In_ IXAudio2* pXaudio2, _Inout_ std::vector<AudioDevice
 
 #else
 
-    // Enumerating with Windows Runtime using WRL
+    // Enumerating with WinRT using WRL
     using namespace Microsoft::WRL;
     using namespace Microsoft::WRL::Wrappers;
     using namespace ABI::Windows::Foundation;
@@ -344,6 +291,61 @@ HRESULT EnumerateAudio( _In_ IXAudio2* pXaudio2, _Inout_ std::vector<AudioDevice
     return S_OK;
 
 #endif 
+
+#elif defined(USING_XAUDIO2_REDIST)
+
+    // Enumeration for XAudio 2.9 down-level on Windows 7
+    ComPtr<IMMDeviceEnumerator> devEnum;
+    HRESULT hr = CoCreateInstance(__uuidof(MMDeviceEnumerator), nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(devEnum.GetAddressOf()));
+    if (FAILED(hr))
+        return hr;
+
+    ComPtr<IMMDeviceCollection> devices;
+    hr = devEnum->EnumAudioEndpoints(eRender, DEVICE_STATE_ACTIVE, &devices);
+    if (FAILED(hr))
+        return hr;
+
+    UINT count = 0;
+    hr = devices->GetCount(&count);
+    if (FAILED(hr))
+        return hr;
+
+    if (!count)
+        return S_FALSE;
+
+    for (UINT j = 0; j < count; ++j)
+    {
+        ComPtr<IMMDevice> endpoint;
+        hr = devices->Item(j, endpoint.GetAddressOf());
+        if (FAILED(hr))
+            return hr;
+
+        LPWSTR id = nullptr;
+        hr = endpoint->GetId(&id);
+        if (FAILED(hr))
+            return hr;
+
+        AudioDevice device;
+        device.deviceId = id;
+        CoTaskMemFree(id);
+
+        ComPtr<IPropertyStore> props;
+        hr = endpoint->OpenPropertyStore(STGM_READ, props.GetAddressOf());
+        if (FAILED(hr))
+            return hr;
+
+        PROPVARIANT var;
+        PropVariantInit(&var);
+
+        hr = props->GetValue(PKEY_Device_FriendlyName, &var);
+        if (FAILED(hr) || var.vt != VT_LPWSTR)
+            return hr;
+
+        device.description = var.pwszVal;
+        PropVariantClear(&var);
+
+        list.emplace_back(device);
+    }
 
 #else // USING_XAUDIO2_7_DIRECTX
 
