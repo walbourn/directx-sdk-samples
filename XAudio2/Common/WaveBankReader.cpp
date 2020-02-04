@@ -30,7 +30,7 @@ namespace
 
     struct handle_closer { void operator()(HANDLE h) { if (h) CloseHandle(h); } };
 
-    typedef std::unique_ptr<void, handle_closer> ScopedHandle;
+    using ScopedHandle = std::unique_ptr<void, handle_closer>;
 
     inline HANDLE safe_handle( HANDLE h ) { return (h == INVALID_HANDLE_VALUE) ? nullptr : h; }
 
@@ -114,7 +114,7 @@ namespace
                 return 4; // MSADPCM_BITS_PER_SAMPLE == 4
 
             // wFormatTag must be TAG_PCM (2 bits can only represent 4 different values)
-            return (wBitsPerSample == BITDEPTH_16) ? 16 : 8;
+            return (wBitsPerSample == BITDEPTH_16) ? 16u : 8u;
         }
 
         DWORD BlockAlign() const
@@ -179,7 +179,6 @@ namespace
                 uint32_t samplesPerAdpcmBlock = AdpcmSamplesPerBlock();
                 return blockAlign * nSamplesPerSec / samplesPerAdpcmBlock;
             }
-            break;
 
             case TAG_WMA:
             {
@@ -208,7 +207,7 @@ namespace
         DWORD AdpcmSamplesPerBlock() const
         {
             uint32_t nBlockAlign = (wBlockAlign + ADPCM_BLOCKALIGN_CONVERSION_OFFSET) * nChannels;
-            return nBlockAlign * 2 / (uint32_t)nChannels - 12;
+            return nBlockAlign * 2 / uint32_t(nChannels) - 12;
         }
 
         void AdpcmFillCoefficientTable(ADPCMWAVEFORMAT *fmt) const
@@ -448,7 +447,7 @@ HRESULT WaveBankReader::Impl::Open( const wchar_t* szFileName )
     }
 
 #if (_WIN32_WINNT >= _WIN32_WINNT_WIN8)
-    CREATEFILE2_EXTENDED_PARAMETERS params = { sizeof(CREATEFILE2_EXTENDED_PARAMETERS), 0 };
+    CREATEFILE2_EXTENDED_PARAMETERS params = { sizeof(CREATEFILE2_EXTENDED_PARAMETERS), 0, 0, 0, {}, nullptr };
     params.dwFileAttributes = FILE_ATTRIBUTE_NORMAL;
     params.dwFileFlags = FILE_FLAG_OVERLAPPED | FILE_FLAG_SEQUENTIAL_SCAN;
     ScopedHandle hFile( safe_handle( CreateFile2( szFileName,
@@ -725,7 +724,7 @@ HRESULT WaveBankReader::Impl::Open( const wchar_t* szFileName )
         hFile.reset();
 
 #if (_WIN32_WINNT >= _WIN32_WINNT_WIN8)
-        CREATEFILE2_EXTENDED_PARAMETERS params2 = { sizeof(CREATEFILE2_EXTENDED_PARAMETERS), 0 };
+        CREATEFILE2_EXTENDED_PARAMETERS params2 = { sizeof(CREATEFILE2_EXTENDED_PARAMETERS), 0, 0, 0, {}, nullptr };
         params2.dwFileAttributes = FILE_ATTRIBUTE_NORMAL;
         params2.dwFileFlags = FILE_FLAG_OVERLAPPED | FILE_FLAG_NO_BUFFERING;
         m_async = CreateFile2( szFileName,
@@ -784,7 +783,7 @@ void WaveBankReader::Impl::Close()
 {
     if ( m_async != INVALID_HANDLE_VALUE )
     {
-        if ( m_request.hEvent != 0 )
+        if ( m_request.hEvent )
         {
             DWORD bytes;
 #if (_WIN32_WINNT >= _WIN32_WINNT_WIN8)
@@ -838,7 +837,7 @@ HRESULT WaveBankReader::Impl::GetFormat( uint32_t index, WAVEFORMATEX* pFormat, 
             pFormat->cbSize = 32 /*MSADPCM_FORMAT_EXTRA_BYTES*/;
             {
                 auto adpcmFmt = reinterpret_cast<ADPCMWAVEFORMAT*>(pFormat);
-                adpcmFmt->wSamplesPerBlock = (WORD) miniFmt.AdpcmSamplesPerBlock();
+                adpcmFmt->wSamplesPerBlock = static_cast<WORD>(miniFmt.AdpcmSamplesPerBlock());
                 miniFmt.AdpcmFillCoefficientTable( adpcmFmt );
             }
             break;
@@ -847,7 +846,7 @@ HRESULT WaveBankReader::Impl::GetFormat( uint32_t index, WAVEFORMATEX* pFormat, 
             if ( maxsize < sizeof(WAVEFORMATEX) )
                 return HRESULT_FROM_WIN32( ERROR_MORE_DATA );
 
-            pFormat->wFormatTag = (miniFmt.wBitsPerSample & 0x1) ? WAVE_FORMAT_WMAUDIO3 : WAVE_FORMAT_WMAUDIO2;
+            pFormat->wFormatTag = static_cast<WORD>((miniFmt.wBitsPerSample & 0x1) ? WAVE_FORMAT_WMAUDIO3 : WAVE_FORMAT_WMAUDIO2);
             pFormat->cbSize = 0;
             break;
 
@@ -860,7 +859,7 @@ HRESULT WaveBankReader::Impl::GetFormat( uint32_t index, WAVEFORMATEX* pFormat, 
 
     pFormat->nChannels = miniFmt.nChannels;
     pFormat->wBitsPerSample = miniFmt.BitsPerSample();
-    pFormat->nBlockAlign = (WORD) miniFmt.BlockAlign();
+    pFormat->nBlockAlign = static_cast<WORD>(miniFmt.BlockAlign());
     pFormat->nSamplesPerSec = miniFmt.nSamplesPerSec;
     pFormat->nAvgBytesPerSec = miniFmt.AvgBytesPerSec();
 
@@ -900,9 +899,9 @@ HRESULT WaveBankReader::Impl::GetWaveData( uint32_t index, const uint8_t** pData
         DWORD dwOffset, dwLength;
         entry.ComputeLocations( dwOffset, dwLength, index, m_header, m_data, reinterpret_cast<const ENTRYCOMPACT*>( m_entries.get() ) );
 
-        if ( ( dwOffset + dwLength ) > m_header.Segments[HEADER::SEGIDX_ENTRYWAVEDATA].dwLength )
+        if ((uint64_t(dwOffset) + uint64_t(dwLength)) > uint64_t(m_header.Segments[HEADER::SEGIDX_ENTRYWAVEDATA].dwLength))
         {
-            return HRESULT_FROM_WIN32( ERROR_HANDLE_EOF );
+            return HRESULT_FROM_WIN32(ERROR_HANDLE_EOF);
         }
 
         *pData = &waveData[ dwOffset ];
@@ -912,9 +911,9 @@ HRESULT WaveBankReader::Impl::GetWaveData( uint32_t index, const uint8_t** pData
     {
         auto& entry = reinterpret_cast<const ENTRY*>( m_entries.get() )[ index ];
 
-        if ( ( entry.PlayRegion.dwOffset + entry.PlayRegion.dwLength ) > m_header.Segments[HEADER::SEGIDX_ENTRYWAVEDATA].dwLength )
+        if ((uint64_t(entry.PlayRegion.dwOffset) + uint64_t(entry.PlayRegion.dwLength)) > uint64_t(m_header.Segments[HEADER::SEGIDX_ENTRYWAVEDATA].dwLength))
         {
-            return HRESULT_FROM_WIN32( ERROR_HANDLE_EOF );
+            return HRESULT_FROM_WIN32(ERROR_HANDLE_EOF);
         }
    
         *pData = &waveData[ entry.PlayRegion.dwOffset ];
@@ -948,7 +947,7 @@ HRESULT WaveBankReader::Impl::GetSeekTable( uint32_t index, const uint32_t** pDa
     switch( miniFmt.wFormatTag )
     {
     case MINIWAVEFORMAT::TAG_WMA:
-        tag = (miniFmt.wBitsPerSample & 0x1) ? WAVE_FORMAT_WMAUDIO3 : WAVE_FORMAT_WMAUDIO2;
+        tag = static_cast<uint32_t>((miniFmt.wBitsPerSample & 0x1) ? WAVE_FORMAT_WMAUDIO3 : WAVE_FORMAT_WMAUDIO2);
         break;
 
     case MINIWAVEFORMAT::TAG_XMA:
@@ -1002,6 +1001,15 @@ HRESULT WaveBankReader::Impl::GetMetadata( uint32_t index, Metadata& metadata ) 
         metadata.lengthBytes = entry.PlayRegion.dwLength;
     }
 
+    if ( m_data.dwFlags & BANKDATA::TYPE_STREAMING )
+    {
+        uint64_t offset = uint64_t(metadata.offsetBytes) + uint64_t(m_header.Segments[HEADER::SEGIDX_ENTRYWAVEDATA].dwOffset);
+        if (offset > UINT32_MAX)
+            return HRESULT_FROM_WIN32(ERROR_ARITHMETIC_OVERFLOW);
+
+        metadata.offsetBytes = static_cast<uint32_t>(offset);
+    }
+
     return S_OK;
 }
 
@@ -1014,7 +1022,7 @@ bool WaveBankReader::Impl::UpdatePrepared()
     if ( m_async == INVALID_HANDLE_VALUE )
         return false;
 
-    if ( m_request.hEvent != 0 )
+    if ( m_request.hEvent )
     {
 
 #if (_WIN32_WINNT >= _WIN32_WINNT_WIN8)
@@ -1082,9 +1090,9 @@ void WaveBankReader::WaitOnPrepare()
     if ( pImpl->m_prepared )
         return;
 
-    if ( pImpl->m_request.hEvent != 0 )
+    if ( pImpl->m_request.hEvent )
     {
-        WaitForSingleObjectEx( pImpl->m_request.hEvent, INFINITE, FALSE );
+        (void)WaitForSingleObjectEx( pImpl->m_request.hEvent, INFINITE, FALSE );
 
         pImpl->UpdatePrepared();
     }
