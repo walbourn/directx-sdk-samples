@@ -41,7 +41,7 @@ namespace
         _In_ ID3D11DeviceContext* pContext,
         _In_ ID3D11Resource* pSource,
         D3D11_TEXTURE2D_DESC& desc,
-        ComPtr<ID3D11Texture2D>& pStaging)
+        ComPtr<ID3D11Texture2D>& pStaging) noexcept
     {
         if (!pContext || !pSource)
             return E_INVALIDARG;
@@ -173,7 +173,7 @@ _Use_decl_annotations_
 HRESULT DirectX::SaveDDSTextureToFile(
     ID3D11DeviceContext* pContext,
     ID3D11Resource* pSource,
-    const wchar_t* fileName)
+    const wchar_t* fileName) noexcept
 {
     if (!fileName)
         return E_INVALIDARG;
@@ -339,8 +339,8 @@ HRESULT DirectX::SaveDDSTextureToFile(
 //--------------------------------------------------------------------------------------
 namespace DirectX
 {
-    extern bool _IsWIC2();
-    extern IWICImagingFactory* _GetWIC();
+    extern bool _IsWIC2() noexcept;
+    extern IWICImagingFactory* _GetWIC() noexcept;
 }
 
 _Use_decl_annotations_
@@ -350,7 +350,8 @@ HRESULT DirectX::SaveWICTextureToFile(
     REFGUID guidContainerFormat,
     const wchar_t* fileName,
     const GUID* targetFormat,
-    std::function<void(IPropertyBag2*)> setCustomProps)
+    std::function<void(IPropertyBag2*)> setCustomProps,
+    bool forceSRGB) noexcept
 {
     if (!fileName)
         return E_INVALIDARG;
@@ -363,7 +364,7 @@ HRESULT DirectX::SaveWICTextureToFile(
 
     // Determine source format's WIC equivalent
     WICPixelFormatGUID pfGuid;
-    bool sRGB = false;
+    bool sRGB = forceSRGB;
     switch (desc.Format)
     {
         case DXGI_FORMAT_R32G32B32A32_FLOAT:            pfGuid = GUID_WICPixelFormat128bppRGBAFloat; break;
@@ -610,8 +611,8 @@ HRESULT DirectX::SaveWICTextureToFile(
         // Conversion required to write
         ComPtr<IWICBitmap> source;
         hr = pWIC->CreateBitmapFromMemory(desc.Width, desc.Height, pfGuid,
-                                          mapped.RowPitch, mapped.RowPitch * desc.Height,
-                                          static_cast<BYTE*>(mapped.pData), source.GetAddressOf());
+            mapped.RowPitch, mapped.RowPitch * desc.Height,
+            static_cast<BYTE*>(mapped.pData), source.GetAddressOf());
         if (FAILED(hr))
         {
             pContext->Unmap(pStaging.Get(), 0);

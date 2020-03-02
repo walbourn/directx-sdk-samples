@@ -17,7 +17,7 @@ using Microsoft::WRL::ComPtr;
 
 namespace
 {
-    inline uint32_t FloatTo7e3(float Value)
+    inline uint32_t FloatTo7e3(float Value) noexcept
     {
         uint32_t IValue = reinterpret_cast<uint32_t *>(&Value)[0];
 
@@ -50,7 +50,7 @@ namespace
         }
     }
 
-    inline float FloatFrom7e3(uint32_t Value)
+    inline float FloatFrom7e3(uint32_t Value) noexcept
     {
         auto Mantissa = static_cast<uint32_t>(Value & 0x7F);
 
@@ -83,7 +83,7 @@ namespace
         return reinterpret_cast<float*>(&Result)[0];
     }
 
-    inline uint32_t FloatTo6e4(float Value)
+    inline uint32_t FloatTo6e4(float Value) noexcept
     {
         uint32_t IValue = reinterpret_cast<uint32_t *>(&Value)[0];
 
@@ -116,7 +116,7 @@ namespace
         }
     }
 
-    inline float FloatFrom6e4(uint32_t Value)
+    inline float FloatFrom6e4(uint32_t Value) noexcept
     {
         uint32_t Mantissa = static_cast<uint32_t>(Value & 0x3F);
 
@@ -205,7 +205,7 @@ void DirectX::_CopyScanline(
     const void* pSource,
     size_t inSize,
     DXGI_FORMAT format,
-    DWORD flags)
+    DWORD flags) noexcept
 {
     assert(pDestination && outSize > 0);
     assert(pSource && inSize > 0);
@@ -450,7 +450,7 @@ void DirectX::_SwizzleScanline(
     const void* pSource,
     size_t inSize,
     DXGI_FORMAT format,
-    DWORD flags)
+    DWORD flags) noexcept
 {
     assert(pDestination && outSize > 0);
     assert(pSource && inSize > 0);
@@ -621,7 +621,7 @@ bool DirectX::_ExpandScanline(
     const void* pSource,
     size_t inSize,
     DXGI_FORMAT inFormat,
-    DWORD flags)
+    DWORD flags) noexcept
 {
     assert(pDestination && outSize > 0);
     assert(pSource && inSize > 0);
@@ -760,7 +760,7 @@ _Use_decl_annotations_ bool DirectX::_LoadScanline(
     size_t count,
     const void* pSource,
     size_t size,
-    DXGI_FORMAT format)
+    DXGI_FORMAT format) noexcept
 {
     assert(pDestination && count > 0 && ((reinterpret_cast<uintptr_t>(pDestination) & 0xF) == 0));
     assert(pSource && size > 0);
@@ -874,16 +874,16 @@ _Use_decl_annotations_ bool DirectX::_LoadScanline(
     return false;
 
     case DXGI_FORMAT_R10G10B10A2_UNORM:
-        LOAD_SCANLINE(XMUDECN4, XMLoadUDecN4);
+        LOAD_SCANLINE(XMUDECN4, XMLoadUDecN4)
 
     case DXGI_FORMAT_R10G10B10_XR_BIAS_A2_UNORM:
-        LOAD_SCANLINE(XMUDECN4, XMLoadUDecN4_XR);
+        LOAD_SCANLINE(XMUDECN4, XMLoadUDecN4_XR)
 
     case DXGI_FORMAT_R10G10B10A2_UINT:
-        LOAD_SCANLINE(XMUDEC4, XMLoadUDec4);
+        LOAD_SCANLINE(XMUDEC4, XMLoadUDec4)
 
     case DXGI_FORMAT_R11G11B10_FLOAT:
-        LOAD_SCANLINE3(XMFLOAT3PK, XMLoadFloat3PK, g_XMIdentityR3);
+        LOAD_SCANLINE3(XMFLOAT3PK, XMLoadFloat3PK, g_XMIdentityR3)
 
     case DXGI_FORMAT_R8G8B8A8_UNORM:
     case DXGI_FORMAT_R8G8B8A8_UNORM_SRGB:
@@ -1553,7 +1553,7 @@ _Use_decl_annotations_ bool DirectX::_LoadScanline(
 
     case XBOX_DXGI_FORMAT_R10G10B10_SNORM_A2_UNORM:
         // Xbox One specific format
-        LOAD_SCANLINE(XMXDECN4, XMLoadXDecN4);
+        LOAD_SCANLINE(XMXDECN4, XMLoadXDecN4)
 
     case XBOX_DXGI_FORMAT_R4G4_UNORM:
         // Xbox One specific format
@@ -1609,7 +1609,7 @@ bool DirectX::_StoreScanline(
     DXGI_FORMAT format,
     const XMVECTOR* pSource,
     size_t count,
-    float threshold)
+    float threshold) noexcept
 {
     assert(pDestination && size > 0);
     assert(pSource && count > 0 && ((reinterpret_cast<uintptr_t>(pSource) & 0xF) == 0));
@@ -1700,16 +1700,16 @@ bool DirectX::_StoreScanline(
         return false;
 
     case DXGI_FORMAT_R10G10B10A2_UNORM:
-        STORE_SCANLINE(XMUDECN4, XMStoreUDecN4);
+        STORE_SCANLINE(XMUDECN4, XMStoreUDecN4)
 
     case DXGI_FORMAT_R10G10B10_XR_BIAS_A2_UNORM:
-        STORE_SCANLINE(XMUDECN4, XMStoreUDecN4_XR);
+        STORE_SCANLINE(XMUDECN4, XMStoreUDecN4_XR)
 
     case DXGI_FORMAT_R10G10B10A2_UINT:
-        STORE_SCANLINE(XMUDEC4, XMStoreUDec4);
+        STORE_SCANLINE(XMUDEC4, XMStoreUDec4)
 
     case DXGI_FORMAT_R11G11B10_FLOAT:
-        STORE_SCANLINE(XMFLOAT3PK, XMStoreFloat3PK);
+        STORE_SCANLINE(XMFLOAT3PK, XMStoreFloat3PK)
 
     case DXGI_FORMAT_R8G8B8A8_UNORM:
     case DXGI_FORMAT_R8G8B8A8_UNORM_SRGB:
@@ -2426,7 +2426,7 @@ bool DirectX::_StoreScanline(
 
     case XBOX_DXGI_FORMAT_R10G10B10_SNORM_A2_UNORM:
         // Xbox One specific format
-        STORE_SCANLINE(XMXDECN4, XMStoreXDecN4);
+        STORE_SCANLINE(XMXDECN4, XMStoreXDecN4)
 
     case XBOX_DXGI_FORMAT_R4G4_UNORM:
         // Xbox One specific format
@@ -2462,7 +2462,7 @@ bool DirectX::_StoreScanline(
 // Convert DXGI image to/from GUID_WICPixelFormat128bppRGBAFloat (no range conversions)
 //-------------------------------------------------------------------------------------
 _Use_decl_annotations_
-HRESULT DirectX::_ConvertToR32G32B32A32(const Image& srcImage, ScratchImage& image)
+HRESULT DirectX::_ConvertToR32G32B32A32(const Image& srcImage, ScratchImage& image) noexcept
 {
     if (!srcImage.pixels)
         return E_POINTER;
@@ -2502,7 +2502,7 @@ HRESULT DirectX::_ConvertToR32G32B32A32(const Image& srcImage, ScratchImage& ima
 }
 
 _Use_decl_annotations_
-HRESULT DirectX::_ConvertFromR32G32B32A32(const Image& srcImage, const Image& destImage)
+HRESULT DirectX::_ConvertFromR32G32B32A32(const Image& srcImage, const Image& destImage) noexcept
 {
     assert(srcImage.format == DXGI_FORMAT_R32G32B32A32_FLOAT);
 
@@ -2528,7 +2528,7 @@ HRESULT DirectX::_ConvertFromR32G32B32A32(const Image& srcImage, const Image& de
 }
 
 _Use_decl_annotations_
-HRESULT DirectX::_ConvertFromR32G32B32A32(const Image& srcImage, DXGI_FORMAT format, ScratchImage& image)
+HRESULT DirectX::_ConvertFromR32G32B32A32(const Image& srcImage, DXGI_FORMAT format, ScratchImage& image) noexcept
 {
     if (!srcImage.pixels)
         return E_POINTER;
@@ -2560,7 +2560,7 @@ HRESULT DirectX::_ConvertFromR32G32B32A32(
     size_t nimages,
     const TexMetadata& metadata,
     DXGI_FORMAT format,
-    ScratchImage& result)
+    ScratchImage& result) noexcept
 {
     if (!srcImages)
         return E_POINTER;
@@ -2631,7 +2631,7 @@ HRESULT DirectX::_ConvertFromR32G32B32A32(
 // Convert DXGI image to/from GUID_WICPixelFormat64bppRGBAHalf (no range conversions)
 //-------------------------------------------------------------------------------------
 _Use_decl_annotations_
-HRESULT DirectX::_ConvertToR16G16B16A16(const Image& srcImage, ScratchImage& image)
+HRESULT DirectX::_ConvertToR16G16B16A16(const Image& srcImage, ScratchImage& image) noexcept
 {
     if (!srcImage.pixels)
         return E_POINTER;
@@ -2683,7 +2683,7 @@ HRESULT DirectX::_ConvertToR16G16B16A16(const Image& srcImage, ScratchImage& ima
 }
 
 _Use_decl_annotations_
-HRESULT DirectX::_ConvertFromR16G16B16A16(const Image& srcImage, const Image& destImage)
+HRESULT DirectX::_ConvertFromR16G16B16A16(const Image& srcImage, const Image& destImage) noexcept
 {
     assert(srcImage.format == DXGI_FORMAT_R16G16B16A16_FLOAT);
 
@@ -2733,7 +2733,7 @@ bool DirectX::_StoreScanlineLinear(
     XMVECTOR* pSource,
     size_t count,
     DWORD flags,
-    float threshold)
+    float threshold) noexcept
 {
     assert(pDestination && size > 0);
     assert(pSource && count > 0 && ((reinterpret_cast<uintptr_t>(pSource) & 0xF) == 0));
@@ -2808,7 +2808,7 @@ bool DirectX::_LoadScanlineLinear(
     const void* pSource,
     size_t size,
     DXGI_FORMAT format,
-    DWORD flags)
+    DWORD flags) noexcept
 {
     assert(pDestination && count > 0 && ((reinterpret_cast<uintptr_t>(pDestination) & 0xF) == 0));
     assert(pSource && size > 0);
@@ -2984,7 +2984,7 @@ namespace
 }
 
 _Use_decl_annotations_
-DWORD DirectX::_GetConvertFlags(DXGI_FORMAT format)
+DWORD DirectX::_GetConvertFlags(DXGI_FORMAT format) noexcept
 {
 #ifdef _DEBUG
     // Ensure conversion table is in ascending order
@@ -3908,7 +3908,7 @@ bool DirectX::_StoreScanlineDither(
     float threshold,
     size_t y,
     size_t z,
-    XMVECTOR* pDiffusionErrors)
+    XMVECTOR* pDiffusionErrors) noexcept
 {
     assert(pDestination && size > 0);
     assert(pSource && count > 0 && ((reinterpret_cast<uintptr_t>(pSource) & 0xF) == 0));
@@ -4371,7 +4371,7 @@ namespace
         _In_ DXGI_FORMAT sformat,
         _In_ DXGI_FORMAT tformat,
         _Out_ WICPixelFormatGUID& pfGUID,
-        _Out_ WICPixelFormatGUID& targetGUID)
+        _Out_ WICPixelFormatGUID& targetGUID) noexcept
     {
         memset(&pfGUID, 0, sizeof(GUID));
         memset(&targetGUID, 0, sizeof(GUID));
@@ -4531,7 +4531,7 @@ namespace
         assert(srcImage.height == destImage.height);
 
         bool iswic2 = false;
-        IWICImagingFactory* pWIC = GetWICFactory(iswic2);
+        auto pWIC = GetWICFactory(iswic2);
         if (!pWIC)
             return E_NOINTERFACE;
 
@@ -4664,7 +4664,7 @@ namespace
     }
 
     //-------------------------------------------------------------------------------------
-    DXGI_FORMAT _PlanarToSingle(_In_ DXGI_FORMAT format)
+    DXGI_FORMAT _PlanarToSingle(_In_ DXGI_FORMAT format) noexcept
     {
         switch (format)
         {
@@ -4735,7 +4735,7 @@ namespace
             }\
         }
 
-    HRESULT ConvertToSinglePlane_(_In_ const Image& srcImage, _In_ const Image& destImage)
+    HRESULT ConvertToSinglePlane_(_In_ const Image& srcImage, _In_ const Image& destImage) noexcept
     {
         assert(srcImage.width == destImage.width);
         assert(srcImage.height == destImage.height);
@@ -4749,17 +4749,17 @@ namespace
         {
         case DXGI_FORMAT_NV12:
             assert(destImage.format == DXGI_FORMAT_YUY2);
-            CONVERT_420_TO_422(uint8_t, XMUBYTEN4);
+            CONVERT_420_TO_422(uint8_t, XMUBYTEN4)
             return S_OK;
 
         case DXGI_FORMAT_P010:
             assert(destImage.format == DXGI_FORMAT_Y210);
-            CONVERT_420_TO_422(uint16_t, XMUSHORTN4);
+            CONVERT_420_TO_422(uint16_t, XMUSHORTN4)
             return S_OK;
 
         case DXGI_FORMAT_P016:
             assert(destImage.format == DXGI_FORMAT_Y216);
-            CONVERT_420_TO_422(uint16_t, XMUSHORTN4);
+            CONVERT_420_TO_422(uint16_t, XMUSHORTN4)
             return S_OK;
 
         case DXGI_FORMAT_NV11:
@@ -5039,7 +5039,7 @@ HRESULT DirectX::Convert(
 // Convert image from planar to single plane (image)
 //-------------------------------------------------------------------------------------
 _Use_decl_annotations_
-HRESULT DirectX::ConvertToSinglePlane(const Image& srcImage, ScratchImage& image)
+HRESULT DirectX::ConvertToSinglePlane(const Image& srcImage, ScratchImage& image) noexcept
 {
     if (!IsPlanar(srcImage.format))
         return E_INVALIDARG;
@@ -5084,7 +5084,7 @@ HRESULT DirectX::ConvertToSinglePlane(
     const Image* srcImages,
     size_t nimages,
     const TexMetadata& metadata,
-    ScratchImage& result)
+    ScratchImage& result) noexcept
 {
     if (!srcImages || !nimages)
         return E_INVALIDARG;

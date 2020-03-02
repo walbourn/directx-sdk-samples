@@ -17,6 +17,11 @@
 namespace ABI { namespace Windows { namespace UI { namespace Core { struct ICoreWindow; } } } }
 #endif
 
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunknown-pragmas"
+#endif
+
 
 namespace DirectX
 {
@@ -399,7 +404,7 @@ namespace DirectX
             bool OemClear : 1;          // VK_OEM_CLEAR, 0xFE
             bool Reserved26: 1;
 
-            bool __cdecl IsKeyDown(Keys key) const
+            bool __cdecl IsKeyDown(Keys key) const noexcept
             {
                 if (key <= 0xfe)
                 {
@@ -410,7 +415,7 @@ namespace DirectX
                 return false;
             }
 
-            bool __cdecl IsKeyUp(Keys key) const
+            bool __cdecl IsKeyUp(Keys key) const noexcept
             {
                 if (key <= 0xfe)
                 {
@@ -431,14 +436,14 @@ namespace DirectX
             #pragma prefast(suppress: 26495, "Reset() performs the initialization")
             KeyboardStateTracker() noexcept { Reset(); }
 
-            void __cdecl Update(const State& state);
+            void __cdecl Update(const State& state) noexcept;
 
             void __cdecl Reset() noexcept;
 
-            bool __cdecl IsKeyPressed(Keys key) const { return pressed.IsKeyDown(key); }
-            bool __cdecl IsKeyReleased(Keys key) const { return released.IsKeyDown(key); }
+            bool __cdecl IsKeyPressed(Keys key) const noexcept { return pressed.IsKeyDown(key); }
+            bool __cdecl IsKeyReleased(Keys key) const noexcept { return released.IsKeyDown(key); }
 
-            State __cdecl GetLastState() const { return lastState; }
+            State __cdecl GetLastState() const noexcept { return lastState; }
 
         public:
             State lastState;
@@ -448,7 +453,7 @@ namespace DirectX
         State __cdecl GetState() const;
 
         // Reset the keyboard state
-        void __cdecl Reset();
+        void __cdecl Reset() noexcept;
 
         // Feature detection
         bool __cdecl IsConnected() const;
@@ -485,3 +490,7 @@ namespace DirectX
         std::unique_ptr<Impl> pImpl;
     };
 }
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif

@@ -70,6 +70,10 @@ namespace
         { DXGI_FORMAT_BC4_UNORM,          CONV_FLAGS_NONE,        { sizeof(DDS_PIXELFORMAT), DDS_FOURCC, MAKEFOURCC('A', 'T', 'I', '1'), 0, 0, 0, 0, 0 } },
         { DXGI_FORMAT_BC5_UNORM,          CONV_FLAGS_NONE,        { sizeof(DDS_PIXELFORMAT), DDS_FOURCC, MAKEFOURCC('A', 'T', 'I', '2'), 0, 0, 0, 0, 0 } },
 
+        { DXGI_FORMAT_BC6H_UF16,          CONV_FLAGS_NONE,        { sizeof(DDS_PIXELFORMAT), DDS_FOURCC, MAKEFOURCC('B', 'C', '6', 'H'), 0, 0, 0, 0, 0 } },
+        { DXGI_FORMAT_BC7_UNORM,          CONV_FLAGS_NONE,        { sizeof(DDS_PIXELFORMAT), DDS_FOURCC, MAKEFOURCC('B', 'C', '7', 'L'), 0, 0, 0, 0, 0 } },
+        { DXGI_FORMAT_BC7_UNORM,          CONV_FLAGS_NONE,        { sizeof(DDS_PIXELFORMAT), DDS_FOURCC, MAKEFOURCC('B', 'C', '7', '\0'), 0, 0, 0, 0, 0 } },
+
         { DXGI_FORMAT_R8G8_B8G8_UNORM,    CONV_FLAGS_NONE,        DDSPF_R8G8_B8G8 }, // D3DFMT_R8G8_B8G8
         { DXGI_FORMAT_G8R8_G8B8_UNORM,    CONV_FLAGS_NONE,        DDSPF_G8R8_G8B8 }, // D3DFMT_G8R8_G8B8
 
@@ -151,7 +155,7 @@ namespace
     //      FourCC CTX1 (Xbox 360 only)
     //      FourCC EAR, EARG, ET2, ET2A (Ericsson Texture Compression)
 
-    DXGI_FORMAT GetDXGIFormat(const DDS_HEADER& hdr, const DDS_PIXELFORMAT& ddpf, DWORD flags, _Inout_ DWORD& convFlags)
+    DXGI_FORMAT GetDXGIFormat(const DDS_HEADER& hdr, const DDS_PIXELFORMAT& ddpf, DWORD flags, _Inout_ DWORD& convFlags) noexcept
     {
         uint32_t ddpfFlags = ddpf.flags;
         if (hdr.reserved1[9] == MAKEFOURCC('N', 'V', 'T', 'T'))
@@ -269,7 +273,7 @@ namespace
         size_t size,
         DWORD flags,
         _Out_ TexMetadata& metadata,
-        _Inout_ DWORD& convFlags)
+        _Inout_ DWORD& convFlags) noexcept
     {
         if (!pSource)
             return E_INVALIDARG;
@@ -424,9 +428,6 @@ namespace
             if (metadata.format == DXGI_FORMAT_UNKNOWN)
                 return HRESULT_FROM_WIN32(ERROR_NOT_SUPPORTED);
 
-            if (convFlags & CONV_FLAGS_PMALPHA)
-                metadata.miscFlags2 |= TEX_ALPHA_MODE_PREMULTIPLIED;
-
             // Special flag for handling LUMINANCE legacy formats
             if (flags & DDS_FLAGS_EXPAND_LUMINANCE)
             {
@@ -512,6 +513,16 @@ namespace
             }
         }
 
+        // Implicit alpha mode
+        if (convFlags & CONV_FLAGS_NOALPHA)
+        {
+            metadata.SetAlphaMode(TEX_ALPHA_MODE_OPAQUE);
+        }
+        else if (convFlags & CONV_FLAGS_PMALPHA)
+        {
+            metadata.SetAlphaMode(TEX_ALPHA_MODE_PREMULTIPLIED);
+        }
+
         return S_OK;
     }
 }
@@ -526,7 +537,7 @@ HRESULT DirectX::_EncodeDDSHeader(
     DWORD flags,
     void* pDestination,
     size_t maxsize,
-    size_t& required)
+    size_t& required) noexcept
 {
     if (!IsValid(metadata.format))
         return E_INVALIDARG;
@@ -779,7 +790,7 @@ namespace
         TEXP_LEGACY_A8L8
     };
 
-    inline TEXP_LEGACY_FORMAT _FindLegacyFormat(DWORD flags)
+    inline TEXP_LEGACY_FORMAT _FindLegacyFormat(DWORD flags) noexcept
     {
         TEXP_LEGACY_FORMAT lformat = TEXP_LEGACY_UNKNOWN;
 
@@ -816,7 +827,7 @@ namespace
             size_t inSize,
             _In_ TEXP_LEGACY_FORMAT inFormat,
             _In_reads_opt_(256) const uint32_t* pal8,
-            _In_ DWORD flags)
+            _In_ DWORD flags) noexcept
     {
         assert(pDestination && outSize > 0);
         assert(pSource && inSize > 0);
@@ -1124,7 +1135,7 @@ namespace
         _In_ DWORD cpFlags,
         _In_ DWORD convFlags,
         _In_reads_opt_(256) const uint32_t *pal8,
-        _In_ const ScratchImage& image)
+        _In_ const ScratchImage& image) noexcept
     {
         assert(pPixels);
         assert(image.GetPixels());
@@ -1392,7 +1403,7 @@ namespace
         return S_OK;
     }
 
-    HRESULT CopyImageInPlace(DWORD convFlags, _In_ const ScratchImage& image)
+    HRESULT CopyImageInPlace(DWORD convFlags, _In_ const ScratchImage& image) noexcept
     {
         if (!image.GetPixels())
             return E_FAIL;
@@ -1452,7 +1463,7 @@ HRESULT DirectX::GetMetadataFromDDSMemory(
     const void* pSource,
     size_t size,
     DWORD flags,
-    TexMetadata& metadata)
+    TexMetadata& metadata) noexcept
 {
     if (!pSource || size == 0)
         return E_INVALIDARG;
@@ -1465,7 +1476,7 @@ _Use_decl_annotations_
 HRESULT DirectX::GetMetadataFromDDSFile(
     const wchar_t* szFile,
     DWORD flags,
-    TexMetadata& metadata)
+    TexMetadata& metadata) noexcept
 {
     if (!szFile)
         return E_INVALIDARG;
@@ -1524,7 +1535,7 @@ HRESULT DirectX::LoadFromDDSMemory(
     size_t size,
     DWORD flags,
     TexMetadata* metadata,
-    ScratchImage& image)
+    ScratchImage& image) noexcept
 {
     if (!pSource || size == 0)
         return E_INVALIDARG;
@@ -1596,7 +1607,7 @@ HRESULT DirectX::LoadFromDDSFile(
     const wchar_t* szFile,
     DWORD flags,
     TexMetadata* metadata,
-    ScratchImage& image)
+    ScratchImage& image) noexcept
 {
     if (!szFile)
         return E_INVALIDARG;
@@ -1786,7 +1797,7 @@ HRESULT DirectX::SaveToDDSMemory(
     size_t nimages,
     const TexMetadata& metadata,
     DWORD flags,
-    Blob& blob)
+    Blob& blob) noexcept
 {
     if (!images || (nimages == 0))
         return E_INVALIDARG;
@@ -2014,7 +2025,7 @@ HRESULT DirectX::SaveToDDSFile(
     size_t nimages,
     const TexMetadata& metadata,
     DWORD flags,
-    const wchar_t* szFile)
+    const wchar_t* szFile) noexcept
 {
     if (!szFile)
         return E_INVALIDARG;

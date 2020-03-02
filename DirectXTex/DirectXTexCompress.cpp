@@ -22,7 +22,7 @@ using namespace DirectX;
 
 namespace
 {
-    inline DWORD GetBCFlags(_In_ DWORD compress)
+    inline DWORD GetBCFlags(_In_ DWORD compress) noexcept
     {
         static_assert(static_cast<int>(TEX_COMPRESS_RGB_DITHER) == static_cast<int>(BC_FLAGS_DITHER_RGB), "TEX_COMPRESS_* flags should match BC_FLAGS_*");
         static_assert(static_cast<int>(TEX_COMPRESS_A_DITHER) == static_cast<int>(BC_FLAGS_DITHER_A), "TEX_COMPRESS_* flags should match BC_FLAGS_*");
@@ -33,7 +33,7 @@ namespace
         return (compress & (BC_FLAGS_DITHER_RGB | BC_FLAGS_DITHER_A | BC_FLAGS_UNIFORM | BC_FLAGS_USE_3SUBSETS | BC_FLAGS_FORCE_BC7_MODE6));
     }
 
-    inline DWORD GetSRGBFlags(_In_ DWORD compress)
+    inline DWORD GetSRGBFlags(_In_ DWORD compress) noexcept
     {
         static_assert(static_cast<int>(TEX_COMPRESS_SRGB_IN) == static_cast<int>(TEX_FILTER_SRGB_IN), "TEX_COMPRESS_SRGB* should match TEX_FILTER_SRGB*");
         static_assert(static_cast<int>(TEX_COMPRESS_SRGB_OUT) == static_cast<int>(TEX_FILTER_SRGB_OUT), "TEX_COMPRESS_SRGB* should match TEX_FILTER_SRGB*");
@@ -41,7 +41,7 @@ namespace
         return (compress & TEX_COMPRESS_SRGB);
     }
 
-    inline bool DetermineEncoderSettings(_In_ DXGI_FORMAT format, _Out_ BC_ENCODE& pfEncode, _Out_ size_t& blocksize, _Out_ DWORD& cflags)
+    inline bool DetermineEncoderSettings(_In_ DXGI_FORMAT format, _Out_ BC_ENCODE& pfEncode, _Out_ size_t& blocksize, _Out_ DWORD& cflags) noexcept
     {
         switch (format)
         {
@@ -250,12 +250,12 @@ namespace
             assert((y >= 0) && (y < int(image.height)));
 
             size_t rowPitch = image.rowPitch;
-            const uint8_t *pSrc = image.pixels + (y*rowPitch) + (x*sbpp);
+            const uint8_t *pSrc = image.pixels + (size_t(y)*rowPitch) + (size_t(x)*sbpp);
 
-            uint8_t *pDest = result.pixels + (nb*blocksize);
+            uint8_t *pDest = result.pixels + (size_t(nb)*blocksize);
 
-            size_t ph = std::min<size_t>(4, image.height - y);
-            size_t pw = std::min<size_t>(4, image.width - x);
+            size_t ph = std::min<size_t>(4, image.height - size_t(y));
+            size_t pw = std::min<size_t>(4, image.width - size_t(x));
             assert(pw > 0 && ph > 0);
 
             ptrdiff_t bytesLeft = pEnd - pSrc;
@@ -268,19 +268,19 @@ namespace
 
             if (ph > 1)
             {
-                bytesToRead = std::min<size_t>(rowPitch, size_t(bytesLeft - rowPitch));
+                bytesToRead = std::min<size_t>(rowPitch, size_t(bytesLeft) - rowPitch);
                 if (!_LoadScanline(&temp[4], pw, pSrc + rowPitch, bytesToRead, format))
                     fail = true;
 
                 if (ph > 2)
                 {
-                    bytesToRead = std::min<size_t>(rowPitch, size_t(bytesLeft - rowPitch * 2));
+                    bytesToRead = std::min<size_t>(rowPitch, size_t(bytesLeft) - rowPitch * 2);
                     if (!_LoadScanline(&temp[8], pw, pSrc + rowPitch * 2, bytesToRead, format))
                         fail = true;
 
                     if (ph > 3)
                     {
-                        bytesToRead = std::min<size_t>(rowPitch, size_t(bytesLeft - rowPitch * 3));
+                        bytesToRead = std::min<size_t>(rowPitch, size_t(bytesLeft) - rowPitch * 3);
                         if (!_LoadScanline(&temp[12], pw, pSrc + rowPitch * 3, bytesToRead, format))
                             fail = true;
                     }
@@ -329,7 +329,7 @@ namespace
 
 
     //-------------------------------------------------------------------------------------
-    DXGI_FORMAT DefaultDecompress(_In_ DXGI_FORMAT format)
+    DXGI_FORMAT DefaultDecompress(_In_ DXGI_FORMAT format) noexcept
     {
         switch (format)
         {
@@ -493,10 +493,10 @@ namespace
 //-------------------------------------------------------------------------------------
 namespace DirectX
 {
-    bool _IsAlphaAllOpaqueBC(_In_ const Image& cImage);
+    bool _IsAlphaAllOpaqueBC(_In_ const Image& cImage) noexcept;
         // Also used by Image
 
-    bool _IsAlphaAllOpaqueBC(_In_ const Image& cImage)
+    bool _IsAlphaAllOpaqueBC(_In_ const Image& cImage) noexcept
     {
         if (!cImage.pixels)
             return false;
@@ -727,7 +727,7 @@ _Use_decl_annotations_
 HRESULT DirectX::Decompress(
     const Image& cImage,
     DXGI_FORMAT format,
-    ScratchImage& image)
+    ScratchImage& image) noexcept
 {
     if (!IsCompressed(cImage.format) || IsCompressed(format))
         return E_INVALIDARG;
@@ -777,7 +777,7 @@ HRESULT DirectX::Decompress(
     size_t nimages,
     const TexMetadata& metadata,
     DXGI_FORMAT format,
-    ScratchImage& images)
+    ScratchImage& images) noexcept
 {
     if (!cImages || !nimages)
         return E_INVALIDARG;

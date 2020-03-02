@@ -44,7 +44,7 @@ namespace
         _In_ DXGI_FORMAT fmt,
         _In_ size_t height,
         _In_ size_t slicePlane,
-        _Inout_ T& res)
+        _Inout_ T& res) noexcept
     {
         switch (static_cast<int>(fmt))
         {
@@ -119,7 +119,7 @@ namespace
         UINT& numberOfPlanes,
         UINT& numberOfResources,
         D3D12_RESOURCE_STATES beforeState,
-        D3D12_RESOURCE_STATES afterState)
+        D3D12_RESOURCE_STATES afterState) noexcept
     {
         if (!pCommandQ || !pSource)
             return E_INVALIDARG;
@@ -152,7 +152,9 @@ namespace
         if (memAlloc > SIZE_MAX)
             return E_UNEXPECTED;
 
-        layoutBuff.reset(new uint8_t[memAlloc]);
+        layoutBuff.reset(new (std::nothrow) uint8_t[memAlloc]);
+        if (!layoutBuff)
+            return E_OUTOFMEMORY;
 
         auto pLayout = reinterpret_cast<D3D12_PLACED_SUBRESOURCE_FOOTPRINT*>(layoutBuff.get());
         auto pRowSizesInBytes = reinterpret_cast<UINT64*>(pLayout + numberOfResources);
@@ -314,7 +316,7 @@ namespace
 _Use_decl_annotations_
 bool DirectX::IsSupportedTexture(
     ID3D12Device* pDevice,
-    const TexMetadata& metadata)
+    const TexMetadata& metadata) noexcept
 {
     if (!pDevice)
         return false;
@@ -426,7 +428,7 @@ _Use_decl_annotations_
 HRESULT DirectX::CreateTexture(
     ID3D12Device* pDevice,
     const TexMetadata& metadata,
-    ID3D12Resource** ppResource)
+    ID3D12Resource** ppResource) noexcept
 {
     return CreateTextureEx(
         pDevice, metadata,
@@ -440,7 +442,7 @@ HRESULT DirectX::CreateTextureEx(
     const TexMetadata& metadata,
     D3D12_RESOURCE_FLAGS resFlags,
     bool forceSRGB,
-    ID3D12Resource** ppResource)
+    ID3D12Resource** ppResource) noexcept
 {
     if (!pDevice || !ppResource)
         return E_INVALIDARG;
@@ -644,7 +646,7 @@ HRESULT DirectX::CaptureTexture(
     bool isCubeMap,
     ScratchImage& result,
     D3D12_RESOURCE_STATES beforeState,
-    D3D12_RESOURCE_STATES afterState)
+    D3D12_RESOURCE_STATES afterState) noexcept
 {
     if (!pCommandQueue || !pSource)
         return E_INVALIDARG;

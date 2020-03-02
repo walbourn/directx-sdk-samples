@@ -34,8 +34,8 @@ public:
     void CreateTexture(_In_z_ const wchar_t* texture, _In_opt_ ID3D11DeviceContext* deviceContext, _Outptr_ ID3D11ShaderResourceView** textureView);
 
     void ReleaseCache();
-    void SetSharing(bool enabled) { mSharing = enabled; }
-    void EnableForceSRGB(bool forceSRGB) { mForceSRGB = forceSRGB; }
+    void SetSharing(bool enabled) noexcept { mSharing = enabled; }
+    void EnableForceSRGB(bool forceSRGB) noexcept { mForceSRGB = forceSRGB; }
 
     static SharedResourcePool<ID3D11Device*, Impl> instancePool;
 
@@ -44,8 +44,8 @@ public:
     ComPtr<ID3D11Device> mDevice;
 
 private:
-    typedef std::map< std::wstring, std::shared_ptr<IEffect> > EffectCache;
-    typedef std::map< std::wstring, ComPtr<ID3D11ShaderResourceView> > TextureCache;
+    using EffectCache = std::map< std::wstring, std::shared_ptr<IEffect> >;
+    using TextureCache = std::map< std::wstring, ComPtr<ID3D11ShaderResourceView> >;
 
     EffectCache  mEffectCache;
     TextureCache mTextureCache;
@@ -170,7 +170,8 @@ void PBREffectFactory::Impl::CreateTexture(const wchar_t* name, ID3D11DeviceCont
                 mForceSRGB, nullptr, textureView);
             if (FAILED(hr))
             {
-                DebugTrace("ERROR: CreateDDSTextureFromFile failed (%08X) for '%ls'\n", hr, fullName);
+                DebugTrace("ERROR: CreateDDSTextureFromFile failed (%08X) for '%ls'\n",
+                    static_cast<unsigned int>(hr), fullName);
                 throw std::exception("CreateDDSTextureFromFile");
             }
         }
@@ -184,7 +185,8 @@ void PBREffectFactory::Impl::CreateTexture(const wchar_t* name, ID3D11DeviceCont
                 mForceSRGB ? WIC_LOADER_FORCE_SRGB : WIC_LOADER_DEFAULT, nullptr, textureView);
             if (FAILED(hr))
             {
-                DebugTrace("ERROR: CreateWICTextureFromFile failed (%08X) for '%ls'\n", hr, fullName);
+                DebugTrace("ERROR: CreateWICTextureFromFile failed (%08X) for '%ls'\n",
+                    static_cast<unsigned int>(hr), fullName);
                 throw std::exception("CreateWICTextureFromFile");
             }
         }
@@ -197,7 +199,8 @@ void PBREffectFactory::Impl::CreateTexture(const wchar_t* name, ID3D11DeviceCont
                 mForceSRGB ? WIC_LOADER_FORCE_SRGB : WIC_LOADER_DEFAULT, nullptr, textureView);
             if (FAILED(hr))
             {
-                DebugTrace("ERROR: CreateWICTextureFromFile failed (%08X) for '%ls'\n", hr, fullName);
+                DebugTrace("ERROR: CreateWICTextureFromFile failed (%08X) for '%ls'\n",
+                    static_cast<unsigned int>(hr), fullName);
                 throw std::exception("CreateWICTextureFromFile");
             }
         }
@@ -262,17 +265,17 @@ void PBREffectFactory::ReleaseCache()
     pImpl->ReleaseCache();
 }
 
-void PBREffectFactory::SetSharing(bool enabled)
+void PBREffectFactory::SetSharing(bool enabled) noexcept
 {
     pImpl->SetSharing(enabled);
 }
 
-void PBREffectFactory::EnableForceSRGB(bool forceSRGB)
+void PBREffectFactory::EnableForceSRGB(bool forceSRGB) noexcept
 {
     pImpl->EnableForceSRGB(forceSRGB);
 }
 
-void PBREffectFactory::SetDirectory(_In_opt_z_ const wchar_t* path)
+void PBREffectFactory::SetDirectory(_In_opt_z_ const wchar_t* path) noexcept
 {
     if (path && *path != 0)
     {
@@ -292,7 +295,7 @@ void PBREffectFactory::SetDirectory(_In_opt_z_ const wchar_t* path)
         *pImpl->mPath = 0;
 }
 
-ID3D11Device* PBREffectFactory::GetDevice() const
+ID3D11Device* PBREffectFactory::GetDevice() const noexcept
 {
     return pImpl->mDevice.Get();
 }

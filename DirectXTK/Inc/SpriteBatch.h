@@ -13,6 +13,7 @@
 #include <d3d11_x.h>
 #else
 #include <d3d11_1.h>
+#include <dxgi.h>
 #endif
 
 #include <DirectXMath.h>
@@ -75,7 +76,7 @@ namespace DirectX
 
         // Rotation mode to be applied to the sprite transformation
         void __cdecl SetRotation(DXGI_MODE_ROTATION mode);
-        DXGI_MODE_ROTATION __cdecl GetRotation() const;
+        DXGI_MODE_ROTATION __cdecl GetRotation() const noexcept;
 
         // Set viewport for sprite transformation
         void __cdecl SetViewport(const D3D11_VIEWPORT& viewPort);

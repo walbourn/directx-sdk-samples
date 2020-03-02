@@ -17,7 +17,7 @@ namespace
 {
     //---------------------------------------------------------------------------------
     // NonPremultiplied alpha -> Premultiplied alpha
-    HRESULT PremultiplyAlpha_(const Image& srcImage, const Image& destImage)
+    HRESULT PremultiplyAlpha_(const Image& srcImage, const Image& destImage) noexcept
     {
         assert(srcImage.width == destImage.width);
         assert(srcImage.height == destImage.height);
@@ -55,7 +55,7 @@ namespace
         return S_OK;
     }
 
-    HRESULT PremultiplyAlphaLinear(const Image& srcImage, DWORD flags, const Image& destImage)
+    HRESULT PremultiplyAlphaLinear(const Image& srcImage, DWORD flags, const Image& destImage) noexcept
     {
         assert(srcImage.width == destImage.width);
         assert(srcImage.height == destImage.height);
@@ -100,7 +100,7 @@ namespace
 
     //---------------------------------------------------------------------------------
     // Premultiplied alpha -> NonPremultiplied alpha (a.k.a. Straight alpha)
-    HRESULT DemultiplyAlpha(const Image& srcImage, const Image& destImage)
+    HRESULT DemultiplyAlpha(const Image& srcImage, const Image& destImage) noexcept
     {
         assert(srcImage.width == destImage.width);
         assert(srcImage.height == destImage.height);
@@ -124,7 +124,10 @@ namespace
             {
                 XMVECTOR v = *ptr;
                 XMVECTOR alpha = XMVectorSplatW(*ptr);
-                alpha = XMVectorDivide(v, alpha);
+                if (XMVectorGetX(alpha) > 0)
+                {
+                    alpha = XMVectorDivide(v, alpha);
+                }
                 *(ptr++) = XMVectorSelect(v, alpha, g_XMSelect1110);
             }
 
@@ -138,14 +141,14 @@ namespace
         return S_OK;
     }
 
-    HRESULT DemultiplyAlphaLinear(const Image& srcImage, DWORD flags, const Image& destImage)
+    HRESULT DemultiplyAlphaLinear(const Image& srcImage, DWORD flags, const Image& destImage) noexcept
     {
         assert(srcImage.width == destImage.width);
         assert(srcImage.height == destImage.height);
 
-        static_assert(static_cast<int>(TEX_PMALPHA_SRGB_IN) == static_cast<int>(TEX_FILTER_SRGB_IN), "TEX_PMALHPA_SRGB* should match TEX_FILTER_SRGB*");
-        static_assert(static_cast<int>(TEX_PMALPHA_SRGB_OUT) == static_cast<int>(TEX_FILTER_SRGB_OUT), "TEX_PMALHPA_SRGB* should match TEX_FILTER_SRGB*");
-        static_assert(static_cast<int>(TEX_PMALPHA_SRGB) == static_cast<int>(TEX_FILTER_SRGB), "TEX_PMALHPA_SRGB* should match TEX_FILTER_SRGB*");
+        static_assert(static_cast<int>(TEX_PMALPHA_SRGB_IN) == static_cast<int>(TEX_FILTER_SRGB_IN), "TEX_PMALPHA_SRGB* should match TEX_FILTER_SRGB*");
+        static_assert(static_cast<int>(TEX_PMALPHA_SRGB_OUT) == static_cast<int>(TEX_FILTER_SRGB_OUT), "TEX_PMALPHA_SRGB* should match TEX_FILTER_SRGB*");
+        static_assert(static_cast<int>(TEX_PMALPHA_SRGB) == static_cast<int>(TEX_FILTER_SRGB), "TEX_PMALPHA_SRGB* should match TEX_FILTER_SRGB*");
         flags &= TEX_PMALPHA_SRGB;
 
         ScopedAlignedArrayXMVECTOR scanline(static_cast<XMVECTOR*>(_aligned_malloc((sizeof(XMVECTOR)*srcImage.width), 16)));
@@ -167,7 +170,10 @@ namespace
             {
                 XMVECTOR v = *ptr;
                 XMVECTOR alpha = XMVectorSplatW(*ptr);
-                alpha = XMVectorDivide(v, alpha);
+                if (XMVectorGetX(alpha) > 0)
+                {
+                    alpha = XMVectorDivide(v, alpha);
+                }
                 *(ptr++) = XMVectorSelect(v, alpha, g_XMSelect1110);
             }
 
@@ -194,7 +200,7 @@ _Use_decl_annotations_
 HRESULT DirectX::PremultiplyAlpha(
     const Image& srcImage,
     DWORD flags,
-    ScratchImage& image)
+    ScratchImage& image) noexcept
 {
     if (!srcImage.pixels)
         return E_POINTER;
@@ -247,7 +253,7 @@ HRESULT DirectX::PremultiplyAlpha(
     size_t nimages,
     const TexMetadata& metadata,
     DWORD flags,
-    ScratchImage& result)
+    ScratchImage& result) noexcept
 {
     if (!srcImages || !nimages)
         return E_INVALIDARG;

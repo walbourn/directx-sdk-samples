@@ -1,7 +1,0 @@
-BMP
-JPG
-PNG
-DDS
-TIFF
-TGA
-WDP

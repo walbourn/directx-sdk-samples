@@ -126,7 +126,7 @@ public:
         }
     }
 
-    void ResetScrollWheelValue()
+    void ResetScrollWheelValue() noexcept
     {
         SetEvent(mScrollWheelValue.get());
     }
@@ -151,7 +151,7 @@ public:
         }
     }
 
-    bool IsConnected() const
+    bool IsConnected() const noexcept
     {
         return GetSystemMetrics(SM_MOUSEPRESENT) != 0;
     }
@@ -232,7 +232,7 @@ private:
 
     friend void Mouse::ProcessMessage(UINT message, WPARAM wParam, LPARAM lParam);
 
-    void ClipToWindow()
+    void ClipToWindow() noexcept
     {
         assert(mWindow != nullptr);
 
@@ -510,7 +510,7 @@ public:
         memset(&state, 0, sizeof(State));
     }
 
-    void ResetScrollWheelValue()
+    void ResetScrollWheelValue() noexcept
     {
     }
 
@@ -634,7 +634,7 @@ public:
         state.positionMode = mMode;
     }
 
-    void ResetScrollWheelValue()
+    void ResetScrollWheelValue() noexcept
     {
         SetEvent(mScrollWheelValue.get());
     }
@@ -1052,7 +1052,7 @@ Mouse::State Mouse::GetState() const
 }
 
 
-void Mouse::ResetScrollWheelValue()
+void Mouse::ResetScrollWheelValue() noexcept
 {
     pImpl->ResetScrollWheelValue();
 }
@@ -1095,19 +1095,19 @@ Mouse& Mouse::Get()
 
 #define UPDATE_BUTTON_STATE(field) field = static_cast<ButtonState>( ( !!state.field ) | ( ( !!state.field ^ !!lastState.field ) << 1 ) );
 
-void Mouse::ButtonStateTracker::Update(const Mouse::State& state)
+void Mouse::ButtonStateTracker::Update(const Mouse::State& state) noexcept
 {
-    UPDATE_BUTTON_STATE(leftButton);
+    UPDATE_BUTTON_STATE(leftButton)
 
     assert((!state.leftButton && !lastState.leftButton) == (leftButton == UP));
     assert((state.leftButton && lastState.leftButton) == (leftButton == HELD));
     assert((!state.leftButton && lastState.leftButton) == (leftButton == RELEASED));
     assert((state.leftButton && !lastState.leftButton) == (leftButton == PRESSED));
 
-    UPDATE_BUTTON_STATE(middleButton);
-    UPDATE_BUTTON_STATE(rightButton);
-    UPDATE_BUTTON_STATE(xButton1);
-    UPDATE_BUTTON_STATE(xButton2);
+    UPDATE_BUTTON_STATE(middleButton)
+    UPDATE_BUTTON_STATE(rightButton)
+    UPDATE_BUTTON_STATE(xButton1)
+    UPDATE_BUTTON_STATE(xButton2)
 
     lastState = state;
 }

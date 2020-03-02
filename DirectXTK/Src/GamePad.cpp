@@ -21,7 +21,7 @@ namespace
 {
     const float c_XboxOneThumbDeadZone = .24f;  // Recommended Xbox One controller deadzone
 
-    float ApplyLinearDeadZone(float value, float maxValue, float deadZoneSize)
+    float ApplyLinearDeadZone(float value, float maxValue, float deadZoneSize) noexcept
     {
         if (value < -deadZoneSize)
         {
@@ -44,8 +44,14 @@ namespace
         return std::max(-1.f, std::min(scaledValue, 1.f));
     }
 
-    void ApplyStickDeadZone(float x, float y, GamePad::DeadZone deadZoneMode, float maxValue, float deadZoneSize,
-                            _Out_ float& resultX, _Out_ float& resultY)
+    void ApplyStickDeadZone(
+        float x,
+        float y,
+        GamePad::DeadZone deadZoneMode,
+        float maxValue,
+        float deadZoneSize,
+        _Out_ float& resultX,
+        _Out_ float& resultY) noexcept
     {
         switch (deadZoneMode)
         {
@@ -82,7 +88,7 @@ namespace
 //======================================================================================
 
 #pragma warning(push)
-#pragma warning(disable : 4471)
+#pragma warning(disable : 4471 5204)
 #include <windows.gaming.input.h>
 #pragma warning(pop)
 
@@ -228,6 +234,8 @@ public:
     void GetCapabilities(int player, Capabilities& caps)
     {
         using namespace Microsoft::WRL;
+        using namespace Microsoft::WRL::Wrappers;
+        using namespace ABI::Windows::Foundation;
         using namespace ABI::Windows::System;
         using namespace ABI::Windows::Gaming::Input;
 
@@ -246,6 +254,7 @@ public:
                 caps.connected = true;
                 caps.gamepadType = Capabilities::GAMEPAD;
                 caps.id.clear();
+                caps.vid = caps.pid = 0;
 
                 ComPtr<IGameController> ctrl;
                 HRESULT hr = mGamePad[player].As(&ctrl);
@@ -255,13 +264,32 @@ public:
                     hr = ctrl->get_User(user.GetAddressOf());
                     if (SUCCEEDED(hr) && user != nullptr)
                     {
-                        Wrappers::HString str;
+                        HString str;
                         hr = user->get_NonRoamableId(str.GetAddressOf());
                         if (SUCCEEDED(hr))
                         {
                             caps.id = str.GetRawBuffer(nullptr);
                         }
                     }
+
+                // Requires the Windows 10 Creators Update SDK (15063)
+                #if defined(NTDDI_WIN10_RS2) && (NTDDI_VERSION >= NTDDI_WIN10_RS2)
+                    ComPtr<IRawGameControllerStatics> rawStatics;
+                    hr = GetActivationFactory(HStringReference(RuntimeClass_Windows_Gaming_Input_RawGameController).Get(), rawStatics.GetAddressOf());
+                    if (SUCCEEDED(hr))
+                    {
+                        ComPtr<IRawGameController> raw;
+                        hr = rawStatics->FromGameController(ctrl.Get(), raw.GetAddressOf());
+                        if (SUCCEEDED(hr) && raw)
+                        {
+                            if (FAILED(raw->get_HardwareVendorId(&caps.vid)))
+                                caps.vid = 0;
+
+                            if (FAILED(raw->get_HardwareProductId(&caps.pid)))
+                                caps.pid = 0;
+                        }
+                    }
+                #endif // NTDDI_WIN10_RS2
                 }
                 return;
             }
@@ -271,7 +299,7 @@ public:
         caps = {};
     }
 
-    bool SetVibration(int player, float leftMotor, float rightMotor, float leftTrigger, float rightTrigger)
+    bool SetVibration(int player, float leftMotor, float rightMotor, float leftTrigger, float rightTrigger) noexcept
     {
         using namespace ABI::Windows::Gaming::Input;
 
@@ -297,7 +325,7 @@ public:
         return false;
     }
 
-    void Suspend()
+    void Suspend() noexcept
     {
         for (size_t j = 0; j < MAX_PLAYER_COUNT; ++j)
         {
@@ -305,7 +333,7 @@ public:
         }
     }
 
-    void Resume()
+    void Resume() noexcept
     {
         // Make sure we rescan gamepads
         SetEvent(mChanged.get());
@@ -691,6 +719,8 @@ public:
             {
                 caps.connected = true;
                 caps.gamepadType = Capabilities::UNKNOWN;
+                caps.id = 0;
+                caps.vid = caps.pid = 0;
 
                 ComPtr<IController> ctrl;
                 HRESULT hr = mGamePad[player].As(&ctrl);
@@ -719,8 +749,19 @@ public:
                         }
                     }
                 }
-                else
-                    caps.id = 0;
+
+            #if _XDK_VER >= 0x42ED07E4 /* XDK Edition 180400 */
+                ComPtr<IController3> ctrl3;
+                hr = mGamePad[player].As(&ctrl3);
+                if (SUCCEEDED(hr) && ctrl3)
+                {
+                    if (FAILED(ctrl3->get_HardwareVendorId(&caps.vid)))
+                        caps.vid = 0;
+
+                    if (FAILED(ctrl3->get_HardwareProductId(&caps.pid)))
+                        caps.pid = 0;
+                }
+            #endif
 
                 return;
             }
@@ -729,7 +770,7 @@ public:
         memset(&caps, 0, sizeof(Capabilities));
     }
 
-    bool SetVibration(int player, float leftMotor, float rightMotor, float leftTrigger, float rightTrigger)
+    bool SetVibration(int player, float leftMotor, float rightMotor, float leftTrigger, float rightTrigger) noexcept
     {
         using namespace ABI::Windows::Xbox::Input;
 
@@ -764,7 +805,7 @@ public:
         return false;
     }
 
-    void Suspend()
+    void Suspend() noexcept
     {
         for (size_t j = 0; j < MAX_PLAYER_COUNT; ++j)
         {
@@ -772,7 +813,7 @@ public:
         }
     }
 
-    void Resume()
+    void Resume() noexcept
     {
         // Make sure we rescan gamepads
         SetEvent(mChanged.get());
@@ -1034,6 +1075,14 @@ public:
                     caps.gamepadType = Capabilities::Type(xcaps.SubType);
                 }
 
+                // Hard-coded VID/PID
+                caps.vid = 0x045E;
+            #if (_WIN32_WINNT >= _WIN32_WINNT_WIN8)
+                caps.pid = (xcaps.Flags & XINPUT_CAPS_WIRELESS) ? 0x0719 : 0;
+            #else
+                caps.pid = 0;
+            #endif
+
                 return;
             }
         }
@@ -1041,7 +1090,7 @@ public:
         memset(&caps, 0, sizeof(Capabilities));
     }
 
-    bool SetVibration(int player, float leftMotor, float rightMotor, float leftTrigger, float rightTrigger)
+    bool SetVibration(int player, float leftMotor, float rightMotor, float leftTrigger, float rightTrigger) noexcept
     {
         if (player == -1)
             player = GetMostRecent();
@@ -1085,7 +1134,7 @@ public:
         }
     }
 
-    void Suspend()
+    void Suspend() noexcept
     {
     #if (_WIN32_WINNT >= _WIN32_WINNT_WIN8)
         XInputEnable(FALSE);
@@ -1108,7 +1157,7 @@ public:
     #endif
     }
 
-    void Resume()
+    void Resume() noexcept
     {
     #if (_WIN32_WINNT >= _WIN32_WINNT_WIN8)
         XInputEnable(TRUE);
@@ -1262,26 +1311,26 @@ GamePad::Capabilities GamePad::GetCapabilities(int player)
 }
 
 
-bool GamePad::SetVibration(int player, float leftMotor, float rightMotor, float leftTrigger, float rightTrigger)
+bool GamePad::SetVibration(int player, float leftMotor, float rightMotor, float leftTrigger, float rightTrigger) noexcept
 {
     return pImpl->SetVibration(player, leftMotor, rightMotor, leftTrigger, rightTrigger);
 }
 
 
-void GamePad::Suspend()
+void GamePad::Suspend() noexcept
 {
     pImpl->Suspend();
 }
 
 
-void GamePad::Resume()
+void GamePad::Resume() noexcept
 {
     pImpl->Resume();
 }
 
 
-#if (_WIN32_WINNT >= 0x0A00 /*_WIN32_WINNT_WIN10*/ ) || defined(_XBOX_ONE)
-void GamePad::RegisterEvents(HANDLE ctrlChanged, HANDLE userChanged)
+#if (_WIN32_WINNT >= _WIN32_WINNT_WIN10) || defined(_XBOX_ONE)
+void GamePad::RegisterEvents(HANDLE ctrlChanged, HANDLE userChanged) noexcept
 {
     pImpl->mCtrlChanged = (!ctrlChanged) ? INVALID_HANDLE_VALUE : ctrlChanged;
     pImpl->mUserChanged = (!userChanged) ? INVALID_HANDLE_VALUE : userChanged;
@@ -1305,27 +1354,27 @@ GamePad& GamePad::Get()
 
 #define UPDATE_BUTTON_STATE(field) field = static_cast<ButtonState>( ( !!state.buttons.field ) | ( ( !!state.buttons.field ^ !!lastState.buttons.field ) << 1 ) );
 
-void GamePad::ButtonStateTracker::Update(const GamePad::State& state)
+void GamePad::ButtonStateTracker::Update(const GamePad::State& state) noexcept
 {
-    UPDATE_BUTTON_STATE(a);
+    UPDATE_BUTTON_STATE(a)
 
     assert((!state.buttons.a && !lastState.buttons.a) == (a == UP));
     assert((state.buttons.a && lastState.buttons.a) == (a == HELD));
     assert((!state.buttons.a && lastState.buttons.a) == (a == RELEASED));
     assert((state.buttons.a && !lastState.buttons.a) == (a == PRESSED));
 
-    UPDATE_BUTTON_STATE(b);
-    UPDATE_BUTTON_STATE(x);
-    UPDATE_BUTTON_STATE(y);
+    UPDATE_BUTTON_STATE(b)
+    UPDATE_BUTTON_STATE(x)
+    UPDATE_BUTTON_STATE(y)
 
-    UPDATE_BUTTON_STATE(leftStick);
-    UPDATE_BUTTON_STATE(rightStick);
+    UPDATE_BUTTON_STATE(leftStick)
+    UPDATE_BUTTON_STATE(rightStick)
 
-    UPDATE_BUTTON_STATE(leftShoulder);
-    UPDATE_BUTTON_STATE(rightShoulder);
+    UPDATE_BUTTON_STATE(leftShoulder)
+    UPDATE_BUTTON_STATE(rightShoulder)
 
-    UPDATE_BUTTON_STATE(back);
-    UPDATE_BUTTON_STATE(start);
+    UPDATE_BUTTON_STATE(back)
+    UPDATE_BUTTON_STATE(start)
 
     dpadUp = static_cast<ButtonState>((!!state.dpad.up) | ((!!state.dpad.up ^ !!lastState.dpad.up) << 1));
     dpadDown = static_cast<ButtonState>((!!state.dpad.down) | ((!!state.dpad.down ^ !!lastState.dpad.down) << 1));

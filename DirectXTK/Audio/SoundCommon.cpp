@@ -16,7 +16,7 @@ using namespace DirectX;
 
 namespace
 {
-    template <typename T> WORD ChannelsSpecifiedInMask(T x)
+    template <typename T> WORD ChannelsSpecifiedInMask(T x) noexcept
     {
         WORD bitCount = 0;
         while (x) { ++bitCount; x &= (x - 1); }
@@ -29,7 +29,7 @@ namespace
 // Wave format utilities
 //======================================================================================
 
-bool DirectX::IsValid(_In_ const WAVEFORMATEX* wfx)
+bool DirectX::IsValid(_In_ const WAVEFORMATEX* wfx) noexcept
 {
     if (!wfx)
         return false;
@@ -55,7 +55,8 @@ bool DirectX::IsValid(_In_ const WAVEFORMATEX* wfx)
     if ((wfx->nSamplesPerSec < XAUDIO2_MIN_SAMPLE_RATE)
         || (wfx->nSamplesPerSec > XAUDIO2_MAX_SAMPLE_RATE))
     {
-        DebugTrace("ERROR: Wave format channel count must be in range %u..%u (%u)\n", XAUDIO2_MIN_SAMPLE_RATE, XAUDIO2_MAX_SAMPLE_RATE, wfx->nSamplesPerSec);
+        DebugTrace("ERROR: Wave format channel count must be in range %u..%u (%u)\n",
+            XAUDIO2_MIN_SAMPLE_RATE, XAUDIO2_MAX_SAMPLE_RATE, wfx->nSamplesPerSec);
         return false;
     }
 
@@ -194,7 +195,7 @@ bool DirectX::IsValid(_In_ const WAVEFORMATEX* wfx)
         case WAVE_FORMAT_WMAUDIO2:
         case WAVE_FORMAT_WMAUDIO3:
 
-        #if defined(_XBOX_ONE) || (_WIN32_WINNT < _WIN32_WINNT_WIN8) || (_WIN32_WINNT >= _WIN32_WINNT_WIN10)
+        #if defined(USING_XAUDIO2_7_DIRECTX) || defined(USING_XAUDIO2_9)
 
             if (wfx->wBitsPerSample != 16)
             {
@@ -224,6 +225,8 @@ bool DirectX::IsValid(_In_ const WAVEFORMATEX* wfx)
         case 0x166 /* WAVE_FORMAT_XMA2 */:
 
         #if defined(_XBOX_ONE) && defined(_TITLE)
+
+            static_assert(WAVE_FORMAT_XMA2 == 0x166, "Unrecognized XMA2 tag");
 
             if (wfx->nBlockAlign != wfx->nChannels * XMA_OUTPUT_SAMPLE_BYTES)
             {
@@ -277,19 +280,22 @@ bool DirectX::IsValid(_In_ const WAVEFORMATEX* wfx)
 
                 if (xmaFmt->NumStreams != ((wfx->nChannels + 1) / 2))
                 {
-                    DebugTrace("ERROR: Wave format XMA2 - NumStreams (%u) != ( nChannels(%u) + 1 ) / 2\n", xmaFmt->NumStreams, wfx->nChannels);
+                    DebugTrace("ERROR: Wave format XMA2 - NumStreams (%u) != ( nChannels(%u) + 1 ) / 2\n",
+                        xmaFmt->NumStreams, wfx->nChannels);
                     return false;
                 }
 
                 if ((xmaFmt->PlayBegin + xmaFmt->PlayLength) > xmaFmt->SamplesEncoded)
                 {
-                    DebugTrace("ERROR: Wave format XMA2 play region too large (%u + %u > %u)\n", xmaFmt->PlayBegin, xmaFmt->PlayLength, xmaFmt->SamplesEncoded);
+                    DebugTrace("ERROR: Wave format XMA2 play region too large (%u + %u > %u)\n",
+                        xmaFmt->PlayBegin, xmaFmt->PlayLength, xmaFmt->SamplesEncoded);
                     return false;
                 }
 
                 if ((xmaFmt->LoopBegin + xmaFmt->LoopLength) > xmaFmt->SamplesEncoded)
                 {
-                    DebugTrace("ERROR: Wave format XMA2 loop region too large (%u + %u > %u)\n", xmaFmt->LoopBegin, xmaFmt->LoopLength, xmaFmt->SamplesEncoded);
+                    DebugTrace("ERROR: Wave format XMA2 loop region too large (%u + %u > %u)\n",
+                        xmaFmt->LoopBegin, xmaFmt->LoopLength, xmaFmt->SamplesEncoded);
                     return false;
                 }
             }
@@ -303,7 +309,8 @@ bool DirectX::IsValid(_In_ const WAVEFORMATEX* wfx)
         case WAVE_FORMAT_EXTENSIBLE:
             if (wfx->cbSize < (sizeof(WAVEFORMATEXTENSIBLE) - sizeof(WAVEFORMATEX)))
             {
-                DebugTrace("ERROR: Wave format WAVE_FORMAT_EXTENSIBLE - cbSize must be %zu (%u)\n", (sizeof(WAVEFORMATEXTENSIBLE) - sizeof(WAVEFORMATEX)), wfx->cbSize);
+                DebugTrace("ERROR: Wave format WAVE_FORMAT_EXTENSIBLE - cbSize must be %zu (%u)\n",
+                    (sizeof(WAVEFORMATEXTENSIBLE) - sizeof(WAVEFORMATEX)), wfx->cbSize);
                 return false;
             }
             else
@@ -335,7 +342,8 @@ bool DirectX::IsValid(_In_ const WAVEFORMATEX* wfx)
                                 break;
 
                             default:
-                                DebugTrace("ERROR: Wave format integer PCM must have 8, 16, 24, or 32 bits per sample (%u)\n", wfx->wBitsPerSample);
+                                DebugTrace("ERROR: Wave format integer PCM must have 8, 16, 24, or 32 bits per sample (%u)\n",
+                                    wfx->wBitsPerSample);
                                 return false;
                         }
 
@@ -350,14 +358,16 @@ bool DirectX::IsValid(_In_ const WAVEFORMATEX* wfx)
                                 break;
 
                             default:
-                                DebugTrace("ERROR: Wave format integer PCM must have 8, 16, 20, 24, or 32 valid bits per sample (%u)\n", wfex->Samples.wValidBitsPerSample);
+                                DebugTrace("ERROR: Wave format integer PCM must have 8, 16, 20, 24, or 32 valid bits per sample (%u)\n",
+                                    wfex->Samples.wValidBitsPerSample);
                                 return false;
                         }
 
                         if (wfex->Samples.wValidBitsPerSample
                             && (wfex->Samples.wValidBitsPerSample > wfx->wBitsPerSample))
                         {
-                            DebugTrace("ERROR: Wave format ingter PCM wValidBitsPerSample (%u) is greater than wBitsPerSample (%u)\n", wfex->Samples.wValidBitsPerSample, wfx->wBitsPerSample);
+                            DebugTrace("ERROR: Wave format ingter PCM wValidBitsPerSample (%u) is greater than wBitsPerSample (%u)\n",
+                                wfex->Samples.wValidBitsPerSample, wfx->wBitsPerSample);
                             return false;
                         }
 
@@ -392,7 +402,8 @@ bool DirectX::IsValid(_In_ const WAVEFORMATEX* wfx)
                                 break;
 
                             default:
-                                DebugTrace("ERROR: Wave format float PCM must have 32 valid bits per sample (%u)\n", wfex->Samples.wValidBitsPerSample);
+                                DebugTrace("ERROR: Wave format float PCM must have 32 valid bits per sample (%u)\n",
+                                    wfex->Samples.wValidBitsPerSample);
                                 return false;
                         }
 
@@ -419,7 +430,7 @@ bool DirectX::IsValid(_In_ const WAVEFORMATEX* wfx)
                     case WAVE_FORMAT_WMAUDIO2:
                     case WAVE_FORMAT_WMAUDIO3:
 
-                    #if defined(_XBOX_ONE) || (_WIN32_WINNT < _WIN32_WINNT_WIN8) || (_WIN32_WINNT >= _WIN32_WINNT_WIN10)
+                    #if defined(USING_XAUDIO2_7_DIRECTX) || defined(USING_XAUDIO2_9)
 
                         if (wfx->wBitsPerSample != 16)
                         {
@@ -476,7 +487,7 @@ bool DirectX::IsValid(_In_ const WAVEFORMATEX* wfx)
 }
 
 
-uint32_t DirectX::GetDefaultChannelMask(int channels)
+uint32_t DirectX::GetDefaultChannelMask(int channels) noexcept
 {
     switch (channels)
     {
@@ -494,7 +505,7 @@ uint32_t DirectX::GetDefaultChannelMask(int channels)
 
 
 _Use_decl_annotations_
-void DirectX::CreateIntegerPCM(WAVEFORMATEX* wfx, int sampleRate, int channels, int sampleBits)
+void DirectX::CreateIntegerPCM(WAVEFORMATEX* wfx, int sampleRate, int channels, int sampleBits) noexcept
 {
     int blockAlign = channels * sampleBits / 8;
 
@@ -511,7 +522,7 @@ void DirectX::CreateIntegerPCM(WAVEFORMATEX* wfx, int sampleRate, int channels, 
 
 
 _Use_decl_annotations_
-void DirectX::CreateFloatPCM(WAVEFORMATEX* wfx, int sampleRate, int channels)
+void DirectX::CreateFloatPCM(WAVEFORMATEX* wfx, int sampleRate, int channels) noexcept
 {
     int blockAlign = channels * 4;
 
@@ -528,11 +539,12 @@ void DirectX::CreateFloatPCM(WAVEFORMATEX* wfx, int sampleRate, int channels)
 
 
 _Use_decl_annotations_
-void DirectX::CreateADPCM(WAVEFORMATEX* wfx, size_t wfxSize, int sampleRate, int channels, int samplesPerBlock)
+void DirectX::CreateADPCM(WAVEFORMATEX* wfx, size_t wfxSize, int sampleRate, int channels, int samplesPerBlock) noexcept(false)
 {
     if (wfxSize < (sizeof(WAVEFORMATEX) + 32 /*MSADPCM_FORMAT_EXTRA_BYTES*/))
     {
-        DebugTrace("CreateADPCM needs at least %zu bytes for the result\n", (sizeof(WAVEFORMATEX) + 32 /*MSADPCM_FORMAT_EXTRA_BYTES*/));
+        DebugTrace("CreateADPCM needs at least %zu bytes for the result\n",
+            (sizeof(WAVEFORMATEX) + 32 /*MSADPCM_FORMAT_EXTRA_BYTES*/));
         throw std::invalid_argument("ADPCMWAVEFORMAT");
     }
 
@@ -564,9 +576,9 @@ void DirectX::CreateADPCM(WAVEFORMATEX* wfx, size_t wfxSize, int sampleRate, int
 }
 
 
-#if defined(_XBOX_ONE) || (_WIN32_WINNT < _WIN32_WINNT_WIN8) || (_WIN32_WINNT >= _WIN32_WINNT_WIN10)
+#if defined(USING_XAUDIO2_7_DIRECTX) || defined(USING_XAUDIO2_9)
 _Use_decl_annotations_
-void DirectX::CreateXWMA(WAVEFORMATEX* wfx, int sampleRate, int channels, int blockAlign, int avgBytes, bool wma3)
+void DirectX::CreateXWMA(WAVEFORMATEX* wfx, int sampleRate, int channels, int blockAlign, int avgBytes, bool wma3) noexcept
 {
     wfx->wFormatTag = static_cast<WORD>((wma3) ? WAVE_FORMAT_WMAUDIO3 : WAVE_FORMAT_WMAUDIO2);
     wfx->nChannels = static_cast<WORD>(channels);
@@ -583,7 +595,7 @@ void DirectX::CreateXWMA(WAVEFORMATEX* wfx, int sampleRate, int channels, int bl
 
 #if defined(_XBOX_ONE) && defined(_TITLE)
 _Use_decl_annotations_
-void DirectX::CreateXMA2(WAVEFORMATEX* wfx, size_t wfxSize, int sampleRate, int channels, int bytesPerBlock, int blockCount, int samplesEncoded)
+void DirectX::CreateXMA2(WAVEFORMATEX* wfx, size_t wfxSize, int sampleRate, int channels, int bytesPerBlock, int blockCount, int samplesEncoded) noexcept(false)
 {
     if (wfxSize < sizeof(XMA2WAVEFORMATEX))
     {
@@ -591,7 +603,7 @@ void DirectX::CreateXMA2(WAVEFORMATEX* wfx, size_t wfxSize, int sampleRate, int 
         throw std::invalid_argument("XMA2WAVEFORMATEX");
     }
 
-    if (!bytesPerBlock || (bytesPerBlock > XMA_READBUFFER_MAX_BYTES))
+    if ((bytesPerBlock < 1) || (bytesPerBlock > int(XMA_READBUFFER_MAX_BYTES)))
     {
         DebugTrace("XMA2 needs a valid bytes per block\n");
         throw std::invalid_argument("XMA2WAVEFORMATEX");
@@ -614,7 +626,7 @@ void DirectX::CreateXMA2(WAVEFORMATEX* wfx, size_t wfxSize, int sampleRate, int 
     xmaFmt->ChannelMask = GetDefaultChannelMask(channels);
 
     xmaFmt->SamplesEncoded = static_cast<DWORD>(samplesEncoded);
-    xmaFmt->BytesPerBlock = bytesPerBlock;
+    xmaFmt->BytesPerBlock = static_cast<DWORD>(bytesPerBlock);
     xmaFmt->PlayBegin = xmaFmt->PlayLength =
         xmaFmt->LoopBegin = xmaFmt->LoopLength = xmaFmt->LoopCount = 0;
     xmaFmt->EncoderVersion = 4 /* XMAENCODER_VERSION_XMA2 */;
@@ -622,11 +634,11 @@ void DirectX::CreateXMA2(WAVEFORMATEX* wfx, size_t wfxSize, int sampleRate, int 
 
     assert(IsValid(wfx));
 }
-#endif // _XBOX_ONE && _TITLE
+#endif // XMA2
 
 
 _Use_decl_annotations_
-bool DirectX::ComputePan(float pan, unsigned int channels, float* matrix)
+bool DirectX::ComputePan(float pan, unsigned int channels, float* matrix) noexcept
 {
     memset(matrix, 0, sizeof(float) * 16);
 

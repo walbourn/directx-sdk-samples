@@ -32,7 +32,7 @@ namespace
         _In_ ID3D11DeviceContext* pContext,
         _In_ ID3D11Resource* pSource,
         const TexMetadata& metadata,
-        const ScratchImage& result)
+        const ScratchImage& result) noexcept
     {
         if (!pContext || !pSource || !result.GetPixels())
             return E_POINTER;
@@ -202,7 +202,7 @@ namespace
 _Use_decl_annotations_
 bool DirectX::IsSupportedTexture(
     ID3D11Device* pDevice,
-    const TexMetadata& metadata)
+    const TexMetadata& metadata) noexcept
 {
     if (!pDevice)
         return false;
@@ -403,7 +403,7 @@ HRESULT DirectX::CreateTexture(
     const Image* srcImages,
     size_t nimages,
     const TexMetadata& metadata,
-    ID3D11Resource** ppResource)
+    ID3D11Resource** ppResource) noexcept
 {
     return CreateTextureEx(
         pDevice, srcImages, nimages, metadata,
@@ -422,7 +422,7 @@ HRESULT DirectX::CreateTextureEx(
     unsigned int cpuAccessFlags,
     unsigned int miscFlags,
     bool forceSRGB,
-    ID3D11Resource** ppResource)
+    ID3D11Resource** ppResource) noexcept
 {
     if (!pDevice || !srcImages || !nimages || !ppResource)
         return E_INVALIDARG;
@@ -612,7 +612,7 @@ HRESULT DirectX::CreateShaderResourceView(
     const Image* srcImages,
     size_t nimages,
     const TexMetadata& metadata,
-    ID3D11ShaderResourceView** ppSRV)
+    ID3D11ShaderResourceView** ppSRV) noexcept
 {
     return CreateShaderResourceViewEx(
         pDevice, srcImages, nimages, metadata,
@@ -631,12 +631,15 @@ HRESULT DirectX::CreateShaderResourceViewEx(
     unsigned int cpuAccessFlags,
     unsigned int miscFlags,
     bool forceSRGB,
-    ID3D11ShaderResourceView** ppSRV)
+    ID3D11ShaderResourceView** ppSRV) noexcept
 {
     if (!ppSRV)
         return E_INVALIDARG;
 
     *ppSRV = nullptr;
+
+    if (!(bindFlags & D3D11_BIND_SHADER_RESOURCE))
+        return E_INVALIDARG;
 
     ComPtr<ID3D11Resource> resource;
     HRESULT hr = CreateTextureEx(pDevice, srcImages, nimages, metadata,
@@ -726,7 +729,7 @@ HRESULT DirectX::CaptureTexture(
     ID3D11Device* pDevice,
     ID3D11DeviceContext* pContext,
     ID3D11Resource* pSource,
-    ScratchImage& result)
+    ScratchImage& result) noexcept
 {
     if (!pDevice || !pContext || !pSource)
         return E_INVALIDARG;

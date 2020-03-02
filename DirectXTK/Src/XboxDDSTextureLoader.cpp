@@ -20,7 +20,7 @@
 #include "XboxDDSTextureLoader.h"
 
 #include "PlatformHelpers.h"
-#include "dds.h"
+#include "DDS.h"
 #include "DirectXHelpers.h"
 
 #include <xdk.h>
@@ -70,8 +70,7 @@ namespace
         std::unique_ptr<uint8_t[]>& ddsData,
         DDS_HEADER** header,
         uint8_t** bitData,
-        size_t* bitSize
-    )
+        size_t* bitSize) noexcept
     {
         if (!header || !bitData || !bitSize)
         {
@@ -137,7 +136,7 @@ namespace
         }
 
         // DDS files always start with the same magic number ("DDS ")
-        uint32_t dwMagicNumber = *(const uint32_t*)(ddsData.get());
+        auto dwMagicNumber = *reinterpret_cast<uint32_t*>(ddsData.get());
         if (dwMagicNumber != DDS_MAGIC)
         {
             return E_FAIL;
@@ -168,7 +167,7 @@ namespace
 
         // setup the pointers in the process request
         *header = hdr;
-        ptrdiff_t offset = sizeof(uint32_t) + sizeof(DDS_HEADER) + sizeof(DDS_HEADER_XBOX);
+        auto offset = sizeof(uint32_t) + sizeof(DDS_HEADER) + sizeof(DDS_HEADER_XBOX);
         *bitData = ddsData.get() + offset;
         *bitSize = FileSize.LowPart - offset;
 
@@ -176,7 +175,7 @@ namespace
     }
 
     //--------------------------------------------------------------------------------------
-    DXGI_FORMAT MakeSRGB(_In_ DXGI_FORMAT format)
+    DXGI_FORMAT MakeSRGB(_In_ DXGI_FORMAT format) noexcept
     {
         switch (format)
         {
@@ -218,7 +217,7 @@ namespace
         _In_ bool isCubeMap,
         _In_ void* grfxMemory,
         _Outptr_opt_ ID3D11Resource** texture,
-        _Outptr_opt_ ID3D11ShaderResourceView** textureView)
+        _Outptr_opt_ ID3D11ShaderResourceView** textureView) noexcept
     {
         if (!d3dDevice || !grfxMemory)
             return E_POINTER;
@@ -421,7 +420,7 @@ namespace
         _In_ bool forceSRGB,
         _Outptr_opt_ ID3D11Resource** texture,
         _Outptr_opt_ ID3D11ShaderResourceView** textureView,
-        _Outptr_ void** grfxMemory)
+        _Outptr_ void** grfxMemory) noexcept
     {
         HRESULT hr = S_OK;
 
@@ -492,6 +491,11 @@ namespace
 
         default:
             return HRESULT_FROM_WIN32(ERROR_NOT_SUPPORTED);
+        }
+
+        if (xboxext->tileMode == uint32_t(-1))
+        {
+            return HRESULT_FROM_WIN32(ERROR_INVALID_DATA);
         }
 
         // Bound sizes
@@ -578,7 +582,7 @@ namespace
     }
 
     //--------------------------------------------------------------------------------------
-    DDS_ALPHA_MODE GetAlphaMode(_In_ const DDS_HEADER* header)
+    DDS_ALPHA_MODE GetAlphaMode(_In_ const DDS_HEADER* header) noexcept
     {
         if (header->ddspf.flags & DDS_FOURCC)
         {
@@ -607,14 +611,15 @@ namespace
 
 //--------------------------------------------------------------------------------------
 _Use_decl_annotations_
-HRESULT Xbox::CreateDDSTextureFromMemory( ID3D11DeviceX* d3dDevice,
-                                          const uint8_t* ddsData,
-                                          size_t ddsDataSize,
-                                          ID3D11Resource** texture,
-                                          ID3D11ShaderResourceView** textureView,
-                                          void** grfxMemory,
-                                          DDS_ALPHA_MODE* alphaMode,
-                                          bool forceSRGB )
+HRESULT Xbox::CreateDDSTextureFromMemory(
+    ID3D11DeviceX* d3dDevice,
+    const uint8_t* ddsData,
+    size_t ddsDataSize,
+    ID3D11Resource** texture,
+    ID3D11ShaderResourceView** textureView,
+    void** grfxMemory,
+    DDS_ALPHA_MODE* alphaMode,
+    bool forceSRGB ) noexcept
 {
     if ( texture )
     {
@@ -644,7 +649,7 @@ HRESULT Xbox::CreateDDSTextureFromMemory( ID3D11DeviceX* d3dDevice,
         return E_FAIL;
     }
 
-    uint32_t dwMagicNumber = *( const uint32_t* )( ddsData );
+    auto dwMagicNumber = *reinterpret_cast<const uint32_t*>(ddsData);
     if (dwMagicNumber != DDS_MAGIC)
     {
         return E_FAIL;
@@ -673,7 +678,7 @@ HRESULT Xbox::CreateDDSTextureFromMemory( ID3D11DeviceX* d3dDevice,
         return E_FAIL;
     }
 
-    ptrdiff_t offset = sizeof( uint32_t ) + sizeof( DDS_HEADER ) + sizeof( DDS_HEADER_XBOX );
+    auto offset = sizeof( uint32_t ) + sizeof( DDS_HEADER ) + sizeof( DDS_HEADER_XBOX );
 
     HRESULT hr = CreateTextureFromDDS( d3dDevice, header,
                                        ddsData + offset, ddsDataSize - offset, forceSRGB,
@@ -700,13 +705,14 @@ HRESULT Xbox::CreateDDSTextureFromMemory( ID3D11DeviceX* d3dDevice,
 
 //--------------------------------------------------------------------------------------
 _Use_decl_annotations_
-HRESULT Xbox::CreateDDSTextureFromFile( ID3D11DeviceX* d3dDevice,
-                                        const wchar_t* fileName,
-                                        ID3D11Resource** texture,
-                                        ID3D11ShaderResourceView** textureView,
-                                        void** grfxMemory,
-                                        DDS_ALPHA_MODE* alphaMode,
-                                        bool forceSRGB )
+HRESULT Xbox::CreateDDSTextureFromFile(
+    ID3D11DeviceX* d3dDevice,
+    const wchar_t* fileName,
+    ID3D11Resource** texture,
+    ID3D11ShaderResourceView** textureView,
+    void** grfxMemory,
+    DDS_ALPHA_MODE* alphaMode,
+    bool forceSRGB ) noexcept
 {
     if ( texture )
     {
@@ -773,7 +779,7 @@ HRESULT Xbox::CreateDDSTextureFromFile( ID3D11DeviceX* d3dDevice,
 
 //--------------------------------------------------------------------------------------
 _Use_decl_annotations_
-void Xbox::FreeDDSTextureMemory(void* grfxMemory)
+void Xbox::FreeDDSTextureMemory(void* grfxMemory) noexcept
 {
     if (grfxMemory)
     {

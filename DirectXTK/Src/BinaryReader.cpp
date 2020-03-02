@@ -16,7 +16,7 @@ using namespace DirectX;
 
 
 // Constructor reads from the filesystem.
-BinaryReader::BinaryReader(_In_z_ wchar_t const* fileName) :
+BinaryReader::BinaryReader(_In_z_ wchar_t const* fileName) noexcept(false) :
     mPos(nullptr),
     mEnd(nullptr)
 {
@@ -25,7 +25,8 @@ BinaryReader::BinaryReader(_In_z_ wchar_t const* fileName) :
     HRESULT hr = ReadEntireFile(fileName, mOwnedData, &dataSize);
     if (FAILED(hr))
     {
-        DebugTrace("ERROR: BinaryReader failed (%08X) to load '%ls'\n", hr, fileName);
+        DebugTrace("ERROR: BinaryReader failed (%08X) to load '%ls'\n",
+            static_cast<unsigned int>(hr), fileName);
         throw std::exception("BinaryReader");
     }
 
@@ -35,7 +36,7 @@ BinaryReader::BinaryReader(_In_z_ wchar_t const* fileName) :
 
 
 // Constructor reads from an existing memory buffer.
-BinaryReader::BinaryReader(_In_reads_bytes_(dataSize) uint8_t const* dataBlob, size_t dataSize) :
+BinaryReader::BinaryReader(_In_reads_bytes_(dataSize) uint8_t const* dataBlob, size_t dataSize) noexcept :
     mPos(dataBlob),
     mEnd(dataBlob + dataSize)
 {

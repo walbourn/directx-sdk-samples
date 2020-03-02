@@ -23,6 +23,9 @@ using namespace DirectX;
 
 namespace
 {
+    const char g_Signature[] = "TRUEVISION-XFILE.";
+        // This is the official footer signature for the TGA 2.0 file format.
+
     enum TGAImageType
     {
         TGA_NO_IMAGE = 0,
@@ -42,6 +45,15 @@ namespace
         TGA_FLAGS_INTERLEAVED_4WAY = 0x80, // Deprecated
     };
 
+    enum TGAAttributesType : uint8_t
+    {
+        TGA_ATTRIBUTE_NONE = 0,             // 0: no alpha data included
+        TGA_ATTRIBUTE_IGNORED = 1,          // 1: undefined data, can be ignored
+        TGA_ATTRIBUTE_UNDEFINED = 2,        // 2: uedefined data, should be retained
+        TGA_ATTRIBUTE_ALPHA = 3,            // 3: useful alpha channel data
+        TGA_ATTRIBUTE_PREMULTIPLIED = 4,    // 4: pre-multiplied alpha
+    };
+
 #pragma pack(push,1)
     struct TGA_HEADER
     {
@@ -59,12 +71,16 @@ namespace
         uint8_t     bDescriptor;
     };
 
+    static_assert(sizeof(TGA_HEADER) == 18, "TGA 2.0 size mismatch");
+
     struct TGA_FOOTER
     {
-        uint16_t    dwExtensionOffset;
-        uint16_t    dwDeveloperOffset;
+        uint32_t    dwExtensionOffset;
+        uint32_t    dwDeveloperOffset;
         char        Signature[18];
     };
+
+    static_assert(sizeof(TGA_FOOTER) == 26, "TGA 2.0 size mismatch");
 
     struct TGA_EXTENSION
     {
@@ -94,6 +110,9 @@ namespace
         uint32_t    dwScanOffset;
         uint8_t     bAttributesType;
     };
+
+    static_assert(sizeof(TGA_EXTENSION) == 495, "TGA 2.0 size mismatch");
+
 #pragma pack(pop)
 
     enum CONVERSION_FLAGS
@@ -117,7 +136,7 @@ namespace
         size_t size,
         _Out_ TexMetadata& metadata,
         size_t& offset,
-        _Inout_opt_ DWORD* convFlags)
+        _Inout_opt_ DWORD* convFlags) noexcept
     {
         if (!pSource)
             return E_INVALIDARG;
@@ -159,6 +178,7 @@ namespace
 
             case 24:
                 metadata.format = DXGI_FORMAT_R8G8B8A8_UNORM;
+                metadata.SetAlphaMode(TEX_ALPHA_MODE_OPAQUE);
                 if (convFlags)
                     *convFlags |= CONV_FLAGS_EXPAND;
                 // We could use DXGI_FORMAT_B8G8R8X8_UNORM, but we prefer DXGI 1.0 formats
@@ -231,7 +251,7 @@ namespace
     //-------------------------------------------------------------------------------------
     // Set alpha for images with all 0 alpha channel
     //-------------------------------------------------------------------------------------
-    HRESULT SetAlphaChannelToOpaque(_In_ const Image* image)
+    HRESULT SetAlphaChannelToOpaque(_In_ const Image* image) noexcept
     {
         assert(image);
 
@@ -256,7 +276,7 @@ namespace
         _In_reads_bytes_(size) const void* pSource,
         size_t size,
         _In_ const Image* image,
-        _In_ DWORD convFlags)
+        _In_ DWORD convFlags) noexcept
     {
         assert(pSource && size > 0);
 
@@ -279,6 +299,8 @@ namespace
 
         auto sPtr = static_cast<const uint8_t*>(pSource);
         const uint8_t* endPtr = sPtr + size;
+
+        bool opaquealpha = false;
 
         switch (image->format)
         {
@@ -349,7 +371,9 @@ namespace
         //-------------------------------------------------------------------------- 16-bit
         case DXGI_FORMAT_B5G5R5A1_UNORM:
         {
-            bool nonzeroa = false;
+            uint32_t minalpha = 255;
+            uint32_t maxalpha = 0;
+
             for (size_t y = 0; y < image->height; ++y)
             {
                 size_t offset = ((convFlags & CONV_FLAGS_INVERTX) ? (image->width - 1) : 0);
@@ -374,8 +398,11 @@ namespace
                             return E_FAIL;
 
                         auto t = static_cast<uint16_t>(uint32_t(*sPtr) | uint32_t(*(sPtr + 1u) << 8));
-                        if (t & 0x8000)
-                            nonzeroa = true;
+
+                        uint32_t alpha = (t & 0x8000) ? 255 : 0;
+                        minalpha = std::min(minalpha, alpha);
+                        maxalpha = std::max(maxalpha, alpha);
+
                         sPtr += 2;
 
                         for (; j > 0; --j, ++x)
@@ -406,8 +433,11 @@ namespace
                                 return E_FAIL;
 
                             auto t = static_cast<uint16_t>(uint32_t(*sPtr) | uint32_t(*(sPtr + 1u) << 8));
-                            if (t & 0x8000)
-                                nonzeroa = true;
+
+                            uint32_t alpha = (t & 0x8000) ? 255 : 0;
+                            minalpha = std::min(minalpha, alpha);
+                            maxalpha = std::max(maxalpha, alpha);
+
                             sPtr += 2;
                             *dPtr = t;
 
@@ -421,11 +451,16 @@ namespace
             }
 
             // If there are no non-zero alpha channel entries, we'll assume alpha is not used and force it to opaque
-            if (!nonzeroa)
+            if (maxalpha == 0)
             {
+                opaquealpha = true;
                 HRESULT hr = SetAlphaChannelToOpaque(image);
                 if (FAILED(hr))
                     return hr;
+            }
+            else if (minalpha == 255)
+            {
+                opaquealpha = true;
             }
         }
         break;
@@ -433,7 +468,9 @@ namespace
         //----------------------------------------------------------------------- 24/32-bit
         case DXGI_FORMAT_R8G8B8A8_UNORM:
         {
-            bool nonzeroa = false;
+            uint32_t minalpha = 255;
+            uint32_t maxalpha = 0;
+
             for (size_t y = 0; y < image->height; ++y)
             {
                 size_t offset = ((convFlags & CONV_FLAGS_INVERTX) ? (image->width - 1) : 0);
@@ -465,7 +502,7 @@ namespace
                             t = uint32_t(*sPtr << 16) | uint32_t(*(sPtr + 1) << 8) | uint32_t(*(sPtr + 2)) | 0xFF000000;
                             sPtr += 3;
 
-                            nonzeroa = true;
+                            minalpha = maxalpha = 255;
                         }
                         else
                         {
@@ -475,10 +512,11 @@ namespace
                                 return E_FAIL;
 
                             // BGRA -> RGBA
-                            t = uint32_t(*sPtr << 16) | uint32_t(*(sPtr + 1) << 8) | uint32_t(*(sPtr + 2)) | uint32_t(*(sPtr + 3) << 24);
+                            uint32_t alpha = *(sPtr + 3);
+                            t = uint32_t(*sPtr << 16) | uint32_t(*(sPtr + 1) << 8) | uint32_t(*(sPtr + 2)) | uint32_t(alpha << 24);
 
-                            if (*(sPtr + 3) > 0)
-                                nonzeroa = true;
+                            minalpha = std::min(minalpha, alpha);
+                            maxalpha = std::max(maxalpha, alpha);
 
                             sPtr += 4;
                         }
@@ -529,7 +567,7 @@ namespace
                                 *dPtr = uint32_t(*sPtr << 16) | uint32_t(*(sPtr + 1) << 8) | uint32_t(*(sPtr + 2)) | 0xFF000000;
                                 sPtr += 3;
 
-                                nonzeroa = true;
+                                minalpha = maxalpha = 255;
                             }
                             else
                             {
@@ -539,10 +577,11 @@ namespace
                                     return E_FAIL;
 
                                 // BGRA -> RGBA
-                                *dPtr = uint32_t(*sPtr << 16) | uint32_t(*(sPtr + 1) << 8) | uint32_t(*(sPtr + 2)) | uint32_t(*(sPtr + 3) << 24);
+                                uint32_t alpha = *(sPtr + 3);
+                                *dPtr = uint32_t(*sPtr << 16) | uint32_t(*(sPtr + 1) << 8) | uint32_t(*(sPtr + 2)) | uint32_t(alpha << 24);
 
-                                if (*(sPtr + 3) > 0)
-                                    nonzeroa = true;
+                                minalpha = std::min(minalpha, alpha);
+                                maxalpha = std::max(maxalpha, alpha);
 
                                 sPtr += 4;
                             }
@@ -557,11 +596,16 @@ namespace
             }
 
             // If there are no non-zero alpha channel entries, we'll assume alpha is not used and force it to opaque
-            if (!nonzeroa)
+            if (maxalpha == 0)
             {
+                opaquealpha = true;
                 HRESULT hr = SetAlphaChannelToOpaque(image);
                 if (FAILED(hr))
                     return hr;
+            }
+            else if (minalpha == 255)
+            {
+                opaquealpha = true;
             }
         }
         break;
@@ -571,7 +615,7 @@ namespace
             return E_FAIL;
         }
 
-        return S_OK;
+        return opaquealpha ? S_FALSE : S_OK;
     }
 
 
@@ -582,7 +626,7 @@ namespace
         _In_reads_bytes_(size) const void* pSource,
         size_t size,
         _In_ const Image* image,
-        _In_ DWORD convFlags)
+        _In_ DWORD convFlags) noexcept
     {
         assert(pSource && size > 0);
 
@@ -605,6 +649,8 @@ namespace
 
         auto sPtr = static_cast<const uint8_t*>(pSource);
         const uint8_t* endPtr = sPtr + size;
+
+        bool opaquealpha = false;
 
         switch (image->format)
         {
@@ -637,7 +683,9 @@ namespace
         //-------------------------------------------------------------------------- 16-bit
         case DXGI_FORMAT_B5G5R5A1_UNORM:
         {
-            bool nonzeroa = false;
+            uint32_t minalpha = 255;
+            uint32_t maxalpha = 0;
+
             for (size_t y = 0; y < image->height; ++y)
             {
                 size_t offset = ((convFlags & CONV_FLAGS_INVERTX) ? (image->width - 1) : 0);
@@ -656,8 +704,9 @@ namespace
                     sPtr += 2;
                     *dPtr = t;
 
-                    if (t & 0x8000)
-                        nonzeroa = true;
+                    uint32_t alpha = (t & 0x8000) ? 255 : 0;
+                    minalpha = std::min(minalpha, alpha);
+                    maxalpha = std::max(maxalpha, alpha);
 
                     if (convFlags & CONV_FLAGS_INVERTX)
                         --dPtr;
@@ -667,11 +716,16 @@ namespace
             }
 
             // If there are no non-zero alpha channel entries, we'll assume alpha is not used and force it to opaque
-            if (!nonzeroa)
+            if (maxalpha == 0)
             {
+                opaquealpha = true;
                 HRESULT hr = SetAlphaChannelToOpaque(image);
                 if (FAILED(hr))
                     return hr;
+            }
+            else if (minalpha == 255)
+            {
+                opaquealpha = true;
             }
         }
         break;
@@ -679,7 +733,9 @@ namespace
         //----------------------------------------------------------------------- 24/32-bit
         case DXGI_FORMAT_R8G8B8A8_UNORM:
         {
-            bool nonzeroa = false;
+            uint32_t minalpha = 255;
+            uint32_t maxalpha = 0;
+
             for (size_t y = 0; y < image->height; ++y)
             {
                 size_t offset = ((convFlags & CONV_FLAGS_INVERTX) ? (image->width - 1) : 0);
@@ -701,7 +757,7 @@ namespace
                         *dPtr = uint32_t(*sPtr << 16) | uint32_t(*(sPtr + 1) << 8) | uint32_t(*(sPtr + 2)) | 0xFF000000;
                         sPtr += 3;
 
-                        nonzeroa = true;
+                        minalpha = maxalpha = 255;
                     }
                     else
                     {
@@ -711,10 +767,11 @@ namespace
                             return E_FAIL;
 
                         // BGRA -> RGBA
-                        *dPtr = uint32_t(*sPtr << 16) | uint32_t(*(sPtr + 1) << 8) | uint32_t(*(sPtr + 2)) | uint32_t(*(sPtr + 3) << 24);
+                        uint32_t alpha = *(sPtr + 3);
+                        *dPtr = uint32_t(*sPtr << 16) | uint32_t(*(sPtr + 1) << 8) | uint32_t(*(sPtr + 2)) | uint32_t(alpha << 24);
 
-                        if (*(sPtr + 3) > 0)
-                            nonzeroa = true;
+                        minalpha = std::min(minalpha, alpha);
+                        maxalpha = std::max(maxalpha, alpha);
 
                         sPtr += 4;
                     }
@@ -727,11 +784,16 @@ namespace
             }
 
             // If there are no non-zero alpha channel entries, we'll assume alpha is not used and force it to opaque
-            if (!nonzeroa)
+            if (maxalpha == 0)
             {
+                opaquealpha = true;
                 HRESULT hr = SetAlphaChannelToOpaque(image);
                 if (FAILED(hr))
                     return hr;
+            }
+            else if (minalpha == 255)
+            {
+                opaquealpha = true;
             }
         }
         break;
@@ -741,14 +803,14 @@ namespace
             return E_FAIL;
         }
 
-        return S_OK;
+        return opaquealpha ? S_FALSE : S_OK;
     }
 
 
     //-------------------------------------------------------------------------------------
     // Encodes TGA file header
     //-------------------------------------------------------------------------------------
-    HRESULT EncodeTGAHeader(_In_ const Image& image, _Out_ TGA_HEADER& header, _Inout_ DWORD& convFlags)
+    HRESULT EncodeTGAHeader(_In_ const Image& image, _Out_ TGA_HEADER& header, _Inout_ DWORD& convFlags) noexcept
     {
         memset(&header, 0, sizeof(TGA_HEADER));
 
@@ -815,7 +877,7 @@ namespace
         _Out_writes_bytes_(outSize) void* pDestination,
         _In_ size_t outSize,
         _In_reads_bytes_(inSize) const void* pSource,
-        _In_ size_t inSize)
+        _In_ size_t inSize) noexcept
     {
         assert(pDestination && outSize > 0);
         assert(pSource && inSize > 0);
@@ -842,6 +904,82 @@ namespace
             }
         }
     }
+
+    //-------------------------------------------------------------------------------------
+    // TGA 2.0 Extension helpers
+    //-------------------------------------------------------------------------------------
+    void SetExtension(TGA_EXTENSION *ext, const TexMetadata& metadata) noexcept
+    {
+        memset(ext, 0, sizeof(TGA_EXTENSION));
+
+        ext->wSize = sizeof(TGA_EXTENSION);
+
+        memcpy(ext->szSoftwareId, "DirectXTex", sizeof("DirectXTex"));
+        ext->wVersionNumber = DIRECTX_TEX_VERSION;
+        ext->bVersionLetter = ' ';
+
+        if (IsSRGB(metadata.format))
+        {
+            ext->wGammaNumerator = 22;
+            ext->wGammaDenominator = 10;
+        }
+
+        switch (metadata.GetAlphaMode())
+        {
+        case TEX_ALPHA_MODE_UNKNOWN:
+            ext->bAttributesType = HasAlpha(metadata.format) ? TGA_ATTRIBUTE_UNDEFINED : TGA_ATTRIBUTE_NONE;
+            break;
+
+        case TEX_ALPHA_MODE_STRAIGHT:
+            ext->bAttributesType = TGA_ATTRIBUTE_ALPHA;
+            break;
+
+        case TEX_ALPHA_MODE_PREMULTIPLIED:
+            ext->bAttributesType = TGA_ATTRIBUTE_PREMULTIPLIED;
+            break;
+
+        case TEX_ALPHA_MODE_OPAQUE:
+            ext->bAttributesType = TGA_ATTRIBUTE_IGNORED;
+            break;
+
+        case TEX_ALPHA_MODE_CUSTOM:
+            ext->bAttributesType = TGA_ATTRIBUTE_UNDEFINED;
+            break;
+        }
+
+        // Set file time stamp
+        {
+            time_t now = {};
+            time(&now);
+
+            tm info;
+            if (!gmtime_s(&info, &now))
+            {
+                ext->wStampMonth = static_cast<uint16_t>(info.tm_mon + 1);
+                ext->wStampDay = static_cast<uint16_t>(info.tm_mday);
+                ext->wStampYear = static_cast<uint16_t>(info.tm_year + 1900);
+                ext->wStampHour = static_cast<uint16_t>(info.tm_hour);
+                ext->wStampMinute = static_cast<uint16_t>(info.tm_min);
+                ext->wStampSecond = static_cast<uint16_t>(info.tm_sec);
+            }
+        }
+    }
+
+    TEX_ALPHA_MODE GetAlphaModeFromExtension(const TGA_EXTENSION *ext) noexcept
+    {
+        if (ext && ext->wSize == sizeof(TGA_EXTENSION))
+        {
+            switch (ext->bAttributesType)
+            {
+            case TGA_ATTRIBUTE_IGNORED: return TEX_ALPHA_MODE_OPAQUE;
+            case TGA_ATTRIBUTE_UNDEFINED: return TEX_ALPHA_MODE_CUSTOM;
+            case TGA_ATTRIBUTE_ALPHA: return TEX_ALPHA_MODE_STRAIGHT;
+            case TGA_ATTRIBUTE_PREMULTIPLIED: return TEX_ALPHA_MODE_PREMULTIPLIED;
+            }
+        }
+
+        return TEX_ALPHA_MODE_UNKNOWN;
+    }
 }
 
 
@@ -856,7 +994,7 @@ _Use_decl_annotations_
 HRESULT DirectX::GetMetadataFromTGAMemory(
     const void* pSource,
     size_t size,
-    TexMetadata& metadata)
+    TexMetadata& metadata) noexcept
 {
     if (!pSource || size == 0)
         return E_INVALIDARG;
@@ -866,7 +1004,7 @@ HRESULT DirectX::GetMetadataFromTGAMemory(
 }
 
 _Use_decl_annotations_
-HRESULT DirectX::GetMetadataFromTGAFile(const wchar_t* szFile, TexMetadata& metadata)
+HRESULT DirectX::GetMetadataFromTGAFile(const wchar_t* szFile, TexMetadata& metadata) noexcept
 {
     if (!szFile)
         return E_INVALIDARG;
@@ -922,7 +1060,7 @@ HRESULT DirectX::LoadFromTGAMemory(
     const void* pSource,
     size_t size,
     TexMetadata* metadata,
-    ScratchImage& image)
+    ScratchImage& image) noexcept
 {
     if (!pSource || size == 0)
         return E_INVALIDARG;
@@ -965,7 +1103,28 @@ HRESULT DirectX::LoadFromTGAMemory(
     }
 
     if (metadata)
+    {
         memcpy(metadata, &mdata, sizeof(TexMetadata));
+        if (hr == S_FALSE)
+        {
+            metadata->SetAlphaMode(TEX_ALPHA_MODE_OPAQUE);
+        }
+        else if (size >= sizeof(TGA_FOOTER))
+        {
+            // Handle optional TGA 2.0 footer
+            auto footer = reinterpret_cast<const TGA_FOOTER*>(static_cast<const uint8_t*>(pSource) + size - sizeof(TGA_FOOTER));
+
+            if (memcmp(footer->Signature, g_Signature, sizeof(g_Signature)) == 0)
+            {
+                if (footer->dwExtensionOffset != 0
+                    && ((footer->dwExtensionOffset + sizeof(TGA_EXTENSION)) <= size))
+                {
+                    auto ext = reinterpret_cast<const TGA_EXTENSION*>(static_cast<const uint8_t*>(pSource) + footer->dwExtensionOffset);
+                    metadata->SetAlphaMode(GetAlphaModeFromExtension(ext));
+                }
+            }
+        }
+    }
 
     return S_OK;
 }
@@ -978,7 +1137,7 @@ _Use_decl_annotations_
 HRESULT DirectX::LoadFromTGAFile(
     const wchar_t* szFile,
     TexMetadata* metadata,
-    ScratchImage& image)
+    ScratchImage& image) noexcept
 {
     if (!szFile)
         return E_INVALIDARG;
@@ -1051,6 +1210,8 @@ HRESULT DirectX::LoadFromTGAFile(
 
     assert(image.GetPixels());
 
+    bool opaquealpha = false;
+
     if (!(convFlags & (CONV_FLAGS_RLE | CONV_FLAGS_EXPAND | CONV_FLAGS_INVERTX)) && (convFlags & CONV_FLAGS_INVERTY))
     {
         // This case we can read directly into the image buffer in place
@@ -1101,7 +1262,8 @@ HRESULT DirectX::LoadFromTGAFile(
             size_t rowPitch = img->rowPitch;
 
             // Scan for non-zero alpha channel
-            bool nonzeroa = false;
+            uint32_t minalpha = 255;
+            uint32_t maxalpha = 0;
 
             for (size_t h = 0; h < img->height; ++h)
             {
@@ -1109,22 +1271,27 @@ HRESULT DirectX::LoadFromTGAFile(
 
                 for (size_t x = 0; x < img->width; ++x)
                 {
-                    if ((*sPtr) & 0xff000000)
-                    {
-                        nonzeroa = true;
-                        break;
-                    }
+                    uint32_t alpha = ((*sPtr & 0xFF000000) >> 24);
+
+                    minalpha = std::min(minalpha, alpha);
+                    maxalpha = std::max(maxalpha, alpha);
 
                     ++sPtr;
                 }
 
-                if (nonzeroa)
-                    break;
-
                 pPixels += rowPitch;
             }
 
-            DWORD tflags = (!nonzeroa) ? TEXP_SCANLINE_SETALPHA : TEXP_SCANLINE_NONE;
+            DWORD tflags = TEXP_SCANLINE_NONE;
+            if (maxalpha == 0)
+            {
+                opaquealpha = true;
+                tflags = TEXP_SCANLINE_SETALPHA;
+            }
+            else if (minalpha == 255)
+            {
+                opaquealpha = true;
+            }
 
             // Swizzle scanlines
             pPixels = img->pixels;
@@ -1150,7 +1317,8 @@ HRESULT DirectX::LoadFromTGAFile(
             }
 
             // Scan for non-zero alpha channel
-            bool nonzeroa = false;
+            uint32_t minalpha = 255;
+            uint32_t maxalpha = 0;
 
             const uint8_t *pPixels = img->pixels;
             if (!pPixels)
@@ -1167,30 +1335,31 @@ HRESULT DirectX::LoadFromTGAFile(
 
                 for (size_t x = 0; x < img->width; ++x)
                 {
-                    if (*sPtr & 0x8000)
-                    {
-                        nonzeroa = true;
-                        break;
-                    }
+                    uint32_t alpha = (*sPtr & 0x8000) ? 255 : 0;
+
+                    minalpha = std::min(minalpha, alpha);
+                    maxalpha = std::max(maxalpha, alpha);
 
                     ++sPtr;
                 }
-
-                if (nonzeroa)
-                    break;
 
                 pPixels += rowPitch;
             }
 
             // If there are no non-zero alpha channel entries, we'll assume alpha is not used and force it to opaque
-            if (!nonzeroa)
+            if (maxalpha == 0)
             {
+                opaquealpha = true;
                 hr = SetAlphaChannelToOpaque(img);
                 if (FAILED(hr))
                 {
                     image.Release();
                     return hr;
                 }
+            }
+            else if (minalpha == 255)
+            {
+                opaquealpha = true;
             }
         }
         break;
@@ -1234,10 +1403,59 @@ HRESULT DirectX::LoadFromTGAFile(
             image.Release();
             return hr;
         }
+
+        if (hr == S_FALSE)
+            opaquealpha = true;
     }
 
     if (metadata)
+    {
         memcpy(metadata, &mdata, sizeof(TexMetadata));
+        if (opaquealpha)
+        {
+            metadata->SetAlphaMode(TEX_ALPHA_MODE_OPAQUE);
+        }
+        else
+        {
+            // Handle optional TGA 2.0 footer
+            TGA_FOOTER footer = {};
+
+            if (SetFilePointer(hFile.get(), -static_cast<int>(sizeof(TGA_FOOTER)), nullptr, FILE_END) == INVALID_SET_FILE_POINTER)
+            {
+                return HRESULT_FROM_WIN32(GetLastError());
+            }
+
+            if (!ReadFile(hFile.get(), &footer, sizeof(TGA_FOOTER), &bytesRead, nullptr))
+            {
+                image.Release();
+                return HRESULT_FROM_WIN32(GetLastError());
+            }
+
+            if (bytesRead != sizeof(TGA_FOOTER))
+            {
+                image.Release();
+                return E_FAIL;
+            }
+
+            if (memcmp(footer.Signature, g_Signature, sizeof(g_Signature)) == 0)
+            {
+                if (footer.dwExtensionOffset != 0
+                    && ((footer.dwExtensionOffset + sizeof(TGA_EXTENSION)) <= fileInfo.EndOfFile.LowPart))
+                {
+                    LARGE_INTEGER filePos = { { static_cast<DWORD>(footer.dwExtensionOffset), 0 } };
+                    if (SetFilePointerEx(hFile.get(), filePos, nullptr, FILE_BEGIN))
+                    {
+                        TGA_EXTENSION ext = {};
+                        if (ReadFile(hFile.get(), &ext, sizeof(TGA_EXTENSION), &bytesRead, nullptr)
+                            && bytesRead == sizeof(TGA_EXTENSION))
+                        {
+                            metadata->SetAlphaMode(GetAlphaModeFromExtension(&ext));
+                        }
+                    }
+                }
+            }
+        }
+    }
 
     return S_OK;
 }
@@ -1247,7 +1465,7 @@ HRESULT DirectX::LoadFromTGAFile(
 // Save a TGA file to memory
 //-------------------------------------------------------------------------------------
 _Use_decl_annotations_
-HRESULT DirectX::SaveToTGAMemory(const Image& image, Blob& blob)
+HRESULT DirectX::SaveToTGAMemory(const Image& image, Blob& blob, const TexMetadata* metadata) noexcept
 {
     if (!image.pixels)
         return E_POINTER;
@@ -1274,13 +1492,18 @@ HRESULT DirectX::SaveToTGAMemory(const Image& image, Blob& blob)
             return hr;
     }
 
-    hr = blob.Initialize(sizeof(TGA_HEADER) + slicePitch);
+    hr = blob.Initialize(sizeof(TGA_HEADER)
+        + slicePitch
+        + (metadata ? sizeof(TGA_EXTENSION) : 0)
+        + sizeof(TGA_FOOTER));
     if (FAILED(hr))
         return hr;
 
     // Copy header
-    auto dPtr = static_cast<uint8_t*>(blob.GetBufferPointer());
-    assert(dPtr != nullptr);
+    auto destPtr = static_cast<uint8_t*>(blob.GetBufferPointer());
+    assert(destPtr  != nullptr);
+
+    uint8_t* dPtr = destPtr;
     memcpy_s(dPtr, blob.GetBufferSize(), &tga_header, sizeof(TGA_HEADER));
     dPtr += sizeof(TGA_HEADER);
 
@@ -1307,6 +1530,24 @@ HRESULT DirectX::SaveToTGAMemory(const Image& image, Blob& blob)
         pPixels += image.rowPitch;
     }
 
+    uint32_t extOffset = 0;
+    if (metadata)
+    {
+        // metadata is only used for writing the TGA 2.0 extension header
+
+        auto ext = reinterpret_cast<TGA_EXTENSION*>(dPtr);
+        SetExtension(ext, *metadata);
+
+        extOffset = static_cast<uint32_t>(dPtr - destPtr);
+        dPtr += sizeof(TGA_EXTENSION);
+    }
+
+    // Copy TGA 2.0 footer
+    auto footer = reinterpret_cast<TGA_FOOTER*>(dPtr);
+    footer->dwDeveloperOffset = 0;
+    footer->dwExtensionOffset = extOffset;
+    memcpy(footer->Signature, g_Signature, sizeof(g_Signature));
+
     return S_OK;
 }
 
@@ -1315,7 +1556,7 @@ HRESULT DirectX::SaveToTGAMemory(const Image& image, Blob& blob)
 // Save a TGA file to disk
 //-------------------------------------------------------------------------------------
 _Use_decl_annotations_
-HRESULT DirectX::SaveToTGAFile(const Image& image, const wchar_t* szFile)
+HRESULT DirectX::SaveToTGAFile(const Image& image, const wchar_t* szFile, const TexMetadata* metadata) noexcept
 {
     if (!szFile)
         return E_INVALIDARG;
@@ -1438,6 +1679,41 @@ HRESULT DirectX::SaveToTGAFile(const Image& image, const wchar_t* szFile)
             if (bytesWritten != rowPitch)
                 return E_FAIL;
         }
+
+        uint32_t extOffset = 0;
+        if (metadata)
+        {
+            // metadata is only used for writing the TGA 2.0 extension header
+            TGA_EXTENSION ext = {};
+            SetExtension(&ext, *metadata);
+
+            extOffset = SetFilePointer(hFile.get(), 0, nullptr, FILE_CURRENT);
+            if (extOffset == INVALID_SET_FILE_POINTER)
+            {
+                return HRESULT_FROM_WIN32(GetLastError());
+            }
+
+            if (!WriteFile(hFile.get(), &ext, sizeof(TGA_EXTENSION), &bytesWritten, nullptr))
+            {
+                return HRESULT_FROM_WIN32(GetLastError());
+            }
+
+            if (bytesWritten != sizeof(TGA_EXTENSION))
+                return E_FAIL;
+        }
+
+        // Write TGA 2.0 footer
+        TGA_FOOTER footer = {};
+        footer.dwExtensionOffset = extOffset;
+        memcpy(footer.Signature, g_Signature, sizeof(g_Signature));
+
+        if (!WriteFile(hFile.get(), &footer, sizeof(footer), &bytesWritten, nullptr))
+        {
+            return HRESULT_FROM_WIN32(GetLastError());
+        }
+
+        if (bytesWritten != sizeof(footer))
+            return E_FAIL;
     }
 
     delonfail.clear();
