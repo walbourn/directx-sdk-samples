@@ -219,7 +219,7 @@ LRESULT WINAPI MsgProc( HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam )
     {
         case WM_ACTIVATEAPP:
         {
-#if (_WIN32_WINNT >= 0x0602 /*_WIN32_WINNT_WIN8*/) || defined(USE_DIRECTX_SDK)
+#if ((_WIN32_WINNT >= 0x0602 /*_WIN32_WINNT_WIN8*/) && (_WIN32_WINNT < 0x0A00 /*_WIN32_WINNT_WIN10*/)) || defined(USE_DIRECTX_SDK)
 
             //
             // XInputEnable is implemented by XInput 1.3 and 1.4, but not 9.1.0
