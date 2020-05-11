@@ -121,10 +121,10 @@ namespace
         }
 
         // Gets or lazily creates the specified pixel shader.
-        ID3D11PixelShader* GetPixelShader(int shaderIndex)
+        ID3D11PixelShader* GetPixelShader(unsigned int shaderIndex)
         {
-            assert(shaderIndex >= 0 && shaderIndex < BasicPostProcess::Effect_Max);
-            _Analysis_assume_(shaderIndex >= 0 && shaderIndex < BasicPostProcess::Effect_Max);
+            assert(shaderIndex < BasicPostProcess::Effect_Max);
+            _Analysis_assume_(shaderIndex < BasicPostProcess::Effect_Max);
 
             return DemandCreate(mPixelShaders[shaderIndex], mMutex, [&](ID3D11PixelShader** pResult) -> HRESULT
             {
@@ -387,7 +387,7 @@ void BasicPostProcess::Impl::GaussianBlur5x5(float multiplier)
             // create a kernel which approximates a 5x5 kernel using only 13
             // sample points instead of 25; this is necessary since 2.0 shaders
             // only support 16 texture grabs.
-            if (fabs(float(x)) + fabs(float(y)) > 2.0f)
+            if (fabsf(float(x)) + fabsf(float(y)) > 2.0f)
                 continue;
 
             // Get the unscaled Gaussian intensity for this offset

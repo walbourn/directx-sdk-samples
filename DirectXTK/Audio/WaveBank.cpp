@@ -37,7 +37,13 @@ public:
         mEngine->RegisterNotify(this, false);
     }
 
-    virtual ~Impl() override
+    Impl(Impl&&) = default;
+    Impl& operator= (Impl&&) = default;
+
+    Impl(Impl const&) = delete;
+    Impl& operator= (Impl const&) = delete;
+
+    ~Impl() override
     {
         if (!mInstances.empty())
         {
@@ -71,39 +77,39 @@ public:
     void Play(unsigned int index, float volume, float pitch, float pan);
 
     // IVoiceNotify
-    virtual void __cdecl OnBufferEnd() override
+    void __cdecl OnBufferEnd() override
     {
         InterlockedDecrement(&mOneShots);
     }
 
-    virtual void __cdecl OnCriticalError() override
+    void __cdecl OnCriticalError() override
     {
         mOneShots = 0;
     }
 
-    virtual void __cdecl OnReset() override
+    void __cdecl OnReset() override
     {
         // No action required
     }
 
-    virtual void __cdecl OnUpdate() override
+    void __cdecl OnUpdate() override
     {
         // We do not register for update notification
         assert(false);
     }
 
-    virtual void __cdecl OnDestroyEngine() noexcept override
+    void __cdecl OnDestroyEngine() noexcept override
     {
         mEngine = nullptr;
         mOneShots = 0;
     }
 
-    virtual void __cdecl OnTrim() override
+    void __cdecl OnTrim() override
     {
         // No action required
     }
 
-    virtual void __cdecl GatherStatistics(AudioStatistics& stats) const noexcept override
+    void __cdecl GatherStatistics(AudioStatistics& stats) const noexcept override
     {
         stats.playingOneShots += mOneShots;
 
@@ -111,14 +117,14 @@ public:
         {
             stats.audioBytes += mReader.BankAudioSize();
 
-        #if defined(_XBOX_ONE) && defined(_TITLE)
+        #ifdef DIRECTX_ENABLE_XMA2
             if (mReader.HasXMA())
                 stats.xmaAudioBytes += mReader.BankAudioSize();
         #endif
         }
     }
 
-    virtual void __cdecl OnDestroyParent() noexcept override
+    void __cdecl OnDestroyParent() noexcept override
     {
     }
 
@@ -221,7 +227,7 @@ void WaveBank::Impl::Play(unsigned int index, float volume, float pitch, float p
     buffer.Flags = XAUDIO2_END_OF_STREAM;
     buffer.pContext = this;
 
-    #if defined(USING_XAUDIO2_7_DIRECTX) || defined(USING_XAUDIO2_9)
+    #ifdef DIRECTX_ENABLE_XWMA
 
     XAUDIO2_BUFFER_WMA wmaBuffer = {};
 
@@ -234,7 +240,7 @@ void WaveBank::Impl::Play(unsigned int index, float volume, float pitch, float p
         hr = voice->SubmitSourceBuffer(&buffer, &wmaBuffer);
     }
     else
-    #endif
+    #endif // xWMA
     {
         hr = voice->SubmitSourceBuffer(&buffer, nullptr);
     }
@@ -375,6 +381,49 @@ std::unique_ptr<SoundEffectInstance> WaveBank::CreateInstance(_In_z_ const char*
 }
 
 
+// Public methods (sound stream instance)
+std::unique_ptr<SoundStreamInstance> WaveBank::CreateStreamInstance(unsigned int index, SOUND_EFFECT_INSTANCE_FLAGS flags)
+{
+    auto& wb = pImpl->mReader;
+
+    if (!pImpl->mStreaming)
+    {
+        DebugTrace("ERROR: SoundStreamInstances can only be created from a streaming wave bank\n");
+        throw std::exception("WaveBank::CreateStreamInstance");
+    }
+
+    if (index >= wb.Count())
+    {
+        // We don't throw an exception here as titles often simply ignore missing assets rather than fail
+        return std::unique_ptr<SoundStreamInstance>();
+    }
+
+    if (!pImpl->mPrepared)
+    {
+        wb.WaitOnPrepare();
+        pImpl->mPrepared = true;
+    }
+
+    auto effect = new SoundStreamInstance(pImpl->mEngine, this, index, flags);
+    assert(effect != nullptr);
+    pImpl->mInstances.emplace_back(effect->GetVoiceNotify());
+    return std::unique_ptr<SoundStreamInstance>(effect);
+}
+
+
+std::unique_ptr<SoundStreamInstance> WaveBank::CreateStreamInstance(_In_z_ const char* name, SOUND_EFFECT_INSTANCE_FLAGS flags)
+{
+    unsigned int index = pImpl->mReader.Find(name);
+    if (index == unsigned(-1))
+    {
+        // We don't throw an exception here as titles often simply ignore missing assets rather than fail
+        return std::unique_ptr<SoundStreamInstance>();
+    }
+
+    return CreateStreamInstance(index, flags);
+}
+
+
 void WaveBank::UnregisterInstance(_In_ IVoiceNotify* instance)
 {
     auto it = std::find(pImpl->mInstances.begin(), pImpl->mInstances.end(), instance);
@@ -480,7 +529,7 @@ int WaveBank::Find(const char* name) const
 }
 
 
-#if defined(USING_XAUDIO2_7_DIRECTX) || defined(USING_XAUDIO2_9)
+#ifdef DIRECTX_ENABLE_XWMA
 
 _Use_decl_annotations_
 bool WaveBank::FillSubmitBuffer(unsigned int index, XAUDIO2_BUFFER& buffer, XAUDIO2_BUFFER_WMA& wmaBuffer) const
@@ -524,3 +573,43 @@ void WaveBank::FillSubmitBuffer(unsigned int index, XAUDIO2_BUFFER& buffer) cons
 }
 
 #endif
+
+
+HANDLE WaveBank::GetAsyncHandle() const noexcept
+{
+    if (pImpl)
+    {
+        return pImpl->mReader.GetAsyncHandle();
+    }
+
+    return nullptr;
+}
+
+
+_Use_decl_annotations_
+bool WaveBank::GetPrivateData(unsigned int index, void* data, size_t datasize)
+{
+    if (index >= pImpl->mReader.Count())
+        return false;
+
+    if (!data)
+        return false;
+
+    switch (datasize)
+    {
+        case sizeof(WaveBankReader::Metadata):
+        {
+            auto ptr = reinterpret_cast<WaveBankReader::Metadata*>(data);
+            return SUCCEEDED(pImpl->mReader.GetMetadata(index, *ptr));
+        }
+
+        case sizeof(WaveBankSeekData):
+        {
+            auto ptr = reinterpret_cast<WaveBankSeekData*>(data);
+            return SUCCEEDED(pImpl->mReader.GetSeekTable(index, &ptr->seekTable, ptr->seekCount, ptr->tag));
+        }
+
+        default:
+            return false;
+    }
+}

@@ -52,7 +52,13 @@ public:
         mBase.Initialize(engine, mWaveBank->GetFormat(index, wfx, sizeof(buff)), flags);
     }
 
-    virtual ~Impl() override
+    Impl(Impl&&) = default;
+    Impl& operator= (Impl&&) = default;
+
+    Impl(Impl const&) = delete;
+    Impl& operator= (Impl const&) = delete;
+
+    ~Impl() override
     {
         mBase.DestroyVoice();
 
@@ -66,44 +72,44 @@ public:
     void Play(bool loop);
 
     // IVoiceNotify
-    virtual void __cdecl OnBufferEnd() override
+    void __cdecl OnBufferEnd() override
     {
         // We don't register for this notification for SoundEffectInstances, so this should not be invoked
         assert(false);
     }
 
-    virtual void __cdecl OnCriticalError() override
+    void __cdecl OnCriticalError() override
     {
         mBase.OnCriticalError();
     }
 
-    virtual void __cdecl OnReset() override
+    void __cdecl OnReset() override
     {
         mBase.OnReset();
     }
 
-    virtual void __cdecl OnUpdate() override
+    void __cdecl OnUpdate() override
     {
         // We do not register for update notification
         assert(false);
     }
 
-    virtual void __cdecl OnDestroyEngine() noexcept override
+    void __cdecl OnDestroyEngine() noexcept override
     {
         mBase.OnDestroy();
     }
 
-    virtual void __cdecl OnTrim() override
+    void __cdecl OnTrim() override
     {
         mBase.OnTrim();
     }
 
-    virtual void __cdecl GatherStatistics(AudioStatistics& stats) const noexcept override
+    void __cdecl GatherStatistics(AudioStatistics& stats) const noexcept override
     {
         mBase.GatherStatistics(stats);
     }
 
-    virtual void __cdecl OnDestroyParent() noexcept override
+    void __cdecl OnDestroyParent() noexcept override
     {
         mBase.OnDestroy();
         mWaveBank = nullptr;
@@ -141,7 +147,7 @@ void SoundEffectInstance::Impl::Play(bool loop)
     // Submit audio data for STOPPED -> PLAYING state transition
     XAUDIO2_BUFFER buffer = {};
 
-#if defined(USING_XAUDIO2_7_DIRECTX) || defined(USING_XAUDIO2_9)
+#ifdef DIRECTX_ENABLE_XWMA
 
     bool iswma = false;
     XAUDIO2_BUFFER_WMA wmaBuffer = {};
@@ -183,7 +189,7 @@ void SoundEffectInstance::Impl::Play(bool loop)
     buffer.pContext = nullptr;
 
     HRESULT hr;
-#if defined(USING_XAUDIO2_7_DIRECTX) || defined(USING_XAUDIO2_9)
+    #ifdef DIRECTX_ENABLE_XWMA
     if (iswma)
     {
         hr = mBase.voice->SubmitSourceBuffer(&buffer, &wmaBuffer);

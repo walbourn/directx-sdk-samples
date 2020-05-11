@@ -14,6 +14,7 @@
 #include "WaveBankReader.h"
 #include "Audio.h"
 #include "PlatformHelpers.h"
+#include "SoundCommon.h"
 
 #if defined(_XBOX_ONE) && defined(_TITLE)
 #include <apu.h>
@@ -25,14 +26,14 @@ namespace
 {
 #pragma pack(push, 1)
 
-    static const size_t DVD_SECTOR_SIZE = 2048;
-    static const size_t DVD_BLOCK_SIZE = DVD_SECTOR_SIZE * 16;
+    constexpr size_t DVD_SECTOR_SIZE = 2048;
+    constexpr size_t DVD_BLOCK_SIZE = DVD_SECTOR_SIZE * 16;
 
-    static const size_t ALIGNMENT_MIN = 4;
-    static const size_t ALIGNMENT_DVD = DVD_SECTOR_SIZE;
+    constexpr size_t ALIGNMENT_MIN = 4;
+    constexpr size_t ALIGNMENT_DVD = DVD_SECTOR_SIZE;
 
-    static const size_t MAX_DATA_SEGMENT_SIZE = 0xFFFFFFFF;
-    static const size_t MAX_COMPACT_DATA_SEGMENT_SIZE = 0x001FFFFF;
+    constexpr size_t MAX_DATA_SEGMENT_SIZE = 0xFFFFFFFF;
+    constexpr size_t MAX_COMPACT_DATA_SEGMENT_SIZE = 0x001FFFFF;
 
     struct REGION
     {
@@ -429,15 +430,21 @@ public:
         m_prepared(false),
         m_header{},
         m_data{}
-    #if defined(_XBOX_ONE) && defined(_TITLE)
+    #ifdef DIRECTX_ENABLE_XMA2
         , m_xmaMemory(nullptr)
     #endif
     {
     }
 
+    Impl(Impl&&) = default;
+    Impl& operator= (Impl&&) = default;
+
+    Impl(Impl const&) = delete;
+    Impl& operator= (Impl const&) = delete;
+
     ~Impl() { Close(); }
 
-    HRESULT Open(_In_z_ const wchar_t* szFileName) noexcept;
+    HRESULT Open(_In_z_ const wchar_t* szFileName) noexcept(false);
     void Close() noexcept;
 
     HRESULT GetFormat(_In_ uint32_t index, _Out_writes_bytes_(maxsize) WAVEFORMATEX* pFormat, _In_ size_t maxsize) const noexcept;
@@ -460,7 +467,7 @@ public:
         m_seekData.reset();
         m_waveData.reset();
 
-    #if defined(_XBOX_ONE) && defined(_TITLE)
+    #ifdef DIRECTX_ENABLE_XMA2
         if (m_xmaMemory)
         {
             ApuFree(m_xmaMemory);
@@ -483,7 +490,7 @@ private:
     std::unique_ptr<uint8_t[]>          m_seekData;
     std::unique_ptr<uint8_t[]>          m_waveData;
 
-#if defined(_XBOX_ONE) && defined(_TITLE)
+#ifdef DIRECTX_ENABLE_XMA2
 public:
     void*                               m_xmaMemory;
 #endif
@@ -491,7 +498,7 @@ public:
 
 
 _Use_decl_annotations_
-HRESULT WaveBankReader::Impl::Open(const wchar_t* szFileName) noexcept
+HRESULT WaveBankReader::Impl::Open(const wchar_t* szFileName) noexcept(false)
 {
     Close();
     Clear();
@@ -837,9 +844,9 @@ HRESULT WaveBankReader::Impl::Open(const wchar_t* szFileName) noexcept
     else
     {
         // If in-memory, kick off read of wave data
-        void *dest;
+        void* dest = nullptr;
 
-    #if defined(_XBOX_ONE) && defined(_TITLE)
+    #ifdef DIRECTX_ENABLE_XMA2
         bool xma = false;
         if (m_data.dwFlags & BANKDATA::FLAGS_COMPACT)
         {
@@ -924,7 +931,7 @@ void WaveBankReader::Impl::Close() noexcept
     }
     m_event.reset();
 
-#if defined(_XBOX_ONE) && defined(_TITLE)
+#ifdef DIRECTX_ENABLE_XMA2
     if (m_xmaMemory)
     {
         ApuFree(m_xmaMemory);
@@ -983,7 +990,7 @@ HRESULT WaveBankReader::Impl::GetFormat(uint32_t index, WAVEFORMATEX* pFormat, s
             break;
 
         case MINIWAVEFORMAT::TAG_XMA: // XMA2 is supported by Xbox One
-        #if defined(_XBOX_ONE) && defined(_TITLE)
+        #ifdef DIRECTX_ENABLE_XMA2
             if (maxsize < sizeof(XMA2WAVEFORMATEX))
                 return HRESULT_FROM_WIN32(ERROR_MORE_DATA);
 
@@ -1081,7 +1088,7 @@ HRESULT WaveBankReader::Impl::GetWaveData(uint32_t index, const uint8_t** pData,
         return E_FAIL;
     }
 
-#if defined(_XBOX_ONE) && defined(_TITLE)
+#ifdef DIRECTX_ENABLE_XMA2
     const uint8_t* waveData = (m_xmaMemory) ? reinterpret_cast<uint8_t*>(m_xmaMemory) : m_waveData.get();
 #else
     const uint8_t* waveData = m_waveData.get();
@@ -1107,7 +1114,7 @@ HRESULT WaveBankReader::Impl::GetWaveData(uint32_t index, const uint8_t** pData,
         DWORD dwOffset, dwLength;
         entry.ComputeLocations(dwOffset, dwLength, index, m_header, m_data, reinterpret_cast<const ENTRYCOMPACT*>(m_entries.get()));
 
-        if ((dwOffset + dwLength) > m_header.Segments[HEADER::SEGIDX_ENTRYWAVEDATA].dwLength)
+        if ((uint64_t(dwOffset) + uint64_t(dwLength)) > uint64_t(m_header.Segments[HEADER::SEGIDX_ENTRYWAVEDATA].dwLength))
         {
             return HRESULT_FROM_WIN32(ERROR_HANDLE_EOF);
         }
@@ -1119,7 +1126,7 @@ HRESULT WaveBankReader::Impl::GetWaveData(uint32_t index, const uint8_t** pData,
     {
         auto& entry = reinterpret_cast<const ENTRY*>(m_entries.get())[index];
 
-        if ((entry.PlayRegion.dwOffset + entry.PlayRegion.dwLength) > m_header.Segments[HEADER::SEGIDX_ENTRYWAVEDATA].dwLength)
+        if ((uint64_t(entry.PlayRegion.dwOffset) + uint64_t(entry.PlayRegion.dwLength)) > uint64_t(m_header.Segments[HEADER::SEGIDX_ENTRYWAVEDATA].dwLength))
         {
             return HRESULT_FROM_WIN32(ERROR_HANDLE_EOF);
         }
@@ -1207,6 +1214,15 @@ HRESULT WaveBankReader::Impl::GetMetadata(uint32_t index, Metadata& metadata) co
         metadata.loopLength = entry.LoopRegion.dwTotalSamples;
         metadata.offsetBytes = entry.PlayRegion.dwOffset;
         metadata.lengthBytes = entry.PlayRegion.dwLength;
+    }
+
+    if (m_data.dwFlags & BANKDATA::TYPE_STREAMING)
+    {
+        uint64_t offset = uint64_t(metadata.offsetBytes) + uint64_t(m_header.Segments[HEADER::SEGIDX_ENTRYWAVEDATA].dwOffset);
+        if (offset > UINT32_MAX)
+            return HRESULT_FROM_WIN32(ERROR_ARITHMETIC_OVERFLOW);
+
+        metadata.offsetBytes = static_cast<uint32_t>(offset);
     }
 
     return S_OK;
@@ -1310,7 +1326,7 @@ bool WaveBankReader::IsStreamingBank() const noexcept
 }
 
 
-#if defined(_XBOX_ONE) && defined(_TITLE)
+#ifdef DIRECTX_ENABLE_XMA2
 bool WaveBankReader::HasXMA() const noexcept
 {
     return (pImpl->m_xmaMemory != nullptr);

@@ -83,7 +83,7 @@ static_assert(offsetof(DirectX::SimpleMath::Viewport, maxDepth) == offsetof(D3D1
 
 RECT DirectX::SimpleMath::Viewport::ComputeDisplayArea(DXGI_SCALING scaling, UINT backBufferWidth, UINT backBufferHeight, int outputWidth, int outputHeight) noexcept
 {
-    RECT rct;
+    RECT rct = {};
 
     switch (int(scaling))
     {
@@ -105,7 +105,7 @@ RECT DirectX::SimpleMath::Viewport::ComputeDisplayArea(DXGI_SCALING scaling, UIN
             // Horizontal fill
             float scaledWidth = float(outputWidth);
             float scaledHeight = float(outputWidth) / aspectRatio;
-            if (scaledHeight >= outputHeight)
+            if (scaledHeight >= float(outputHeight))
             {
                 // Do vertical fill
                 scaledWidth = float(outputHeight) * aspectRatio;

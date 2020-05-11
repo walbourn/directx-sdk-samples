@@ -25,10 +25,10 @@
 #define IID_GRAPHICS_PPV_ARGS(x) IID_PPV_ARGS(x)
 #endif
 
+#include <cstdint>
 #include <exception>
 
 #include <assert.h>
-#include <stdint.h>
 
 //
 // The core Direct3D headers provide the following helper C++ classes
@@ -72,6 +72,12 @@ namespace DirectX
             }
         }
 
+        MapGuard(MapGuard&&) = default;
+        MapGuard& operator= (MapGuard&&) = default;
+
+        MapGuard(MapGuard const&) = delete;
+        MapGuard& operator= (MapGuard const&) = delete;
+
         ~MapGuard()
         {
             mContext->Unmap(mResource, mSubresource);
@@ -99,9 +105,6 @@ namespace DirectX
         ID3D11DeviceContext*    mContext;
         ID3D11Resource*         mResource;
         UINT                    mSubresource;
-
-        MapGuard(MapGuard const&);
-        MapGuard& operator= (MapGuard const&);
     };
 
 

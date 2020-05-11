@@ -88,6 +88,12 @@ public:
         }
     }
 
+    Impl(Impl&&) = default;
+    Impl& operator= (Impl&&) = default;
+
+    Impl(Impl const&) = delete;
+    Impl& operator= (Impl const&) = delete;
+
     ~Impl()
     {
         s_mouse = nullptr;
@@ -277,15 +283,16 @@ void Mouse::ProcessMessage(UINT message, WPARAM wParam, LPARAM lParam)
     if (!pImpl)
         return;
 
-    HANDLE evts[3];
-    evts[0] = pImpl->mScrollWheelValue.get();
-    evts[1] = pImpl->mAbsoluteMode.get();
-    evts[2] = pImpl->mRelativeMode.get();
-    switch (WaitForMultipleObjectsEx(_countof(evts), evts, FALSE, 0, FALSE))
+    HANDLE events[3] = { pImpl->mScrollWheelValue.get(), pImpl->mAbsoluteMode.get(), pImpl->mRelativeMode.get() };
+    switch (WaitForMultipleObjectsEx(_countof(events), events, FALSE, 0, FALSE))
     {
+        default:
+        case WAIT_TIMEOUT:
+            break;
+
         case WAIT_OBJECT_0:
             pImpl->mState.scrollWheelValue = 0;
-            ResetEvent(evts[0]);
+            ResetEvent(events[0]);
             break;
 
         case (WAIT_OBJECT_0 + 1):
@@ -381,8 +388,8 @@ void Mouse::ProcessMessage(UINT message, WPARAM wParam, LPARAM lParam)
                         const int width = GetSystemMetrics(SM_CXVIRTUALSCREEN);
                         const int height = GetSystemMetrics(SM_CYVIRTUALSCREEN);
 
-                        int x = static_cast<int>((float(raw.data.mouse.lLastX) / 65535.0f) * width);
-                        int y = static_cast<int>((float(raw.data.mouse.lLastY) / 65535.0f) * height);
+                        int x = static_cast<int>((float(raw.data.mouse.lLastX) / 65535.0f) * float(width));
+                        int y = static_cast<int>((float(raw.data.mouse.lLastY) / 65535.0f) * float(height));
 
                         if (pImpl->mRelativeX == INT32_MAX)
                         {
