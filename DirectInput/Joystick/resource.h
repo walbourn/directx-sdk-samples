@@ -32,6 +32,7 @@
 #define IDC_POV1                        1042
 #define IDC_POV2                        1043
 #define IDC_POV3                        1044
+#define IDC_INFO                        1045
 
 // Next default values for new objects
 // 

@@ -27,45 +27,45 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 // Dialog
 //
 
-IDD_JOYST_IMM DIALOG DISCARDABLE  0, 0, 190, 182
+IDD_JOYST_IMM DIALOG DISCARDABLE  0, 0, 425, 179
 STYLE DS_MODALFRAME | DS_CENTER | WS_MINIMIZEBOX | WS_POPUP | WS_CAPTION | 
     WS_SYSMENU
 CAPTION "DirectInput Joystick Sample "
 FONT 8, "MS Shell Dlg"
 BEGIN
-    DEFPUSHBUTTON   "E&xit",IDCANCEL,156,161,27,14
-    LTEXT           "between updates is lost.",IDC_STATIC,7,25,153,8
-    LTEXT           "This sample polls the joystick 30 times a second.",
-                    IDC_STATIC,7,7,153,8
-    LTEXT           "When using immediate mode, joystick data",IDC_STATIC,7,
-                    17,153,8
-    LTEXT           "X Axis:",IDC_X_AXIS_TEXT,18,56,22,8,WS_DISABLED
-    LTEXT           "Y Axis:",IDC_Y_AXIS_TEXT,18,67,22,8,WS_DISABLED
-    LTEXT           "Z Axis:",IDC_Z_AXIS_TEXT,18,78,22,8,WS_DISABLED
-    LTEXT           "Buttons:",IDC_STATIC,18,137,27,8
-    LTEXT           "X Rotation:",IDC_X_ROT_TEXT,18,93,36,8,WS_DISABLED
-    LTEXT           "POV 0:",IDC_POV0_TEXT,100,82,24,8,WS_DISABLED
-    GROUPBOX        "Joystick State",IDC_STATIC,7,41,176,112
-    LTEXT           "0",IDC_X_AXIS,63,56,21,8,WS_DISABLED
-    LTEXT           "0",IDC_Y_AXIS,63,67,21,8,WS_DISABLED
-    LTEXT           "0",IDC_Z_AXIS,63,78,21,8,WS_DISABLED
-    LTEXT           "",IDC_BUTTONS,54,137,120,8
-    LTEXT           "0",IDC_X_ROT,63,93,21,8,WS_DISABLED
-    LTEXT           "0",IDC_POV0,135,82,21,8,WS_DISABLED
-    LTEXT           "Y Rotation:",IDC_Y_ROT_TEXT,18,104,36,8,WS_DISABLED
-    LTEXT           "0",IDC_Y_ROT,63,104,21,8,WS_DISABLED
-    LTEXT           "Z Rotation:",IDC_Z_ROT_TEXT,18,115,36,8,WS_DISABLED
-    LTEXT           "0",IDC_Z_ROT,63,115,21,8,WS_DISABLED
-    LTEXT           "Slider 0:",IDC_SLIDER0_TEXT,100,56,26,8,WS_DISABLED
-    LTEXT           "0",IDC_SLIDER0,135,56,21,8,WS_DISABLED
-    LTEXT           "Slider 1:",IDC_SLIDER1_TEXT,100,67,26,8,WS_DISABLED
-    LTEXT           "0",IDC_SLIDER1,135,67,21,8,WS_DISABLED
-    LTEXT           "POV 1:",IDC_POV1_TEXT,100,93,24,8,WS_DISABLED
-    LTEXT           "0",IDC_POV1,135,93,21,8,WS_DISABLED
-    LTEXT           "POV 2:",IDC_POV2_TEXT,100,104,24,8,WS_DISABLED
-    LTEXT           "0",IDC_POV2,135,104,21,8,WS_DISABLED
-    LTEXT           "POV 3:",IDC_POV3_TEXT,100,115,24,8,WS_DISABLED
-    LTEXT           "0",IDC_POV3,135,115,21,8,WS_DISABLED
+    DEFPUSHBUTTON   "E&xit", IDCANCEL, 391, 159, 27, 14, 0
+    LTEXT           "between updates is lost.", IDC_STATIC, 7, 25, 153, 8
+    LTEXT           "This sample polls the joystick 30 times a second.", IDC_STATIC, 7, 7, 153, 8
+    LTEXT           "When using immediate mode,joystick data", IDC_STATIC, 7, 17, 153, 8
+    LTEXT           "X Axis:", IDC_X_AXIS_TEXT, 16, 57, 22, 8, WS_DISABLED
+    LTEXT           "Y Axis:", IDC_Y_AXIS_TEXT, 16, 68, 22, 8, WS_DISABLED
+    LTEXT           "Z Axis:", IDC_Z_AXIS_TEXT, 16, 79, 22, 8, WS_DISABLED
+    LTEXT           "Buttons:", IDC_STATIC, 16, 138, 27, 8
+    LTEXT           "X Rotation:", IDC_X_ROT_TEXT, 16, 94, 36, 8, WS_DISABLED
+    LTEXT           "POV 0:", IDC_POV0_TEXT, 98, 83, 24, 8, WS_DISABLED
+    GROUPBOX        "Joystick State", IDC_STATIC, 5, 42, 176, 112, 0
+    LTEXT           "0", IDC_X_AXIS, 61, 57, 32, 8, WS_DISABLED
+    LTEXT           "0", IDC_Y_AXIS, 61, 68, 32, 8, WS_DISABLED
+    LTEXT           "0", IDC_Z_AXIS, 61, 79, 32, 8, WS_DISABLED
+    LTEXT           "", IDC_BUTTONS, 52, 138, 120, 8
+    LTEXT           "0", IDC_X_ROT, 61, 94, 32, 8, WS_DISABLED
+    LTEXT           "0", IDC_POV0, 133, 83, 32, 8, WS_DISABLED
+    LTEXT           "Y Rotation:", IDC_Y_ROT_TEXT, 16, 105, 36, 8, WS_DISABLED
+    LTEXT           "0", IDC_Y_ROT, 61, 105, 32, 8, WS_DISABLED
+    LTEXT           "Z Rotation:", IDC_Z_ROT_TEXT, 16, 116, 36, 8, WS_DISABLED
+    LTEXT           "0", IDC_Z_ROT, 61, 116, 32, 8, WS_DISABLED
+    LTEXT           "Slider 0:", IDC_SLIDER0_TEXT, 98, 57, 26, 8, WS_DISABLED
+    LTEXT           "0", IDC_SLIDER0, 133, 57, 32, 8, WS_DISABLED
+    LTEXT           "Slider 1:", IDC_SLIDER1_TEXT, 98, 68, 26, 8, WS_DISABLED
+    LTEXT           "0", IDC_SLIDER1, 133, 68, 32, 8, WS_DISABLED
+    LTEXT           "POV 1:", IDC_POV1_TEXT, 98, 94, 24, 8, WS_DISABLED
+    LTEXT           "0", IDC_POV1, 133, 94, 32, 8, WS_DISABLED
+    LTEXT           "POV 2:", IDC_POV2_TEXT, 98, 105, 24, 8, WS_DISABLED
+    LTEXT           "0", IDC_POV2, 133, 105, 32, 8, WS_DISABLED
+    LTEXT           "POV 3:", IDC_POV3_TEXT, 98, 116, 24, 8, WS_DISABLED
+    LTEXT           "0", IDC_POV3, 133, 116, 32, 8, WS_DISABLED
+    GROUPBOX        "Joystick Info", IDC_STATIC, 189, 43, 228, 111, 0
+    LTEXT           "Not connected", IDC_INFO, 198, 53, 215, 99, WS_DISABLED
 END
 
 

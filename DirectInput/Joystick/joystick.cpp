@@ -42,18 +42,9 @@ BOOL CALLBACK    EnumJoysticksCallback( const DIDEVICEINSTANCE* pdidInstance, VO
 HRESULT InitDirectInput( HWND hDlg );
 VOID FreeDirectInput();
 HRESULT UpdateInputState( HWND hDlg );
+VOID FillJoystickInfo(HWND hDlg);
 
-// Stuff to filter out XInput devices
-#include <wbemidl.h>
-HRESULT SetupForIsXInputDevice();
-bool IsXInputDevice( const GUID* pGuidProductFromDirectInput );
-void CleanupForIsXInputDevice();
-
-struct XINPUT_DEVICE_NODE
-{
-    DWORD dwVidPid;
-    XINPUT_DEVICE_NODE* pNext;
-};
+bool IsXInputDevice( LPDIRECTINPUTDEVICE8 pJoystick );
 
 struct DI_ENUM_CONTEXT
 {
@@ -62,7 +53,6 @@ struct DI_ENUM_CONTEXT
 };
 
 bool                    g_bFilterOutXinputDevices = false;
-XINPUT_DEVICE_NODE*     g_pXInputDeviceList = nullptr;
 
 
 
@@ -75,7 +65,6 @@ XINPUT_DEVICE_NODE*     g_pXInputDeviceList = nullptr;
 
 LPDIRECTINPUT8          g_pDI = nullptr;
 LPDIRECTINPUTDEVICE8    g_pJoystick = nullptr;
-
 
 
 
@@ -199,9 +188,6 @@ HRESULT InitDirectInput( HWND hDlg )
         return hr;
 
 
-    if( g_bFilterOutXinputDevices )
-        SetupForIsXInputDevice();
-
     DIJOYCONFIG PreferredJoyCfg = {0};
     DI_ENUM_CONTEXT enumContext;
     enumContext.pPreferredJoyCfg = &PreferredJoyCfg;
@@ -221,9 +207,6 @@ HRESULT InitDirectInput( HWND hDlg )
                                          EnumJoysticksCallback,
                                          &enumContext, DIEDFL_ATTACHEDONLY ) ) )
         return hr;
-
-    if( g_bFilterOutXinputDevices )
-        CleanupForIsXInputDevice();
 
     // Make sure we got a joystick
     if( !g_pJoystick )
@@ -256,168 +239,99 @@ HRESULT InitDirectInput( HWND hDlg )
                                                ( VOID* )hDlg, DIDFT_ALL ) ) )
         return hr;
 
+    FillJoystickInfo( hDlg );
+
     return S_OK;
 }
 
 
 //-----------------------------------------------------------------------------
-// Enum each PNP device using WMI and check each device ID to see if it contains 
-// "IG_" (ex. "VID_045E&PID_028E&IG_00").  If it does, then it's an XInput device
-// Unfortunately this information can not be found by just using DirectInput.
-// Checking against a VID/PID of 0x028E/0x045E won't find 3rd party or future 
-// XInput devices.
-//
-// This function stores the list of xinput devices in a linked list 
-// at g_pXInputDeviceList, and IsXInputDevice() searchs that linked list
-//-----------------------------------------------------------------------------
-HRESULT SetupForIsXInputDevice()
-{
-    IWbemServices* pIWbemServices = nullptr;
-    IEnumWbemClassObject* pEnumDevices = nullptr;
-    IWbemLocator* pIWbemLocator = nullptr;
-    IWbemClassObject* pDevices[20] = {0};
-    BSTR bstrDeviceID = nullptr;
-    BSTR bstrClassName = nullptr;
-    BSTR bstrNamespace = nullptr;
-    DWORD uReturned = 0;
-    bool bCleanupCOM = false;
-    UINT iDevice = 0;
-    VARIANT var;
-    HRESULT hr;
-
-    // CoInit if needed
-    hr = CoInitialize( nullptr );
-    bCleanupCOM = SUCCEEDED( hr );
-
-    // Create WMI
-    hr = CoCreateInstance( __uuidof( WbemLocator ),
-                           nullptr,
-                           CLSCTX_INPROC_SERVER,
-                           __uuidof( IWbemLocator ),
-                           ( LPVOID* )&pIWbemLocator );
-    if( FAILED( hr ) || pIWbemLocator == nullptr )
-        goto LCleanup;
-
-    // Create BSTRs for WMI
-    bstrNamespace = SysAllocString( L"\\\\.\\root\\cimv2" ); if( bstrNamespace == nullptr ) goto LCleanup;
-    bstrDeviceID = SysAllocString( L"DeviceID" );           if( bstrDeviceID == nullptr )  goto LCleanup;
-    bstrClassName = SysAllocString( L"Win32_PNPEntity" );    if( bstrClassName == nullptr ) goto LCleanup;
-
-    // Connect to WMI 
-    hr = pIWbemLocator->ConnectServer( bstrNamespace, nullptr, nullptr, 0L,
-                                       0L, nullptr, nullptr, &pIWbemServices );
-    if( FAILED( hr ) || pIWbemServices == nullptr )
-        goto LCleanup;
-
-    // Switch security level to IMPERSONATE
-    (void)CoSetProxyBlanket( pIWbemServices, RPC_C_AUTHN_WINNT, RPC_C_AUTHZ_NONE, nullptr,
-                             RPC_C_AUTHN_LEVEL_CALL, RPC_C_IMP_LEVEL_IMPERSONATE, nullptr, 0 );
-
-    // Get list of Win32_PNPEntity devices
-    hr = pIWbemServices->CreateInstanceEnum( bstrClassName, 0, nullptr, &pEnumDevices );
-    if( FAILED( hr ) || pEnumDevices == nullptr )
-        goto LCleanup;
-
-    // Loop over all devices
-    for(; ; )
-    {
-        // Get 20 at a time
-        hr = pEnumDevices->Next( 10000, 20, pDevices, &uReturned );
-        if( FAILED( hr ) )
-            goto LCleanup;
-        if( uReturned == 0 )
-            break;
-
-        for( iDevice = 0; iDevice < uReturned; iDevice++ )
-        {
-            if ( !pDevices[iDevice] )
-               continue;
-
-            // For each device, get its device ID
-            hr = pDevices[iDevice]->Get( bstrDeviceID, 0L, &var, nullptr, nullptr );
-            if( SUCCEEDED( hr ) && var.vt == VT_BSTR && var.bstrVal != nullptr )
-            {
-                // Check if the device ID contains "IG_".  If it does, then it's an XInput device
-                // Unfortunately this information can not be found by just using DirectInput 
-                if( wcsstr( var.bstrVal, L"IG_" ) )
-                {
-                    // If it does, then get the VID/PID from var.bstrVal
-                    DWORD dwPid = 0, dwVid = 0;
-                    WCHAR* strVid = wcsstr( var.bstrVal, L"VID_" );
-                    if( strVid && swscanf( strVid, L"VID_%4X", &dwVid ) != 1 )
-                        dwVid = 0;
-                    WCHAR* strPid = wcsstr( var.bstrVal, L"PID_" );
-                    if( strPid && swscanf( strPid, L"PID_%4X", &dwPid ) != 1 )
-                        dwPid = 0;
-
-                    DWORD dwVidPid = MAKELONG( dwVid, dwPid );
-
-                    // Add the VID/PID to a linked list
-                    XINPUT_DEVICE_NODE* pNewNode = new XINPUT_DEVICE_NODE;
-                    if( pNewNode )
-                    {
-                        pNewNode->dwVidPid = dwVidPid;
-                        pNewNode->pNext = g_pXInputDeviceList;
-                        g_pXInputDeviceList = pNewNode;
-                    }
-                }
-            }
-            SAFE_RELEASE( pDevices[iDevice] );
-        }
-    }
-
-LCleanup:
-    if( bstrNamespace )
-        SysFreeString( bstrNamespace );
-    if( bstrDeviceID )
-        SysFreeString( bstrDeviceID );
-    if( bstrClassName )
-        SysFreeString( bstrClassName );
-    for( iDevice = 0; iDevice < 20; iDevice++ )
-    SAFE_RELEASE( pDevices[iDevice] );
-    SAFE_RELEASE( pEnumDevices );
-    SAFE_RELEASE( pIWbemLocator );
-    SAFE_RELEASE( pIWbemServices );
-
-    return hr;
-}
-
-
-//-----------------------------------------------------------------------------
 // Returns true if the DirectInput device is also an XInput device.
-// Call SetupForIsXInputDevice() before, and CleanupForIsXInputDevice() after
+// Checks if device ID contains "IG_" (ex. "\\?\HID#VID_045E&PID_02A1&IG_00").
+// If it does, then it's an XInput device.
 //-----------------------------------------------------------------------------
-bool IsXInputDevice( const GUID* pGuidProductFromDirectInput )
+bool IsXInputDevice( LPDIRECTINPUTDEVICE8 pJoystick )
 {
-    // Check each xinput device to see if this device's vid/pid matches
-    XINPUT_DEVICE_NODE* pNode = g_pXInputDeviceList;
-    while( pNode )
-    {
-        if( pNode->dwVidPid == pGuidProductFromDirectInput->Data1 )
-            return true;
-        pNode = pNode->pNext;
-    }
+    DIPROPGUIDANDPATH dip;
+    dip.diph.dwSize = sizeof( DIPROPGUIDANDPATH );
+    dip.diph.dwHeaderSize = sizeof( DIPROPHEADER );
+    dip.diph.dwObj = 0;
+    dip.diph.dwHow = DIPH_DEVICE;
 
-    return false;
+    if ( FAILED( pJoystick->GetProperty( DIPROP_GUIDANDPATH, &dip.diph ) ) )
+        return false;
+
+    _wcsupr( dip.wszPath );
+
+    return wcsstr( dip.wszPath, L"IG_" );
 }
 
-
-//-----------------------------------------------------------------------------
-// Cleanup needed for IsXInputDevice()
-//-----------------------------------------------------------------------------
-void CleanupForIsXInputDevice()
+VOID FillJoystickInfo( HWND hDlg )
 {
-    // Cleanup linked list
-    XINPUT_DEVICE_NODE* pNode = g_pXInputDeviceList;
-    while( pNode )
-    {
-        XINPUT_DEVICE_NODE* pDelete = pNode;
-        pNode = pNode->pNext;
-        SAFE_DELETE( pDelete );
-    }
+    TCHAR strJoysInfo[512] = { 0 };
+
+    DIDEVICEINSTANCE pdidInstance;
+    pdidInstance.dwSize = sizeof(pdidInstance);
+
+    if ( FAILED ( g_pJoystick->GetDeviceInfo( &pdidInstance ) ) )
+        return;
+
+    DIPROPDWORD dipdw;
+    dipdw.diph.dwSize = sizeof(DIPROPDWORD);
+    dipdw.diph.dwHeaderSize = sizeof(DIPROPHEADER);
+    dipdw.diph.dwObj = 0;
+    dipdw.diph.dwHow = DIPH_DEVICE;
+
+    if ( FAILED( g_pJoystick->GetProperty( DIPROP_VIDPID, &dipdw.diph ) ) )
+        return;
+
+    WORD wVendorID = LOWORD( dipdw.dwData );
+    WORD wProductID = HIWORD( dipdw.dwData );
+
+    DIPROPGUIDANDPATH dip;
+    dip.diph.dwSize = sizeof(DIPROPGUIDANDPATH);
+    dip.diph.dwHeaderSize = sizeof(DIPROPHEADER);
+    dip.diph.dwObj = 0;
+    dip.diph.dwHow = DIPH_DEVICE;
+
+    if (FAILED( g_pJoystick->GetProperty( DIPROP_GUIDANDPATH, &dip.diph ) ) )
+        return;
+
+    WCHAR* wszPath = dip.wszPath;
+
+    TCHAR strGuidProduct[64] = { 0 };
+    TCHAR strGuidInstance[64] = { 0 };
+    TCHAR strGuidClass[64] = { 0 };
+
+    StringFromGUID2(pdidInstance.guidProduct, strGuidProduct, 64);
+    StringFromGUID2(pdidInstance.guidInstance, strGuidInstance, 64);
+    StringFromGUID2(dip.guidClass, strGuidClass, 64);
+
+    _stprintf_s(strJoysInfo, 512,
+        L"Product Name: %s\n"
+        L"Instance Name: %s\n"
+        L"Vendor ID: 0x%04x\n"
+        L"Product ID: 0x%04x\n"
+        L"Product GUID: %s\n"
+        L"Instance GUID: %s\n"
+        L"HID Class GUID: %s\n"
+        L"HID Usage Page: 0x%04x\n"
+        L"HID Usage ID: 0x%04x\n"
+        L"HID Path: %s",
+        pdidInstance.tszProductName,
+        pdidInstance.tszInstanceName,
+        wVendorID,
+        wProductID,
+        strGuidProduct,
+        strGuidInstance,
+        strGuidClass,
+        pdidInstance.wUsagePage,
+        pdidInstance.wUsage,
+        dip.wszPath);
+
+    EnableWindow(GetDlgItem(hDlg, IDC_INFO), TRUE);
+    SetWindowText(GetDlgItem(hDlg, IDC_INFO), strJoysInfo);
 }
-
-
 
 //-----------------------------------------------------------------------------
 // Name: EnumJoysticksCallback()
@@ -429,9 +343,6 @@ BOOL CALLBACK EnumJoysticksCallback( const DIDEVICEINSTANCE* pdidInstance,
 {
     auto pEnumContext = reinterpret_cast<DI_ENUM_CONTEXT*>( pContext );
     HRESULT hr;
-
-    if( g_bFilterOutXinputDevices && IsXInputDevice( &pdidInstance->guidProduct ) )
-        return DIENUM_CONTINUE;
 
     // Skip anything other than the perferred joystick device as defined by the control panel.  
     // Instead you could store all the enumerated joysticks and let the user pick.
@@ -446,6 +357,12 @@ BOOL CALLBACK EnumJoysticksCallback( const DIDEVICEINSTANCE* pdidInstance,
     // it while we were in the middle of enumerating it.)
     if( FAILED( hr ) )
         return DIENUM_CONTINUE;
+
+    if (g_bFilterOutXinputDevices && IsXInputDevice( g_pJoystick ))
+    {
+        SAFE_RELEASE( g_pJoystick );
+        return DIENUM_CONTINUE;
+    }
 
     // Stop enumeration. Note: we're just taking the first joystick we get. You
     // could store all the enumerated joysticks and let the user pick.
