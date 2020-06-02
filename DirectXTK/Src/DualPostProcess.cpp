@@ -12,7 +12,7 @@
 
 #include "AlignedNew.h"
 #include "CommonStates.h"
-#include "ConstantBuffer.h"
+#include "BufferHelpers.h"
 #include "DemandCreate.h"
 #include "DirectXHelpers.h"
 #include "SharedResourcePool.h"
@@ -23,10 +23,10 @@ using Microsoft::WRL::ComPtr;
 
 namespace
 {
-    const int c_MaxSamples = 16;
+    constexpr int c_MaxSamples = 16;
 
-    const int Dirty_ConstantBuffer  = 0x01;
-    const int Dirty_Parameters      = 0x02;
+    constexpr int Dirty_ConstantBuffer  = 0x01;
+    constexpr int Dirty_Parameters      = 0x02;
 
     // Constant buffer layout. Must match the shader!
     __declspec(align(16)) struct PostProcessConstants
@@ -178,11 +178,15 @@ DualPostProcess::Impl::Impl(_In_ ID3D11Device* device)
     {
         throw std::exception("DualPostProcess requires Feature Level 10.0 or later");
     }
+
+    SetDebugObjectName(mConstantBuffer.GetBuffer(), "DualPostProcess");
 }
 
 
 // Sets our state onto the D3D device.
-void DualPostProcess::Impl::Process(_In_ ID3D11DeviceContext* deviceContext, std::function<void __cdecl()>& setCustomState)
+void DualPostProcess::Impl::Process(
+    _In_ ID3D11DeviceContext* deviceContext,
+    std::function<void __cdecl()>& setCustomState)
 {
     // Set the texture.
     ID3D11ShaderResourceView* textures[2] = { texture.Get(), texture2.Get() };
@@ -292,7 +296,9 @@ DualPostProcess::~DualPostProcess()
 
 
 // IPostProcess methods.
-void DualPostProcess::Process(_In_ ID3D11DeviceContext* deviceContext, _In_opt_ std::function<void __cdecl()> setCustomState)
+void DualPostProcess::Process(
+    _In_ ID3D11DeviceContext* deviceContext,
+    _In_opt_ std::function<void __cdecl()> setCustomState)
 {
     pImpl->Process(deviceContext, setCustomState);
 }

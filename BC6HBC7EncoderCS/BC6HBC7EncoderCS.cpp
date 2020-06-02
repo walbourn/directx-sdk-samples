@@ -10,11 +10,11 @@
 #include <stdio.h>
 #include <d3d11.h>
 #include <vector>
-#include "utils.h"
 #include "EncoderBase.h"
 #include "BC6HEncoderCS10.h"
 #include "BC7EncoderCS10.h"
 #include "DirectXTex.h"
+#include "utils.h"
 
 using namespace DirectX;
 
@@ -354,7 +354,8 @@ int __cdecl wmain(int argc, WCHAR* argv[])
         }
                 
         SAFE_RELEASE( g_pSourceTexture );
-        if ( FAILED( LoadTextureFromFile( g_pDevice, argv[i], fmtLoadAs, g_CommandLineOptions.bNoMips, g_CommandLineOptions.dwFilter, &g_pSourceTexture ) ) )
+        if ( FAILED( LoadTextureFromFile( g_pDevice, argv[i], fmtLoadAs,
+            g_CommandLineOptions.bNoMips, static_cast<TEX_FILTER_FLAGS>(g_CommandLineOptions.dwFilter), &g_pSourceTexture ) ) )
         {
             printf( "error reading source texture file, it must exist and be in uncompressed texture2D format(texture array and cube map are supported but texture3D is not currently supported)\n" );
             continue;

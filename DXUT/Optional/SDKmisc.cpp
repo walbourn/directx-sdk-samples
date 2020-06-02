@@ -834,15 +834,16 @@ HRESULT CDXUTResourceCache::CreateTextureFromFile( ID3D11Device* pDevice, ID3D11
     HRESULT hr;
     if ( _wcsicmp( ext, L".dds" ) == 0 )
     {
-        hr = DirectX::CreateDDSTextureFromFileEx( pDevice, pSrcFile, 0,
-                                                  D3D11_USAGE_DEFAULT, D3D11_BIND_SHADER_RESOURCE, 0, 0, bSRGB,
-                                                  nullptr, ppOutputRV, nullptr );
+        hr = DirectX::CreateDDSTextureFromFileEx(pDevice, pSrcFile, 0,
+            D3D11_USAGE_DEFAULT, D3D11_BIND_SHADER_RESOURCE, 0, 0, bSRGB,
+            nullptr, ppOutputRV, nullptr);
     }
     else
     {
-        hr = DirectX::CreateWICTextureFromFileEx( pDevice, pContext, pSrcFile, 0,
-                                                  D3D11_USAGE_DEFAULT, D3D11_BIND_SHADER_RESOURCE, 0, 0, bSRGB,
-                                                  nullptr, ppOutputRV );
+        hr = DirectX::CreateWICTextureFromFileEx(pDevice, pContext, pSrcFile, 0,
+            D3D11_USAGE_DEFAULT, D3D11_BIND_SHADER_RESOURCE, 0, 0,
+            bSRGB ? WIC_LOADER_FORCE_SRGB : WIC_LOADER_DEFAULT,
+            nullptr, ppOutputRV);
     }
 
     if ( FAILED(hr) )

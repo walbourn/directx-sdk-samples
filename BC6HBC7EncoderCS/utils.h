@@ -59,7 +59,8 @@ void RunComputeShader( ID3D11DeviceContext* pd3dImmediateContext,
 //--------------------------------------------------------------------------------------
 // Loads a texture from file
 //-------------------------------------------------------------------------------------- 
-HRESULT LoadTextureFromFile( ID3D11Device* pd3dDevice, LPCTSTR lpFileName, DXGI_FORMAT fmtLoadAs, BOOL bNoMips, DWORD dwFilter, ID3D11Texture2D** ppTextureOut );
+HRESULT LoadTextureFromFile( ID3D11Device* pd3dDevice, LPCTSTR lpFileName, DXGI_FORMAT fmtLoadAs, BOOL bNoMips,
+    DirectX::TEX_FILTER_FLAGS dwFilter, ID3D11Texture2D** ppTextureOut );
 
 //--------------------------------------------------------------------------------------
 // Create a CPU accessible buffer and download the content of a GPU buffer into it

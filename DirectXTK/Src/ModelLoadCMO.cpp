@@ -9,14 +9,12 @@
 
 #include "pch.h"
 #include "Model.h"
-
 #include "DDSTextureLoader.h"
+#include "DirectXHelpers.h"
 #include "Effects.h"
 #include "VertexTypes.h"
-
-#include "DirectXHelpers.h"
-#include "PlatformHelpers.h"
 #include "BinaryReader.h"
+#include "PlatformHelpers.h"
 
 using namespace DirectX;
 using Microsoft::WRL::ComPtr;
@@ -195,29 +193,18 @@ namespace
     };
 
     // Helper for creating a D3D input layout.
-    void CreateInputLayout(_In_ ID3D11Device* device, IEffect* effect, _Out_ ID3D11InputLayout** pInputLayout, bool skinning)
+    void CreateCMOInputLayout(_In_ ID3D11Device* device, _In_ IEffect* effect, _Outptr_ ID3D11InputLayout** pInputLayout, bool skinning)
     {
-        void const* shaderByteCode;
-        size_t byteCodeLength;
-
-        effect->GetVertexShaderBytecode(&shaderByteCode, &byteCodeLength);
-
         if (skinning)
         {
             ThrowIfFailed(
-                device->CreateInputLayout(VertexPositionNormalTangentColorTextureSkinning::InputElements,
-                VertexPositionNormalTangentColorTextureSkinning::InputElementCount,
-                shaderByteCode, byteCodeLength,
-                pInputLayout)
+                CreateInputLayoutFromEffect<VertexPositionNormalTangentColorTextureSkinning>(device, effect, pInputLayout)
             );
         }
         else
         {
             ThrowIfFailed(
-                device->CreateInputLayout(VertexPositionNormalTangentColorTexture::InputElements,
-                VertexPositionNormalTangentColorTexture::InputElementCount,
-                shaderByteCode, byteCodeLength,
-                pInputLayout)
+                CreateInputLayoutFromEffect<VertexPositionNormalTangentColorTexture>(device, effect, pInputLayout)
             );
         }
 
@@ -473,8 +460,7 @@ std::unique_ptr<Model> DirectX::Model::CreateFromCMO(
             desc.ByteWidth = static_cast<UINT>(ibBytes);
             desc.BindFlags = D3D11_BIND_INDEX_BUFFER;
 
-            D3D11_SUBRESOURCE_DATA initData = {};
-            initData.pSysMem = indexes;
+            D3D11_SUBRESOURCE_DATA initData = { indexes, 0, 0 };
 
             ThrowIfFailed(
                 device->CreateBuffer(&desc, &initData, &ibs[j])
@@ -698,8 +684,7 @@ std::unique_ptr<Model> DirectX::Model::CreateFromCMO(
             if (fxFactoryDGSL && !enableSkinning)
             {
                 // Can use CMO vertex data directly
-                D3D11_SUBRESOURCE_DATA initData = {};
-                initData.pSysMem = vbData[j].ptr;
+                D3D11_SUBRESOURCE_DATA initData = { vbData[j].ptr, 0, 0 };
 
                 ThrowIfFailed(
                     device->CreateBuffer(&desc, &initData, &vbs[j])
@@ -799,8 +784,7 @@ std::unique_ptr<Model> DirectX::Model::CreateFromCMO(
                 }
 
                 // Create vertex buffer from temporary buffer
-                D3D11_SUBRESOURCE_DATA initData = {};
-                initData.pSysMem = temp.get();
+                D3D11_SUBRESOURCE_DATA initData = { temp.get(), 0, 0 };
 
                 ThrowIfFailed(
                     device->CreateBuffer(&desc, &initData, &vbs[j])
@@ -837,7 +821,7 @@ std::unique_ptr<Model> DirectX::Model::CreateFromCMO(
                 info.emissiveTexture = m.texture[3].empty() ? nullptr : m.texture[3].c_str();
                 info.pixelShader = m.pixelShader.c_str();
 
-                const int offset = DGSLEffectFactory::DGSLEffectInfo::BaseTextureOffset;
+                constexpr int offset = DGSLEffectFactory::DGSLEffectInfo::BaseTextureOffset;
                 for (int i = 0; i < (DGSLEffect::MaxTextures - offset); ++i)
                 {
                     info.textures[i] = m.texture[i + offset].empty() ? nullptr : m.texture[i + offset].c_str();
@@ -865,7 +849,7 @@ std::unique_ptr<Model> DirectX::Model::CreateFromCMO(
                 m.effect = fxFactory.CreateEffect(info, nullptr);
             }
 
-            CreateInputLayout(device, m.effect.get(), &m.il, enableSkinning);
+            CreateCMOInputLayout(device, m.effect.get(), &m.il, enableSkinning);
         }
 
         // Build mesh parts

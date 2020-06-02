@@ -205,7 +205,8 @@ void RunComputeShader( ID3D11DeviceContext* pd3dImmediateContext,
 // Loads a texture from file
 // This function also generates mip levels as necessary using the specified filter
 //-------------------------------------------------------------------------------------- 
-HRESULT LoadTextureFromFile( ID3D11Device* pd3dDevice, LPCTSTR lpFileName, DXGI_FORMAT fmtLoadAs, BOOL bNoMips, DWORD dwFilter, ID3D11Texture2D** ppTextureOut )
+HRESULT LoadTextureFromFile( ID3D11Device* pd3dDevice, LPCTSTR lpFileName, DXGI_FORMAT fmtLoadAs, BOOL bNoMips,
+    DirectX::TEX_FILTER_FLAGS dwFilter, ID3D11Texture2D** ppTextureOut )
 {
     HRESULT hr = S_OK;
     
@@ -240,7 +241,7 @@ HRESULT LoadTextureFromFile( ID3D11Device* pd3dDevice, LPCTSTR lpFileName, DXGI_
     }
     else
     {
-        hr = LoadFromWICFile( lpFileName, dwFilter, &info, *image );
+        hr = LoadFromWICFile( lpFileName, WIC_FLAGS_NONE | dwFilter, &info, *image );
         if ( FAILED(hr) )
         {            
             delete image;

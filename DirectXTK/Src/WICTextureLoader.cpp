@@ -450,12 +450,12 @@ namespace
                 GUID containerFormat;
                 if (SUCCEEDED(metareader->GetContainerFormat(&containerFormat)))
                 {
-                    // Check for sRGB colorspace metadata
                     bool sRGB = false;
 
                     PROPVARIANT value;
                     PropVariantInit(&value);
 
+                    // Check for colorspace chunks
                     if (memcmp(&containerFormat, &GUID_ContainerFormatPng, sizeof(GUID)) == 0)
                     {
                         // Check for sRGB chunk
@@ -463,26 +463,46 @@ namespace
                         {
                             sRGB = true;
                         }
+                        else if (SUCCEEDED(metareader->GetMetadataByName(L"/gAMA/ImageGamma", &value)) && value.vt == VT_UI4)
+                        {
+                            sRGB = (value.uintVal == 45455);
+                        }
+                        else
+                        {
+                            sRGB = (loadFlags & WIC_LOADER_SRGB_DEFAULT) != 0;
+                        }
                     }
 #if defined(_XBOX_ONE) && defined(_TITLE)
                     else if (memcmp(&containerFormat, &GUID_ContainerFormatJpeg, sizeof(GUID)) == 0)
                     {
-                        if (SUCCEEDED(metareader->GetMetadataByName(L"/app1/ifd/exif/{ushort=40961}", &value)) && value.vt == VT_UI2 && value.uiVal == 1)
+                        if (SUCCEEDED(metareader->GetMetadataByName(L"/app1/ifd/exif/{ushort=40961}", &value)) && value.vt == VT_UI2)
                         {
-                            sRGB = true;
+                            sRGB = (value.uiVal == 1);
+                        }
+                        else
+                        {
+                            sRGB = (loadFlags & WIC_LOADER_SRGB_DEFAULT) != 0;
                         }
                     }
                     else if (memcmp(&containerFormat, &GUID_ContainerFormatTiff, sizeof(GUID)) == 0)
                     {
-                        if (SUCCEEDED(metareader->GetMetadataByName(L"/ifd/exif/{ushort=40961}", &value)) && value.vt == VT_UI2 && value.uiVal == 1)
+                        if (SUCCEEDED(metareader->GetMetadataByName(L"/ifd/exif/{ushort=40961}", &value)) && value.vt == VT_UI2)
                         {
-                            sRGB = true;
+                            sRGB = (value.uiVal == 1);
+                        }
+                        else
+                        {
+                            sRGB = (loadFlags & WIC_LOADER_SRGB_DEFAULT) != 0;
                         }
                     }
 #else
-                    else if (SUCCEEDED(metareader->GetMetadataByName(L"System.Image.ColorSpace", &value)) && value.vt == VT_UI2 && value.uiVal == 1)
+                    else if (SUCCEEDED(metareader->GetMetadataByName(L"System.Image.ColorSpace", &value)) && value.vt == VT_UI2)
                     {
-                        sRGB = true;
+                        sRGB = (value.uiVal == 1);
+                    }
+                    else
+                    {
+                        sRGB = (loadFlags & WIC_LOADER_SRGB_DEFAULT) != 0;
                     }
 #endif
 
@@ -639,7 +659,7 @@ namespace
 
         if (autogen)
         {
-            desc.BindFlags = bindFlags | D3D11_BIND_RENDER_TARGET;
+            desc.BindFlags = bindFlags | D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;
             desc.MiscFlags = miscFlags | D3D11_RESOURCE_MISC_GENERATE_MIPS;
         }
         else
@@ -648,10 +668,7 @@ namespace
             desc.MiscFlags = miscFlags;
         }
 
-        D3D11_SUBRESOURCE_DATA initData;
-        initData.pSysMem = temp.get();
-        initData.SysMemPitch = static_cast<UINT>(rowPitch);
-        initData.SysMemSlicePitch = static_cast<UINT>(imageSize);
+        D3D11_SUBRESOURCE_DATA initData = { temp.get(), static_cast<UINT>(rowPitch), static_cast<UINT>(imageSize) };
 
         ID3D11Texture2D* tex = nullptr;
         hr = d3dDevice->CreateTexture2D(&desc, (autogen) ? nullptr : &initData, &tex);
@@ -841,7 +858,7 @@ HRESULT DirectX::CreateWICTextureFromMemoryEx(
     unsigned int bindFlags,
     unsigned int cpuAccessFlags,
     unsigned int miscFlags,
-    unsigned int loadFlags,
+    WIC_LOADER_FLAGS loadFlags,
     ID3D11Resource** texture,
     ID3D11ShaderResourceView** textureView) noexcept
 {
@@ -936,7 +953,7 @@ _Use_decl_annotations_
         unsigned int bindFlags,
         unsigned int cpuAccessFlags,
         unsigned int miscFlags,
-        unsigned int loadFlags,
+        WIC_LOADER_FLAGS loadFlags,
         ID3D11Resource** texture,
         ID3D11ShaderResourceView** textureView) noexcept
 {
@@ -1064,7 +1081,7 @@ HRESULT DirectX::CreateWICTextureFromFileEx(
     unsigned int bindFlags,
     unsigned int cpuAccessFlags,
     unsigned int miscFlags,
-    unsigned int loadFlags,
+    WIC_LOADER_FLAGS loadFlags,
     ID3D11Resource** texture,
     ID3D11ShaderResourceView** textureView) noexcept
 {
@@ -1140,7 +1157,7 @@ _Use_decl_annotations_
         unsigned int bindFlags,
         unsigned int cpuAccessFlags,
         unsigned int miscFlags,
-        unsigned int loadFlags,
+        WIC_LOADER_FLAGS loadFlags,
         ID3D11Resource** texture,
         ID3D11ShaderResourceView** textureView) noexcept
 {

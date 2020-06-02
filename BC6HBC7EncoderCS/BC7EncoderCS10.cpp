@@ -9,9 +9,10 @@
 
 #include <d3d11.h>
 #include <vector>
-#include "utils.h"
 #include "EncoderBase.h"
 #include "BC7EncoderCS10.h"
+#include <DirectXTex.h>
+#include "utils.h"
 
 namespace
 {
