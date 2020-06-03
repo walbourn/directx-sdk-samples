@@ -3,25 +3,25 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.28307.960
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "XAudio2BasicSound", "XAudio2BasicSound\XAudio2BasicSound_NuGetRedist_2017.vcxproj", "{1247D15D-5E45-4600-8282-08E00743E70A}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "XAudio2BasicSound", "XAudio2BasicSound\XAudio2BasicSound_NuGetRedist_2019.vcxproj", "{1247D15D-5E45-4600-8282-08E00743E70A}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "XAudio2AsyncStream", "XAudio2AsyncStream\XAudio2AsyncStream_NuGetRedist_2017.vcxproj", "{D58411F1-A50B-4FC3-A9BF-374285EAD4AB}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "XAudio2AsyncStream", "XAudio2AsyncStream\XAudio2AsyncStream_NuGetRedist_2019.vcxproj", "{D58411F1-A50B-4FC3-A9BF-374285EAD4AB}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "XAudio2Enumerate", "XAudio2Enumerate\XAudio2Enumerate_NuGetRedist_2017.vcxproj", "{ED321F2B-B836-44DD-81FA-80767F9029B1}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "XAudio2Enumerate", "XAudio2Enumerate\XAudio2Enumerate_NuGetRedist_2019.vcxproj", "{ED321F2B-B836-44DD-81FA-80767F9029B1}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "XAudio2MFStream", "XAudio2MFStream\XAudio2MFStream_NuGetRedist_2017.vcxproj", "{C3C23E2F-4589-4E8B-BFF9-F61525792B35}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "XAudio2MFStream", "XAudio2MFStream\XAudio2MFStream_NuGetRedist_2019.vcxproj", "{C3C23E2F-4589-4E8B-BFF9-F61525792B35}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "XAudio2Sound3D", "XAudio2Sound3D\XAudio2Sound3D_NuGetRedist_2017.vcxproj", "{DC2D80DD-B1D7-4834-92AE-1D96F698DF8B}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "XAudio2Sound3D", "XAudio2Sound3D\XAudio2Sound3D_NuGetRedist_2019.vcxproj", "{DC2D80DD-B1D7-4834-92AE-1D96F698DF8B}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DXUT", "..\DXUT\Core\DXUT_2017_Win10.vcxproj", "{85344B7F-5AA0-4E12-A065-D1333D11F6CA}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DXUT", "..\DXUT\Core\DXUT_2019_Win10.vcxproj", "{85344B7F-5AA0-4E12-A065-D1333D11F6CA}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DXUTOpt", "..\DXUT\Optional\DXUTOpt_2017_Win10.vcxproj", "{61B333C2-C4F7-4CC1-A9BF-83F6D95588EB}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DXUTOpt", "..\DXUT\Optional\DXUTOpt_2019_Win10.vcxproj", "{61B333C2-C4F7-4CC1-A9BF-83F6D95588EB}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "XAudio2WaveBank", "XAudio2WaveBank\XAudio2WaveBank_NuGetRedist_2017.vcxproj", "{E50139B8-EBD4-4137-B29C-A343E7B8A527}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "XAudio2WaveBank", "XAudio2WaveBank\XAudio2WaveBank_NuGetRedist_2019.vcxproj", "{E50139B8-EBD4-4137-B29C-A343E7B8A527}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "XWBTool", "XWBTool\XWBTool_2017.vcxproj", "{C7AB4186-54B2-4244-A533-77494763EA1D}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "XWBTool", "XWBTool\XWBTool_2019.vcxproj", "{C7AB4186-54B2-4244-A533-77494763EA1D}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "XAudio2CustomAPO", "XAudio2CustomAPO\XAudio2CustomAPO_NuGetRedist_2017.vcxproj", "{728AEDE7-18AB-4C95-98C1-3030F948EBB8}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "XAudio2CustomAPO", "XAudio2CustomAPO\XAudio2CustomAPO_NuGetRedist_2019.vcxproj", "{728AEDE7-18AB-4C95-98C1-3030F948EBB8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
