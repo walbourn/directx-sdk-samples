@@ -6,12 +6,12 @@ http://go.microsoft.com/fwlink/?LinkId=320437
 
 Copyright (c) Microsoft Corporation. All rights reserved.
 
-**January 16, 2020**
+**June 3, 2020**
 
 DXUT is a "GLUT"-like framework for Direct3D 11.x Win32 desktop applications; primarily
 samples, demos, and prototypes.
 
-This code is designed to build with Visual Studio 2015, Visual Studio 2017, or Visual Studio 2019. It is recommended that you make use of the latest updates (VS 2015 Update 3, VS 2017 15.9 update, etc.).
+This code is designed to build with Visual Studio 2017 ([15.9](https://walbourn.github.io/vs-2017-15-9-update/)) or Visual Studio 2019. It is recommended that you make use of the Windows 10 May 2020 Update SDK ([19041](https://walbourn.github.io/windows-10-may-2020-update-sdk/)).
 
 These components are designed to work without requiring any content from the legacy DirectX SDK. For details, see [Where is the DirectX SDK?](https://aka.ms/dxsdk).
 

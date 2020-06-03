@@ -15,15 +15,15 @@
 //--------------------------------------------------------------------------------------
 
 #include "dxut.h"
-
 #include "DDSTextureLoader.h"
 
 #include <assert.h>
 #include <algorithm>
 #include <memory>
 
-#if !defined(NO_D3D11_DEBUG_NAME) && ( defined(_DEBUG) || defined(PROFILE) )
-#pragma comment(lib,"dxguid.lib")
+#ifdef __clang__
+#pragma clang diagnostic ignored "-Wcovered-switch-default"
+#pragma clang diagnostic ignored "-Wswitch-enum"
 #endif
 
 using namespace DirectX;
@@ -118,14 +118,14 @@ struct DDS_HEADER_DXT10
 //--------------------------------------------------------------------------------------
 namespace
 {
-    struct handle_closer { void operator()(HANDLE h) { if (h) CloseHandle(h); } };
+    struct handle_closer { void operator()(HANDLE h) noexcept { if (h) CloseHandle(h); } };
 
-    typedef std::unique_ptr<void, handle_closer> ScopedHandle;
+    using ScopedHandle = std::unique_ptr<void, handle_closer>;
 
-    inline HANDLE safe_handle( HANDLE h ) { return (h == INVALID_HANDLE_VALUE) ? nullptr : h; }
+    inline HANDLE safe_handle( HANDLE h ) noexcept { return (h == INVALID_HANDLE_VALUE) ? nullptr : h; }
 
     template<UINT TNameLength>
-    inline void SetDebugObjectName(_In_ ID3D11DeviceChild* resource, _In_ const char (&name)[TNameLength])
+    inline void SetDebugObjectName(_In_ ID3D11DeviceChild* resource, _In_ const char (&name)[TNameLength]) noexcept
     {
     #if defined(_DEBUG) || defined(PROFILE)
         resource->SetPrivateData(WKPDID_D3DDebugObjectName, TNameLength - 1, name);
@@ -141,7 +141,7 @@ namespace
         size_t ddsDataSize,
         const DDS_HEADER** header,
         const uint8_t** bitData,
-        size_t* bitSize)
+        size_t* bitSize) noexcept
     {
         if (!header || !bitData || !bitSize)
         {
@@ -206,7 +206,7 @@ namespace
         std::unique_ptr<uint8_t[]>& ddsData,
         const DDS_HEADER** header,
         const uint8_t** bitData,
-        size_t* bitSize)
+        size_t* bitSize) noexcept
     {
         if (!header || !bitData || !bitSize)
         {
@@ -322,7 +322,7 @@ namespace
     //--------------------------------------------------------------------------------------
     // Return the BPP for a particular format
     //--------------------------------------------------------------------------------------
-    size_t BitsPerPixel(_In_ DXGI_FORMAT fmt)
+    size_t BitsPerPixel(_In_ DXGI_FORMAT fmt) noexcept
     {
         switch (fmt)
         {
@@ -478,7 +478,7 @@ namespace
         _In_ DXGI_FORMAT fmt,
         size_t* outNumBytes,
         _Out_opt_ size_t* outRowBytes,
-        _Out_opt_ size_t* outNumRows)
+        _Out_opt_ size_t* outNumRows) noexcept
     {
         uint64_t numBytes = 0;
         uint64_t rowBytes = 0;
@@ -621,7 +621,7 @@ namespace
     //--------------------------------------------------------------------------------------
     #define ISBITMASK( r,g,b,a ) ( ddpf.RBitMask == r && ddpf.GBitMask == g && ddpf.BBitMask == b && ddpf.ABitMask == a )
 
-    DXGI_FORMAT GetDXGIFormat(const DDS_PIXELFORMAT& ddpf)
+    DXGI_FORMAT GetDXGIFormat(const DDS_PIXELFORMAT& ddpf) noexcept
     {
         if (ddpf.flags & DDS_RGB)
         {
@@ -640,12 +640,12 @@ namespace
                     return DXGI_FORMAT_B8G8R8A8_UNORM;
                 }
 
-                if (ISBITMASK(0x00ff0000, 0x0000ff00, 0x000000ff, 0x00000000))
+                if (ISBITMASK(0x00ff0000, 0x0000ff00, 0x000000ff, 0))
                 {
                     return DXGI_FORMAT_B8G8R8X8_UNORM;
                 }
 
-                // No DXGI format maps to ISBITMASK(0x000000ff,0x0000ff00,0x00ff0000,0x00000000) aka D3DFMT_X8B8G8R8
+                // No DXGI format maps to ISBITMASK(0x000000ff,0x0000ff00,0x00ff0000,0) aka D3DFMT_X8B8G8R8
 
                 // Note that many common DDS reader/writers (including D3DX) swap the
                 // the RED/BLUE masks for 10:10:10:2 formats. We assume
@@ -661,12 +661,12 @@ namespace
 
                 // No DXGI format maps to ISBITMASK(0x000003ff,0x000ffc00,0x3ff00000,0xc0000000) aka D3DFMT_A2R10G10B10
 
-                if (ISBITMASK(0x0000ffff, 0xffff0000, 0x00000000, 0x00000000))
+                if (ISBITMASK(0x0000ffff, 0xffff0000, 0, 0))
                 {
                     return DXGI_FORMAT_R16G16_UNORM;
                 }
 
-                if (ISBITMASK(0xffffffff, 0x00000000, 0x00000000, 0x00000000))
+                if (ISBITMASK(0xffffffff, 0, 0, 0))
                 {
                     // Only 32-bit color channel format in D3D9 was R32F
                     return DXGI_FORMAT_R32_FLOAT; // D3DX writes this out as a FourCC of 114
@@ -682,19 +682,19 @@ namespace
                 {
                     return DXGI_FORMAT_B5G5R5A1_UNORM;
                 }
-                if (ISBITMASK(0xf800, 0x07e0, 0x001f, 0x0000))
+                if (ISBITMASK(0xf800, 0x07e0, 0x001f, 0))
                 {
                     return DXGI_FORMAT_B5G6R5_UNORM;
                 }
 
-                // No DXGI format maps to ISBITMASK(0x7c00,0x03e0,0x001f,0x0000) aka D3DFMT_X1R5G5B5
+                // No DXGI format maps to ISBITMASK(0x7c00,0x03e0,0x001f,0) aka D3DFMT_X1R5G5B5
 
                 if (ISBITMASK(0x0f00, 0x00f0, 0x000f, 0xf000))
                 {
                     return DXGI_FORMAT_B4G4R4A4_UNORM;
                 }
 
-                // No DXGI format maps to ISBITMASK(0x0f00,0x00f0,0x000f,0x0000) aka D3DFMT_X4R4G4B4
+                // No DXGI format maps to ISBITMASK(0x0f00,0x00f0,0x000f,0) aka D3DFMT_X4R4G4B4
 
                 // No 3:3:2, 3:3:2:8, or paletted DXGI formats aka D3DFMT_A8R3G3B2, D3DFMT_R3G3B2, D3DFMT_P8, D3DFMT_A8P8, etc.
                 break;
@@ -704,14 +704,14 @@ namespace
         {
             if (8 == ddpf.RGBBitCount)
             {
-                if (ISBITMASK(0x000000ff, 0x00000000, 0x00000000, 0x00000000))
+                if (ISBITMASK(0xff, 0, 0, 0))
                 {
                     return DXGI_FORMAT_R8_UNORM; // D3DX10/11 writes this out as DX10 extension
                 }
 
                 // No DXGI format maps to ISBITMASK(0x0f,0x00,0x00,0xf0) aka D3DFMT_A4L4
 
-                if (ISBITMASK(0x000000ff, 0x00000000, 0x00000000, 0x0000ff00))
+                if (ISBITMASK(0x00ff, 0, 0, 0xff00))
                 {
                     return DXGI_FORMAT_R8G8_UNORM; // Some DDS writers assume the bitcount should be 8 instead of 16
                 }
@@ -719,11 +719,11 @@ namespace
 
             if (16 == ddpf.RGBBitCount)
             {
-                if (ISBITMASK(0x0000ffff, 0x00000000, 0x00000000, 0x00000000))
+                if (ISBITMASK(0xffff, 0, 0, 0))
                 {
                     return DXGI_FORMAT_R16_UNORM; // D3DX10/11 writes this out as DX10 extension
                 }
-                if (ISBITMASK(0x000000ff, 0x00000000, 0x00000000, 0x0000ff00))
+                if (ISBITMASK(0x00ff, 0, 0, 0xff00))
                 {
                     return DXGI_FORMAT_R8G8_UNORM; // D3DX10/11 writes this out as DX10 extension
                 }
@@ -740,7 +740,7 @@ namespace
         {
             if (16 == ddpf.RGBBitCount)
             {
-                if (ISBITMASK(0x00ff, 0xff00, 0x0000, 0x0000))
+                if (ISBITMASK(0x00ff, 0xff00, 0, 0))
                 {
                     return DXGI_FORMAT_R8G8_SNORM; // D3DX10/11 writes this out as DX10 extension
                 }
@@ -752,13 +752,15 @@ namespace
                 {
                     return DXGI_FORMAT_R8G8B8A8_SNORM; // D3DX10/11 writes this out as DX10 extension
                 }
-                if (ISBITMASK(0x0000ffff, 0xffff0000, 0x00000000, 0x00000000))
+                if (ISBITMASK(0x0000ffff, 0xffff0000, 0, 0))
                 {
                     return DXGI_FORMAT_R16G16_SNORM; // D3DX10/11 writes this out as DX10 extension
                 }
 
                 // No DXGI format maps to ISBITMASK(0x3ff00000, 0x000ffc00, 0x000003ff, 0xc0000000) aka D3DFMT_A2W10V10U10
             }
+
+            // No DXGI format maps to DDPF_BUMPLUMINANCE aka D3DFMT_L6V5U5, D3DFMT_X8L8V8U8
         }
         else if (ddpf.flags & DDS_FOURCC)
         {
@@ -854,15 +856,19 @@ namespace
 
             case 116: // D3DFMT_A32B32G32R32F
                 return DXGI_FORMAT_R32G32B32A32_FLOAT;
+
+            // No DXGI format maps to D3DFMT_CxV8U8
             }
         }
 
         return DXGI_FORMAT_UNKNOWN;
     }
 
+    #undef ISBITMASK
+
 
     //--------------------------------------------------------------------------------------
-    DXGI_FORMAT MakeSRGB(_In_ DXGI_FORMAT format)
+    DXGI_FORMAT MakeSRGB(_In_ DXGI_FORMAT format) noexcept
     {
         switch (format)
         {
@@ -908,7 +914,7 @@ namespace
         _Out_ size_t& theight,
         _Out_ size_t& tdepth,
         _Out_ size_t& skipMip,
-        _Out_writes_(mipCount*arraySize) D3D11_SUBRESOURCE_DATA* initData)
+        _Out_writes_(mipCount*arraySize) D3D11_SUBRESOURCE_DATA* initData) noexcept
     {
         if (!bitData || !initData)
         {
@@ -1009,7 +1015,7 @@ namespace
         _In_ bool isCubeMap,
         _In_reads_opt_(mipCount*arraySize) D3D11_SUBRESOURCE_DATA* initData,
         _Outptr_opt_ ID3D11Resource** texture,
-        _Outptr_opt_ ID3D11ShaderResourceView** textureView)
+        _Outptr_opt_ ID3D11ShaderResourceView** textureView) noexcept
     {
         if (!d3dDevice)
             return E_POINTER;
@@ -1239,7 +1245,7 @@ namespace
         _In_ unsigned int miscFlags,
         _In_ bool forceSRGB,
         _Outptr_opt_ ID3D11Resource** texture,
-        _Outptr_opt_ ID3D11ShaderResourceView** textureView)
+        _Outptr_opt_ ID3D11ShaderResourceView** textureView) noexcept
     {
         HRESULT hr = S_OK;
 
@@ -1554,26 +1560,26 @@ namespace
                     case D3D_FEATURE_LEVEL_9_2:
                         if (isCubeMap)
                         {
-                            maxsize = 512 /*D3D_FL9_1_REQ_TEXTURECUBE_DIMENSION*/;
+                            maxsize = 512u /*D3D_FL9_1_REQ_TEXTURECUBE_DIMENSION*/;
                         }
                         else
                         {
                             maxsize = (resDim == D3D11_RESOURCE_DIMENSION_TEXTURE3D)
-                                ? 256 /*D3D_FL9_1_REQ_TEXTURE3D_U_V_OR_W_DIMENSION*/
-                                : 2048 /*D3D_FL9_1_REQ_TEXTURE2D_U_OR_V_DIMENSION*/;
+                                ? 256u /*D3D_FL9_1_REQ_TEXTURE3D_U_V_OR_W_DIMENSION*/
+                                : 2048u /*D3D_FL9_1_REQ_TEXTURE2D_U_OR_V_DIMENSION*/;
                         }
                         break;
 
                     case D3D_FEATURE_LEVEL_9_3:
                         maxsize = (resDim == D3D11_RESOURCE_DIMENSION_TEXTURE3D)
-                            ? 256 /*D3D_FL9_1_REQ_TEXTURE3D_U_V_OR_W_DIMENSION*/
-                            : 4096 /*D3D_FL9_3_REQ_TEXTURE2D_U_OR_V_DIMENSION*/;
+                            ? 256u /*D3D_FL9_1_REQ_TEXTURE3D_U_V_OR_W_DIMENSION*/
+                            : 4096u /*D3D_FL9_3_REQ_TEXTURE2D_U_OR_V_DIMENSION*/;
                         break;
 
                     default: // D3D_FEATURE_LEVEL_10_0 & D3D_FEATURE_LEVEL_10_1
                         maxsize = (resDim == D3D11_RESOURCE_DIMENSION_TEXTURE3D)
-                            ? 2048 /*D3D10_REQ_TEXTURE3D_U_V_OR_W_DIMENSION*/
-                            : 8192 /*D3D10_REQ_TEXTURE2D_U_OR_V_DIMENSION*/;
+                            ? 2048u /*D3D10_REQ_TEXTURE3D_U_V_OR_W_DIMENSION*/
+                            : 8192u /*D3D10_REQ_TEXTURE2D_U_OR_V_DIMENSION*/;
                         break;
                     }
 
@@ -1599,7 +1605,7 @@ namespace
 
 
     //--------------------------------------------------------------------------------------
-    DDS_ALPHA_MODE GetAlphaMode(_In_ const DDS_HEADER* header)
+    DDS_ALPHA_MODE GetAlphaMode(_In_ const DDS_HEADER* header) noexcept
     {
         if (header->ddspf.flags & DDS_FOURCC)
         {
@@ -1634,7 +1640,7 @@ namespace
     void SetDebugTextureInfo(
         _In_z_ const wchar_t* fileName,
         _In_opt_ ID3D11Resource** texture,
-        _In_opt_ ID3D11ShaderResourceView** textureView)
+        _In_opt_ ID3D11ShaderResourceView** textureView) noexcept
     {
 #if !defined(NO_D3D11_DEBUG_NAME) && ( defined(_DEBUG) || defined(PROFILE) )
         if (texture || textureView)
@@ -1695,7 +1701,7 @@ HRESULT DirectX::CreateDDSTextureFromMemory(
     ID3D11Resource** texture,
     ID3D11ShaderResourceView** textureView,
     size_t maxsize,
-    DDS_ALPHA_MODE* alphaMode)
+    DDS_ALPHA_MODE* alphaMode) noexcept
 {
     return CreateDDSTextureFromMemoryEx(d3dDevice, nullptr,
         ddsData, ddsDataSize,
@@ -1714,7 +1720,7 @@ HRESULT DirectX::CreateDDSTextureFromMemory(
     ID3D11Resource** texture,
     ID3D11ShaderResourceView** textureView,
     size_t maxsize,
-    DDS_ALPHA_MODE* alphaMode)
+    DDS_ALPHA_MODE* alphaMode) noexcept
 {
     return CreateDDSTextureFromMemoryEx(d3dDevice, d3dContext,
         ddsData, ddsDataSize,
@@ -1737,7 +1743,7 @@ HRESULT DirectX::CreateDDSTextureFromMemoryEx(
     bool forceSRGB,
     ID3D11Resource** texture,
     ID3D11ShaderResourceView** textureView,
-    DDS_ALPHA_MODE* alphaMode)
+    DDS_ALPHA_MODE* alphaMode) noexcept
 {
     return CreateDDSTextureFromMemoryEx(d3dDevice, nullptr,
         ddsData, ddsDataSize,
@@ -1761,7 +1767,7 @@ HRESULT DirectX::CreateDDSTextureFromMemoryEx(
     bool forceSRGB,
     ID3D11Resource** texture,
     ID3D11ShaderResourceView** textureView,
-    DDS_ALPHA_MODE* alphaMode)
+    DDS_ALPHA_MODE* alphaMode) noexcept
 {
     if (texture)
     {
@@ -1834,7 +1840,7 @@ HRESULT DirectX::CreateDDSTextureFromFile(
     ID3D11Resource** texture,
     ID3D11ShaderResourceView** textureView,
     size_t maxsize,
-    DDS_ALPHA_MODE* alphaMode)
+    DDS_ALPHA_MODE* alphaMode) noexcept
 {
     return CreateDDSTextureFromFileEx(d3dDevice, nullptr,
         fileName, maxsize,
@@ -1851,7 +1857,7 @@ HRESULT DirectX::CreateDDSTextureFromFile(
     ID3D11Resource** texture,
     ID3D11ShaderResourceView** textureView,
     size_t maxsize,
-    DDS_ALPHA_MODE* alphaMode)
+    DDS_ALPHA_MODE* alphaMode) noexcept
 {
     return CreateDDSTextureFromFileEx(d3dDevice, d3dContext,
         fileName,
@@ -1873,7 +1879,7 @@ HRESULT DirectX::CreateDDSTextureFromFileEx(
     bool forceSRGB,
     ID3D11Resource** texture,
     ID3D11ShaderResourceView** textureView,
-    DDS_ALPHA_MODE* alphaMode)
+    DDS_ALPHA_MODE* alphaMode) noexcept
 {
     return CreateDDSTextureFromFileEx(d3dDevice, nullptr,
         fileName,
@@ -1896,7 +1902,7 @@ HRESULT DirectX::CreateDDSTextureFromFileEx(
     bool forceSRGB,
     ID3D11Resource** texture,
     ID3D11ShaderResourceView** textureView,
-    DDS_ALPHA_MODE* alphaMode)
+    DDS_ALPHA_MODE* alphaMode) noexcept
 {
     if (texture)
     {
