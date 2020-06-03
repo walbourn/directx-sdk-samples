@@ -9,6 +9,7 @@
 
 #include <stdio.h>
 #include <d3d11.h>
+#include <string>
 #include <vector>
 #include "EncoderBase.h"
 #include "BC6HEncoderCS10.h"
