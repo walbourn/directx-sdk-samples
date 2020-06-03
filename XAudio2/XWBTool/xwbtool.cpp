@@ -656,7 +656,8 @@ enum OPTIONS
     OPT_STREAMING,
     OPT_OUTPUTFILE,
     OPT_OUTPUTHEADER,
-    OPT_NOOVERWRITE,
+    OPT_TOLOWER,
+    OPT_OVERWRITE,
     OPT_COMPACT,
     OPT_NOCOMPACT,
     OPT_FRIENDLY_NAMES,
@@ -689,7 +690,7 @@ struct WaveFile
         data{},
         conv(0),
         miniFmt{}
-        {}
+    {}
 
     WaveFile(WaveFile&) = delete;
     WaveFile& operator= (WaveFile&) = delete;
@@ -717,13 +718,14 @@ namespace
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 
-const SValue g_pOptions [] =
+const SValue g_pOptions[] =
 {
     { L"r",         OPT_RECURSIVE },
     { L"s",         OPT_STREAMING },
     { L"o",         OPT_OUTPUTFILE },
+    { L"l",         OPT_TOLOWER },
     { L"h",         OPT_OUTPUTHEADER },
-    { L"n",         OPT_NOOVERWRITE },
+    { L"y",         OPT_OVERWRITE },
     { L"c",         OPT_COMPACT },
     { L"nc",        OPT_NOCOMPACT },
     { L"f",         OPT_FRIENDLY_NAMES },
@@ -850,7 +852,8 @@ namespace
         wprintf(L"                       otherwise an in-memory bank is created\n");
         wprintf(L"   -o <filename>       output filename\n");
         wprintf(L"   -h <h-filename>     output C/C++ header\n");
-        wprintf(L"   -n                  do not overwrite output\n");
+        wprintf(L"   -l                  force output filename to lower case\n");
+        wprintf(L"   -y                  overwrite existing output file (if any)\n");
         wprintf(L"   -c                  force creation of compact wavebank\n");
         wprintf(L"   -nc                 force creation of non-compact wavebank\n");
         wprintf(L"   -f                  include entry friendly names\n");
@@ -908,20 +911,6 @@ namespace
         {
             wprintf(L" (%hs %u channels, %u-bit, %lu Hz)", GetFormatTagName(wave.data.wfx->wFormatTag), wave.data.wfx->nChannels, wave.data.wfx->wBitsPerSample, wave.data.wfx->nSamplesPerSec);
         }
-    }
-
-    bool FileExists(const wchar_t* pszFilename)
-    {
-        FILE *f = nullptr;
-        if (!_wfopen_s(&f, pszFilename, L"rb"))
-        {
-            if (f)
-                fclose(f);
-
-            return true;
-        }
-
-        return false;
     }
 }
 
@@ -1019,46 +1008,46 @@ int __cdecl wmain(_In_ int argc, _In_z_count_(argc) wchar_t* argv[])
                 break;
 
             case OPT_FILELIST:
+            {
+                std::wifstream inFile(pValue);
+                if (!inFile)
                 {
-                    std::wifstream inFile(pValue);
+                    wprintf(L"Error opening -flist file %ls\n", pValue);
+                    return 1;
+                }
+                wchar_t fname[1024] = {};
+                for (;;)
+                {
+                    inFile >> fname;
                     if (!inFile)
+                        break;
+
+                    if (*fname == L'#')
                     {
-                        wprintf(L"Error opening -flist file %ls\n", pValue);
+                        // Comment
+                    }
+                    else if (*fname == L'-')
+                    {
+                        wprintf(L"Command-line arguments not supported in -flist file\n");
                         return 1;
                     }
-                    wchar_t fname[1024] = {};
-                    for (;;)
+                    else if (wcspbrk(fname, L"?*") != nullptr)
                     {
-                        inFile >> fname;
-                        if (!inFile)
-                            break;
-
-                        if (*fname == L'#')
-                        {
-                            // Comment
-                        }
-                        else if (*fname == L'-')
-                        {
-                            wprintf(L"Command-line arguments not supported in -flist file\n");
-                            return 1;
-                        }
-                        else if (wcspbrk(fname, L"?*") != nullptr)
-                        {
-                            wprintf(L"Wildcards not supported in -flist file\n");
-                            return 1;
-                        }
-                        else
-                        {
-                            SConversion conv;
-                            wcscpy_s(conv.szSrc, MAX_PATH, fname);
-                            conversion.push_back(conv);
-                        }
-
-                        inFile.ignore(1000, '\n');
+                        wprintf(L"Wildcards not supported in -flist file\n");
+                        return 1;
                     }
-                    inFile.close();
+                    else
+                    {
+                        SConversion conv;
+                        wcscpy_s(conv.szSrc, MAX_PATH, fname);
+                        conversion.push_back(conv);
+                    }
+
+                    inFile.ignore(1000, '\n');
                 }
-                break;
+                inFile.close();
+            }
+            break;
             }
         }
         else if (wcspbrk(pArg, L"?*") != nullptr)
@@ -1090,6 +1079,52 @@ int __cdecl wmain(_In_ int argc, _In_z_count_(argc) wchar_t* argv[])
     if (~dwOptions & (1 << OPT_NOLOGO))
         PrintLogo();
 
+    // Determine output file name
+    if (!*szOutputFile)
+    {
+        auto pConv = conversion.begin();
+
+        wchar_t ext[_MAX_EXT];
+        wchar_t fname[_MAX_FNAME];
+        _wsplitpath_s(pConv->szSrc, nullptr, 0, nullptr, 0, fname, _MAX_FNAME, ext, _MAX_EXT);
+
+        if (_wcsicmp(ext, L".xwb") == 0)
+        {
+            wprintf(L"ERROR: Need to specify output file via -o\n");
+            return 1;
+        }
+
+        _wmakepath_s(szOutputFile, nullptr, nullptr, fname, L".xwb");
+    }
+
+    if (dwOptions & (1 << OPT_TOLOWER))
+    {
+        (void)_wcslwr_s(szOutputFile);
+
+        if (*szHeaderFile)
+        {
+            (void)_wcslwr_s(szHeaderFile);
+        }
+    }
+
+    if (~dwOptions & (1 << OPT_OVERWRITE))
+    {
+        if (GetFileAttributesW(szOutputFile) != INVALID_FILE_ATTRIBUTES)
+        {
+            wprintf(L"ERROR: Output file %ls already exists, use -y to overwrite!\n", szOutputFile);
+            return 1;
+        }
+
+        if (*szHeaderFile)
+        {
+            if (GetFileAttributesW(szHeaderFile) != INVALID_FILE_ATTRIBUTES)
+            {
+                wprintf(L"ERROR: Output header file %ls already exists!\n", szHeaderFile);
+                return 1;
+            }
+        }
+    }
+
     // Gather wave files
     std::unique_ptr<uint8_t[]> entries;
     std::unique_ptr<char[]> entryNames;
@@ -1106,16 +1141,6 @@ int __cdecl wmain(_In_ int argc, _In_z_count_(argc) wchar_t* argv[])
         // Load source image
         if (pConv != conversion.begin())
             wprintf(L"\n");
-        else if (!*szOutputFile)
-        {
-            if (_wcsicmp(ext, L".xwb") == 0)
-            {
-                wprintf(L"ERROR: Need to specify output file via -o\n");
-                return 1;
-            }
-
-            _wmakepath_s(szOutputFile, nullptr, nullptr, fname, L".xwb");
-        }
 
         wprintf(L"reading %ls", pConv->szSrc);
         fflush(stdout);
@@ -1318,24 +1343,6 @@ int __cdecl wmain(_In_ int argc, _In_z_count_(argc) wchar_t* argv[])
     wprintf(L"writing %ls%ls wavebank %ls w/ %zu entries\n", (compact) ? L"compact " : L"", (dwOptions & (1 << OPT_STREAMING)) ? L"streaming" : L"in-memory", szOutputFile, waves.size());
     fflush(stdout);
 
-    if (dwOptions & (1 << OPT_NOOVERWRITE))
-    {
-        if (FileExists(szOutputFile))
-        {
-            wprintf(L"ERROR: Output file %ls already exists!\n", szOutputFile);
-            return 1;
-        }
-
-        if (*szHeaderFile)
-        {
-            if (FileExists(szHeaderFile))
-            {
-                wprintf(L"ERROR: Output header file %ls already exists!\n", szHeaderFile);
-                return 1;
-            }
-        }
-    }
-
     hFile.reset(safe_handle(CreateFileW(szOutputFile, GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr)));
     if (!hFile)
     {
@@ -1363,7 +1370,10 @@ int __cdecl wmain(_In_ int argc, _In_z_count_(argc) wchar_t* argv[])
 
     data.dwFlags = (dwOptions & (1 << OPT_STREAMING)) ? BANKDATA::TYPE_STREAMING : BANKDATA::TYPE_BUFFER;
 
-    data.dwFlags |= BANKDATA::FLAGS_SEEKTABLES;
+    if (seekEntries > 0)
+    {
+        data.dwFlags |= BANKDATA::FLAGS_SEEKTABLES;
+    }
 
     if (dwOptions & (1 << OPT_FRIENDLY_NAMES))
     {
@@ -1589,7 +1599,7 @@ int __cdecl wmain(_In_ int argc, _In_z_count_(argc) wchar_t* argv[])
 
             FileNameToIdentifier(wBankName, _MAX_FNAME);
 
-            fprintf_s(file, "#pragma once\n\nenum XACT_WAVEBANK_%ls\n{\n", wBankName);
+            fprintf_s(file, "#pragma once\n\nenum XACT_WAVEBANK_%ls : unsigned int\n{\n", wBankName);
 
             size_t windex = 0;
             for (auto it = waves.begin(); it != waves.end(); ++it, ++windex)
