@@ -1,6 +1,6 @@
 
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
+# Visual Studio Version 16
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Tutorial01", "Tutorial01\Tutorial01_2019.vcxproj", "{06EDC280-1187-4614-A248-E640C095FA6B}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Tutorial02", "Tutorial02\Tutorial02_2019.vcxproj", "{28877253-3120-4098-86B8-BAAC1C0AF240}"
