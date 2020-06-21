@@ -2849,8 +2849,6 @@ CDXUTControl::CDXUTControl( _In_opt_ CDXUTDialog* pDialog ) noexcept
     m_bHasFocus = false;
     m_bIsDefault = false;
 
-    m_pDialog = nullptr;
-
     m_x = 0;
     m_y = 0;
     m_width = 0;
