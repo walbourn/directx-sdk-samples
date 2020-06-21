@@ -209,9 +209,10 @@ HRESULT PlayWaveFromWaveBank( IXAudio2* pXaudio2, WaveBankReader& wb, uint32_t i
         return E_INVALIDARG;
 
     uint8_t waveFormat[64];
+    static_assert(sizeof(waveFormat) >= sizeof(WAVEFORMATEX), "Buffer size should be >= size of WAVEFORMATEX");
     auto pwfx = reinterpret_cast<WAVEFORMATEX*>( &waveFormat );
 
-    HRESULT hr = wb.GetFormat( index, pwfx, 64 );
+    HRESULT hr = wb.GetFormat( index, pwfx, sizeof(waveFormat) );
     if ( FAILED(hr) )
         return hr;
 

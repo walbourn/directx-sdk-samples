@@ -202,7 +202,8 @@ int main()
             //
             // Get the info we need to play back this wave (need enough space for PCM, ADPCM, and xWMA formats)
             //
-            char formatBuff[ 64 ]; 
+            uint8_t formatBuff[ 64 ];
+            static_assert(sizeof(formatBuff) >= sizeof(WAVEFORMATEX), "Buffer size should be >= size of WAVEFORMATEX");
             WAVEFORMATEX *wfx = reinterpret_cast<WAVEFORMATEX*>(&formatBuff);
 
             if( FAILED( hr = wb.GetFormat( i, wfx, 64 ) ) )
