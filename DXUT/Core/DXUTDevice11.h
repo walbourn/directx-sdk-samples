@@ -113,7 +113,7 @@ CD3D11Enumeration* WINAPI DXUTGetD3D11Enumeration(_In_ bool bForceEnumerate = fa
 //--------------------------------------------------------------------------------------
 class CD3D11EnumAdapterInfo
 {
-    const CD3D11EnumAdapterInfo &operator = ( const CD3D11EnumAdapterInfo &rhs );
+    const CD3D11EnumAdapterInfo &operator = ( const CD3D11EnumAdapterInfo &rhs ) = delete;
 
 public:
     CD3D11EnumAdapterInfo() noexcept :
@@ -144,7 +144,7 @@ public:
 
 class CD3D11EnumOutputInfo
 {
-    const CD3D11EnumOutputInfo &operator = ( const CD3D11EnumOutputInfo &rhs );
+    const CD3D11EnumOutputInfo &operator = ( const CD3D11EnumOutputInfo &rhs ) = delete;
 
 public:
     CD3D11EnumOutputInfo() noexcept :
