@@ -2096,7 +2096,7 @@ HRESULT DXUTChangeDevice( DXUTDeviceSettings* pNewDeviceSettings,
             rcResizedWindow.right = nClientWidth;
             rcResizedWindow.top = 0;
             rcResizedWindow.bottom = nClientHeight;
-            AdjustWindowRect( &rcResizedWindow, GetWindowLong( DXUTGetHWNDDeviceWindowed(), GWL_STYLE ),
+            AdjustWindowRect( &rcResizedWindow, (DWORD)GetWindowLongPtr( DXUTGetHWNDDeviceWindowed(), GWL_STYLE ),
                               GetDXUTState().GetMenu() != 0 );
 
             int nWindowWidth = rcResizedWindow.right - rcResizedWindow.left;
@@ -2133,7 +2133,7 @@ HRESULT DXUTChangeDevice( DXUTDeviceSettings* pNewDeviceSettings,
             RECT rcWindow = {};
             rcWindow.right = (long)( DXUTGetBackBufferWidthFromDS(pNewDeviceSettings) );
             rcWindow.bottom = (long)( DXUTGetBackBufferHeightFromDS(pNewDeviceSettings) );
-            AdjustWindowRect( &rcWindow, GetWindowLong( DXUTGetHWNDDeviceWindowed(), GWL_STYLE ), GetDXUTState().GetMenu() != 0 );
+            AdjustWindowRect( &rcWindow, (DWORD)GetWindowLongPtr( DXUTGetHWNDDeviceWindowed(), GWL_STYLE ), GetDXUTState().GetMenu() != 0 );
 
             // Resize the window.  It is important to adjust the window size 
             // after resetting the device rather than beforehand to ensure 
