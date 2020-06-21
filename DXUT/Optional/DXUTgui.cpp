@@ -3116,11 +3116,7 @@ void CDXUTButton::Render( _In_ float fElapsedTime )
 
     DXUT_CONTROL_STATE iState = DXUT_STATE_NORMAL;
 
-    if( m_bVisible == false )
-    {
-        iState = DXUT_STATE_HIDDEN;
-    }
-    else if( m_bEnabled == false )
+    if( m_bEnabled == false )
     {
         iState = DXUT_STATE_DISABLED;
     }
@@ -3315,9 +3311,7 @@ void CDXUTCheckBox::Render( _In_ float fElapsedTime )
         return;
     DXUT_CONTROL_STATE iState = DXUT_STATE_NORMAL;
 
-    if( m_bVisible == false )
-        iState = DXUT_STATE_HIDDEN;
-    else if( m_bEnabled == false )
+    if( m_bEnabled == false )
         iState = DXUT_STATE_DISABLED;
     else if( m_bPressed )
         iState = DXUT_STATE_PRESSED;
@@ -4403,11 +4397,7 @@ void CDXUTSlider::Render( _In_ float fElapsedTime )
 
     DXUT_CONTROL_STATE iState = DXUT_STATE_NORMAL;
 
-    if( m_bVisible == false )
-    {
-        iState = DXUT_STATE_HIDDEN;
-    }
-    else if( m_bEnabled == false )
+    if( m_bEnabled == false )
     {
         iState = DXUT_STATE_DISABLED;
     }
