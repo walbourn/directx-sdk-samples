@@ -429,6 +429,7 @@ int main()
 #endif
 
     CoUninitialize();
+    return 0;
 }
 
 
