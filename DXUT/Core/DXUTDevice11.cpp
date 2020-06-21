@@ -188,8 +188,10 @@ HRESULT CD3D11Enumeration::Enumerate( LPDXUTCALLBACKISD3D11DEVICEACCEPTABLE IsD3
         {
             delete pAdapterInfo;
         }
-
-        if (SUCCEEDED(hr)) m_AdapterInfoList.push_back( pAdapterInfo );
+        else
+        {
+            m_AdapterInfoList.push_back(pAdapterInfo);
+        }
     }
 
     //
@@ -854,10 +856,8 @@ void CD3D11Enumeration::BuildMultiSampleQualityList( DXGI_FORMAT fmt, CD3D11Enum
             //D3D10_MAX_MULTISAMPLE_SAMPLE_COUNT in d3d10.h. If the returned value of pNumQualityLevels is 0, 
             //the format and sample count combination is not supported for the installed adapter.
 
-            if (Quality != 0) {
-                pDeviceCombo->multiSampleCountList.push_back( i );
-                pDeviceCombo->multiSampleQualityList.push_back( Quality );
-            }
+            pDeviceCombo->multiSampleCountList.push_back( i );
+            pDeviceCombo->multiSampleQualityList.push_back( Quality );
         }
     }
 
