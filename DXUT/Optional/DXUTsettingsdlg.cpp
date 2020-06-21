@@ -1467,7 +1467,7 @@ HRESULT CD3DSettingsDlg::UpdateD3D11Resolutions()
             {
                 // If "Show All" is not checked, then hide all resolutions
                 // that don't match the aspect ratio of the desktop resolution
-                if (bShowAll || (!bShowAll && fabsf(fDesktopAspectRatio - fAspect) < 0.05f))
+                if (bShowAll || fabsf(fDesktopAspectRatio - fAspect) < 0.05f)
                 {
                     AddD3D11Resolution(DisplayMode.Width, DisplayMode.Height);
                 }
