@@ -4758,7 +4758,7 @@ void CDXUTScrollBar::Render( _In_ float fElapsedTime )
         iState = DXUT_STATE_FOCUS;
 
 
-    float fBlendRate = ( iState == DXUT_STATE_PRESSED ) ? 0.0f : 0.8f;
+    float fBlendRate = 0.8f;
 
     // Background track layer
     auto pElement = m_Elements[ 0 ];
