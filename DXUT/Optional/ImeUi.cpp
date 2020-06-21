@@ -1000,7 +1000,7 @@ static void DrawCandidateList()
         g_CaretInfo.pFont->GetTextExtent( g_szReadingString, ( DWORD* )&largest.cx, ( DWORD* )&largest.cy );
     else
     {
-        for( i = 0; g_szCandidate[i][0] && i < ( int )g_uCandPageSize; i++ )
+        for( i = 0; i < ( int )g_uCandPageSize && g_szCandidate[i][0]; i++ )
         {
             DWORD tx = 0;
             DWORD ty = 0;
