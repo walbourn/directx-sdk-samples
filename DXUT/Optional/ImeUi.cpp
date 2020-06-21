@@ -30,11 +30,11 @@
 #define IMEID_VER(dwId)		( ( dwId ) & 0xffff0000 )
 #define IMEID_LANG(dwId)	( ( dwId ) & 0x0000ffff )
 
-#define _CHT_HKL_DAYI				( (HKL)0xE0060404 )	// DaYi
-#define _CHT_HKL_NEW_PHONETIC		( (HKL)0xE0080404 )	// New Phonetic
-#define _CHT_HKL_NEW_CHANG_JIE		( (HKL)0xE0090404 )	// New Chang Jie
-#define _CHT_HKL_NEW_QUICK			( (HKL)0xE00A0404 )	// New Quick
-#define _CHT_HKL_HK_CANTONESE		( (HKL)0xE00B0404 )	// Hong Kong Cantonese
+#define _CHT_HKL_DAYI				( (HKL)(DWORD_PTR)0xE0060404 )	// DaYi
+#define _CHT_HKL_NEW_PHONETIC		( (HKL)(DWORD_PTR)0xE0080404 )	// New Phonetic
+#define _CHT_HKL_NEW_CHANG_JIE		( (HKL)(DWORD_PTR)0xE0090404 )	// New Chang Jie
+#define _CHT_HKL_NEW_QUICK			( (HKL)(DWORD_PTR)0xE00A0404 )	// New Quick
+#define _CHT_HKL_HK_CANTONESE		( (HKL)(DWORD_PTR)0xE00B0404 )	// Hong Kong Cantonese
 #define _CHT_IMEFILENAME	"TINTLGNT.IME"	// New Phonetic
 #define _CHT_IMEFILENAME2	"CINTLGNT.IME"	// New Chang Jie
 #define _CHT_IMEFILENAME3	"MSTCIPHA.IME"	// Phonetic 5.1
