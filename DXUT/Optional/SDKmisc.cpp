@@ -221,23 +221,19 @@ LPCWSTR WINAPI DXUTGetMediaSearchPath()
 //--------------------------------------------------------------------------------------
 HRESULT WINAPI DXUTSetMediaSearchPath( _In_z_ LPCWSTR strPath )
 {
-    HRESULT hr;
-
     WCHAR* s_strSearchPath = DXUTMediaSearchPath();
 
-    hr = wcscpy_s( s_strSearchPath, MAX_PATH, strPath );
-    if( SUCCEEDED( hr ) )
+    wcscpy_s( s_strSearchPath, MAX_PATH, strPath );
+
+    // append slash if needed
+    const size_t ch = wcsnlen( s_strSearchPath, MAX_PATH);
+
+    if( s_strSearchPath[ch - 1] != L'\\' )
     {
-        // append slash if needed
-        size_t ch = 0;
-        ch = wcsnlen( s_strSearchPath, MAX_PATH);
-        if( SUCCEEDED( hr ) && s_strSearchPath[ch - 1] != L'\\' )
-        {
-            hr = wcscat_s( s_strSearchPath, MAX_PATH, L"\\" );
-        }
+        wcscat_s( s_strSearchPath, MAX_PATH, L"\\" );
     }
 
-    return hr;
+    return S_OK;
 }
 
 
