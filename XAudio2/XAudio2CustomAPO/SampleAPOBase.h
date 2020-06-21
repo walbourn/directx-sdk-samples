@@ -148,7 +148,7 @@ CSampleXAPOBase<APOClass, ParameterClass>::CSampleXAPOBase( )
 : CXAPOParametersBase( &m_regProps, (BYTE*)m_parameters, sizeof( ParameterClass ), FALSE )
 {
 	ZeroMemory( m_parameters, sizeof( m_parameters ) );
-	ZeroMemory( m_wfx, sizeof( m_wfx ) );
+	ZeroMemory( &m_wfx, sizeof( m_wfx ) );
 }
 
 
