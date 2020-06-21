@@ -605,13 +605,13 @@ static void DrawImeIndicator()
             {
                 PieData[0].sx = ( -SizeOfPie / 2 ) + g_CaretInfo.margins.left - 4;
                 PieData[0].sy = ( float )g_CaretInfo.margins.top + ( g_CaretInfo.margins.bottom -
-                                                                     g_CaretInfo.margins.top ) / 2;
+                                                                     g_CaretInfo.margins.top ) / 2.0F;
             }
             else
             {
                 PieData[0].sx = -( SizeOfPie / 2 ) + g_CaretInfo.margins.right + gSkinIME.symbolHeight + 4;
                 PieData[0].sy = ( float )g_CaretInfo.margins.top + ( g_CaretInfo.margins.bottom -
-                                                                     g_CaretInfo.margins.top ) / 2;
+                                                                     g_CaretInfo.margins.top ) / 2.0F;
             }
             break;
         }
