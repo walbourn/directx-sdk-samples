@@ -169,7 +169,7 @@ public:
 //--------------------------------------------------------------------------------------
 class CD3D11EnumDeviceInfo
 {
-    const CD3D11EnumDeviceInfo& operator =( const CD3D11EnumDeviceInfo& rhs );
+    const CD3D11EnumDeviceInfo& operator =( const CD3D11EnumDeviceInfo& rhs ) = delete;
 
 public:
     ~CD3D11EnumDeviceInfo();
