@@ -1905,7 +1905,7 @@ HRESULT DXUTChangeDevice( DXUTDeviceSettings* pNewDeviceSettings,
     else
     {
         // Going to fullscreen mode
-        if( !pOldDeviceSettings || ( pOldDeviceSettings && DXUTGetIsWindowedFromDS( pOldDeviceSettings ) ) )
+        if( !pOldDeviceSettings || ( DXUTGetIsWindowedFromDS( pOldDeviceSettings ) ) )
         {
             // Transistioning to full screen mode from a standard window so 
             if( pOldDeviceSettings )
