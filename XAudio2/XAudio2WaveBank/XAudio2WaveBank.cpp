@@ -294,12 +294,12 @@ HRESULT PlayWaveFromWaveBank( IXAudio2* pXaudio2, WaveBankReader& wb, uint32_t i
     hr = pSourceVoice->Start( 0 );
 
     // Let the sound play
-    BOOL isRunning = TRUE;
+    bool isRunning = true;
     while( SUCCEEDED( hr ) && isRunning )
     {
         XAUDIO2_VOICE_STATE state;
         pSourceVoice->GetState( &state );
-        isRunning = ( state.BuffersQueued > 0 ) != 0;
+        isRunning = ( state.BuffersQueued > 0 );
 
         // Wait till the escape key is pressed
         if( GetAsyncKeyState( VK_ESCAPE ) )
