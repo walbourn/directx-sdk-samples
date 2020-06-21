@@ -620,7 +620,7 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
 
     // Grid
     const UINT lcount = 2 * ( ( ZMAX - ZMIN + 1 ) + ( XMAX - XMIN + 1 ) );
-    std::unique_ptr<Vertex> vbData( new Vertex[ lcount ] );
+    std::unique_ptr<Vertex[]> vbData( std::make_unique<Vertex[]>( lcount ) );
 
     auto pVertices = vbData.get();
     int i, j;
