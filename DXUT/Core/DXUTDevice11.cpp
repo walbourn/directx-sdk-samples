@@ -1262,10 +1262,6 @@ HRESULT WINAPI DXUTGetD3D11AdapterDisplayMode( UINT AdapterOrdinal, UINT nOutput
             memset( &Desc, 0, sizeof(Desc) );
         pModeDesc->Width = Desc.DesktopCoordinates.right - Desc.DesktopCoordinates.left;
         pModeDesc->Height = Desc.DesktopCoordinates.bottom - Desc.DesktopCoordinates.top;
-
-        // This should not be required with DXGI 1.1 support for BGRA...
-        if( pModeDesc->Format == DXGI_FORMAT_B8G8R8A8_UNORM )
-            pModeDesc->Format = DXGI_FORMAT_R8G8B8A8_UNORM;
     }
 
     return S_OK;
