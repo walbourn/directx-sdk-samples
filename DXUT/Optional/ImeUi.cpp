@@ -233,7 +233,7 @@ static DWORD                    g_IMECursorChars = 0;
 static TCHAR g_szCandidate[MAX_CANDLIST][MAX_CANDIDATE_LENGTH];
 static DWORD                    g_dwSelection, g_dwCount;
 static UINT                     g_uCandPageSize;
-static DWORD                    g_bDisableImeCompletely = false;
+static bool                     g_bDisableImeCompletely = false;
 static DWORD                    g_dwIMELevel;
 static DWORD                    g_dwIMELevelSaved;
 static TCHAR g_szMultiLineCompString[ 256 *( 3 - sizeof( TCHAR ) ) ];
