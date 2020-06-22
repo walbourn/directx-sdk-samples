@@ -1132,7 +1132,7 @@ void CDXUTDialog::OnMouseMove( _In_ const POINT& pt )
 
     // Handle mouse entering the new control
     m_pControlMouseOver = pControl;
-    if( pControl )
+    if( m_pControlMouseOver )
         m_pControlMouseOver->OnMouseEnter();
 }
 
