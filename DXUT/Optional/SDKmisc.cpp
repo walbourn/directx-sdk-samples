@@ -353,47 +353,47 @@ bool DXUTFindMediaSearchTypicalDirs( WCHAR* strSearchPath, int cchSearch, LPCWST
 
     // Search in .\  
     wcscpy_s( strSearchPath, cchSearch, strLeaf );
-    if( GetFileAttributes( strSearchPath ) != 0xFFFFFFFF )
+    if( GetFileAttributes( strSearchPath ) != INVALID_FILE_ATTRIBUTES )
         return true;
 
     // Search in ..\  
     swprintf_s( strSearchPath, cchSearch, L"..\\%ls", strLeaf );
-    if( GetFileAttributes( strSearchPath ) != 0xFFFFFFFF )
+    if( GetFileAttributes( strSearchPath ) != INVALID_FILE_ATTRIBUTES )
         return true;
 
     // Search in ..\..\ 
     swprintf_s( strSearchPath, cchSearch, L"..\\..\\%ls", strLeaf );
-    if( GetFileAttributes( strSearchPath ) != 0xFFFFFFFF )
+    if( GetFileAttributes( strSearchPath ) != INVALID_FILE_ATTRIBUTES )
         return true;
 
     // Search in ..\..\ 
     swprintf_s( strSearchPath, cchSearch, L"..\\..\\%ls", strLeaf );
-    if( GetFileAttributes( strSearchPath ) != 0xFFFFFFFF )
+    if( GetFileAttributes( strSearchPath ) != INVALID_FILE_ATTRIBUTES )
         return true;
 
     // Search in the %EXE_DIR%\ 
     swprintf_s( strSearchPath, cchSearch, L"%ls\\%ls", strExePath, strLeaf );
-    if( GetFileAttributes( strSearchPath ) != 0xFFFFFFFF )
+    if( GetFileAttributes( strSearchPath ) != INVALID_FILE_ATTRIBUTES )
         return true;
 
     // Search in the %EXE_DIR%\..\ 
     swprintf_s( strSearchPath, cchSearch, L"%ls\\..\\%ls", strExePath, strLeaf );
-    if( GetFileAttributes( strSearchPath ) != 0xFFFFFFFF )
+    if( GetFileAttributes( strSearchPath ) != INVALID_FILE_ATTRIBUTES )
         return true;
 
     // Search in the %EXE_DIR%\..\..\ 
     swprintf_s( strSearchPath, cchSearch, L"%ls\\..\\..\\%ls", strExePath, strLeaf );
-    if( GetFileAttributes( strSearchPath ) != 0xFFFFFFFF )
+    if( GetFileAttributes( strSearchPath ) != INVALID_FILE_ATTRIBUTES )
         return true;
 
     // Search in "%EXE_DIR%\..\%EXE_NAME%\".  This matches the DirectX SDK layout
     swprintf_s( strSearchPath, cchSearch, L"%ls\\..\\%ls\\%ls", strExePath, strExeName, strLeaf );
-    if( GetFileAttributes( strSearchPath ) != 0xFFFFFFFF )
+    if( GetFileAttributes( strSearchPath ) != INVALID_FILE_ATTRIBUTES )
         return true;
 
     // Search in "%EXE_DIR%\..\..\%EXE_NAME%\".  This matches the DirectX SDK layout
     swprintf_s( strSearchPath, cchSearch, L"%ls\\..\\..\\%ls\\%ls", strExePath, strExeName, strLeaf );
-    if( GetFileAttributes( strSearchPath ) != 0xFFFFFFFF )
+    if( GetFileAttributes( strSearchPath ) != INVALID_FILE_ATTRIBUTES )
         return true;
 
     // Search in media search dir 
@@ -401,7 +401,7 @@ bool DXUTFindMediaSearchTypicalDirs( WCHAR* strSearchPath, int cchSearch, LPCWST
     if( s_strSearchPath[0] != 0 )
     {
         swprintf_s( strSearchPath, cchSearch, L"%ls%ls", s_strSearchPath, strLeaf );
-        if( GetFileAttributes( strSearchPath ) != 0xFFFFFFFF )
+        if( GetFileAttributes( strSearchPath ) != INVALID_FILE_ATTRIBUTES )
             return true;
     }
 
@@ -438,7 +438,7 @@ bool DXUTFindMediaSearchParentDirs( WCHAR* strSearchPath, int cchSearch, const W
     while( strFilePart && *strFilePart != '\0' )
     {
         swprintf_s( strFullFileName, MAX_PATH, L"%ls\\%ls", strFullPath, strLeafName );
-        if( GetFileAttributes( strFullFileName ) != 0xFFFFFFFF )
+        if( GetFileAttributes( strFullFileName ) != INVALID_FILE_ATTRIBUTES )
         {
             wcscpy_s( strSearchPath, cchSearch, strFullFileName );
             return true;
