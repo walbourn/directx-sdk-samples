@@ -607,19 +607,19 @@ HRESULT CDXUTDialog::OnRender( _In_ float fElapsedTime )
         Top = 1.0f - m_y * 2.0f / m_pManager->m_nBackBufferHeight;
         Bottom = 1.0f - ( m_y + m_height ) * 2.0f / m_pManager->m_nBackBufferHeight;
 
-        DXUT_SCREEN_VERTEX_10 vertices[4] =
-        {
-            Left,  Top,    0.5f, D3DCOLOR_TO_D3DCOLORVALUE( m_colorTopLeft ), 0.0f, 0.0f,
-            Right, Top,    0.5f, D3DCOLOR_TO_D3DCOLORVALUE( m_colorTopRight ), 1.0f, 0.0f,
-            Left,  Bottom, 0.5f, D3DCOLOR_TO_D3DCOLORVALUE( m_colorBottomLeft ), 0.0f, 1.0f,
-            Right, Bottom, 0.5f, D3DCOLOR_TO_D3DCOLORVALUE( m_colorBottomRight ), 1.0f, 1.0f,
-        };
-
         //DXUT_SCREEN_VERTEX_10 *pVB;
         D3D11_MAPPED_SUBRESOURCE MappedData;
         if( SUCCEEDED( pd3dDeviceContext->Map( m_pManager->m_pVBScreenQuad11, 0, D3D11_MAP_WRITE_DISCARD,
                                                0, &MappedData ) ) )
         {
+            DXUT_SCREEN_VERTEX_10 vertices[4] =
+            {
+                Left,  Top,    0.5f, D3DCOLOR_TO_D3DCOLORVALUE(m_colorTopLeft), 0.0f, 0.0f,
+                Right, Top,    0.5f, D3DCOLOR_TO_D3DCOLORVALUE(m_colorTopRight), 1.0f, 0.0f,
+                Left,  Bottom, 0.5f, D3DCOLOR_TO_D3DCOLORVALUE(m_colorBottomLeft), 0.0f, 1.0f,
+                Right, Bottom, 0.5f, D3DCOLOR_TO_D3DCOLORVALUE(m_colorBottomRight), 1.0f, 1.0f,
+            };
+
             memcpy( MappedData.pData, vertices, sizeof( vertices ) );
             pd3dDeviceContext->Unmap( m_pManager->m_pVBScreenQuad11, 0 );
         }

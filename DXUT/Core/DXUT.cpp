@@ -4476,9 +4476,9 @@ HRESULT DXUTSnapDeviceSettingsToEnumDevice( DXUTDeviceSettings* pDeviceSettings,
     }   
     if (pDeviceSettingsCombo->pOutputInfo)
     {
-        auto bestDisplayMode = pDeviceSettingsCombo->pOutputInfo->displayModeList[ bestModeIndex ];
         if (!pDeviceSettingsCombo->Windowed)
         {
+            auto bestDisplayMode = pDeviceSettingsCombo->pOutputInfo->displayModeList[bestModeIndex];
             pDeviceSettings->d3d11.sd.BufferDesc.Height = bestDisplayMode.Height;
             pDeviceSettings->d3d11.sd.BufferDesc.Width = bestDisplayMode.Width;
             pDeviceSettings->d3d11.sd.BufferDesc.RefreshRate.Numerator = bestDisplayMode.RefreshRate.Numerator;
