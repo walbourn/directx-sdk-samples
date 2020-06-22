@@ -6196,7 +6196,7 @@ void CDXUTEditBox::SetTextFloatArray( const float* pNumbers, int nCount )
     }
 
     // Don't want the last space
-    if( nCount > 0 && wcslen( wszBuffer ) > 0 )
+    if( nCount > 0 && wszBuffer[0] != L'\0' )
         wszBuffer[wcslen( wszBuffer ) - 1] = 0;
 
     SetText( wszBuffer );
