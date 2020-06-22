@@ -6378,11 +6378,12 @@ bool CUniBuffer::InsertChar( _In_ int nIndex, _In_ WCHAR wChar )
 //--------------------------------------------------------------------------------------
 bool CUniBuffer::RemoveChar( _In_ int nIndex )
 {
-    if( !wcslen( m_pwszBuffer ) || nIndex < 0 || nIndex >= (int)wcslen( m_pwszBuffer ) )
+    const size_t nBufferLen = wcslen( m_pwszBuffer );
+    if( !nBufferLen || nIndex < 0 || nIndex >= (int)nBufferLen )
         return false;  // Invalid index
 
     MoveMemory( m_pwszBuffer + nIndex, m_pwszBuffer + nIndex + 1, sizeof( WCHAR ) *
-                ( wcslen( m_pwszBuffer ) - nIndex ) );
+                ( nBufferLen - nIndex ) );
     m_bAnalyseRequired = true;
     return true;
 }
