@@ -2666,7 +2666,9 @@ void CTsfUiLessMode::ReleaseSinks()
     if( m_tm && SUCCEEDED( m_tm->QueryInterface( __uuidof( ITfSource ), ( void** )&source ) ) )
     {
         hr = source->UnadviseSink( m_dwUIElementSinkCookie );
+        assert(SUCCEEDED(hr));
         hr = source->UnadviseSink( m_dwAlpnSinkCookie );
+        assert(SUCCEEDED(hr));
         source->Release();
         SetupCompartmentSinks( TRUE );	// Remove all compartment sinks
         m_tm->Deactivate();
