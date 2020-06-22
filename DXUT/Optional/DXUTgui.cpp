@@ -2668,13 +2668,13 @@ void CDXUTDialogResourceManager::EnableKeyboardInputForAllDialogs()
 _Use_decl_annotations_
 int CDXUTDialogResourceManager::AddFont( LPCWSTR strFaceName, LONG height, LONG weight ) 
 {
+    const size_t nFaceLen = wcsnlen( strFaceName, MAX_PATH);
+
     // See if this font already exists
     for( size_t i = 0; i < m_FontCache.size(); ++i )
     {
         auto pFontNode = m_FontCache[ i ];
-        size_t nLen = 0;
-        nLen = wcsnlen( strFaceName, MAX_PATH);
-        if( 0 == _wcsnicmp( pFontNode->strFace, strFaceName, nLen ) &&
+        if( 0 == _wcsnicmp( pFontNode->strFace, strFaceName, nFaceLen ) &&
             pFontNode->nHeight == height &&
             pFontNode->nWeight == weight )
         {
@@ -2703,14 +2703,14 @@ int CDXUTDialogResourceManager::AddFont( LPCWSTR strFaceName, LONG height, LONG 
 //--------------------------------------------------------------------------------------
 int CDXUTDialogResourceManager::AddTexture( _In_z_ LPCWSTR strFilename )
 {
+    const size_t nNameLen = wcsnlen( strFilename, MAX_PATH);
+
     // See if this texture already exists
     for( size_t i = 0; i < m_TextureCache.size(); ++i )
     {
         auto pTextureNode = m_TextureCache[ i ];
-        size_t nLen = 0;
-        nLen = wcsnlen( strFilename, MAX_PATH);
         if( pTextureNode->bFileSource &&  // Sources must match
-            0 == _wcsnicmp( pTextureNode->strFilename, strFilename, nLen ) )
+            0 == _wcsnicmp( pTextureNode->strFilename, strFilename, nNameLen ) )
         {
             return static_cast<int>( i );
         }
