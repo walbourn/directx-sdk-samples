@@ -619,7 +619,7 @@ namespace
 
 
     //--------------------------------------------------------------------------------------
-    #define ISBITMASK( r,g,b,a ) ( ddpf.RBitMask == r && ddpf.GBitMask == g && ddpf.BBitMask == b && ddpf.ABitMask == a )
+    #define ISBITMASK( r,g,b,a ) ( ddpf.RBitMask == (r) && ddpf.GBitMask == (g) && ddpf.BBitMask == (b) && ddpf.ABitMask == (a) )
 
     DXGI_FORMAT GetDXGIFormat(const DDS_PIXELFORMAT& ddpf) noexcept
     {
