@@ -1494,7 +1494,7 @@ HRESULT CD3DSettingsDlg::UpdateD3D11RefreshRates()
 {
     const DWORD dwWidth = g_DeviceSettings.d3d11.sd.BufferDesc.Width;
     const DWORD dwHeight = g_DeviceSettings.d3d11.sd.BufferDesc.Height;
-    DXGI_FORMAT backBuffer = g_DeviceSettings.d3d11.sd.BufferDesc.Format;
+    const DXGI_FORMAT backBuffer = g_DeviceSettings.d3d11.sd.BufferDesc.Format;
     const DXGI_RATIONAL RefreshRate = g_DeviceSettings.d3d11.sd.BufferDesc.RefreshRate;
 
     auto pRefreshRateComboBox = m_Dialog.GetComboBox( DXUTSETTINGSDLG_D3D11_REFRESH_RATE );

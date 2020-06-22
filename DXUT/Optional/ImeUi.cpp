@@ -47,7 +47,7 @@
 #define IMEID_CHT_VER60 ( LANG_CHT | MAKEIMEVERSION( 6, 0 ) )	// New(Phonetic/ChanJie)IME6.0 : 6.0.x.x // New IME 6.0(web download)
 #define IMEID_CHT_VER_VISTA ( LANG_CHT | MAKEIMEVERSION( 7, 0 ) )	// All TSF TIP under Cicero UI-less mode: a hack to make GetImeId() return non-zero value
 
-#define _CHS_HKL		( (HKL)0xE00E0804 )	// MSPY
+#define _CHS_HKL		( (HKL)(DWORD_PTR)0xE00E0804 )	// MSPY
 #define _CHS_IMEFILENAME	"PINTLGNT.IME"	// MSPY1.5/2/3
 #define _CHS_IMEFILENAME2	"MSSCIPYA.IME"	// MSPY3 for OfficeXP
 #define IMEID_CHS_VER41	( LANG_CHS | MAKEIMEVERSION( 4, 1 ) )	// MSPY1.5	// SCIME97 or MSPY1.5 (w/Win98, Office97)
