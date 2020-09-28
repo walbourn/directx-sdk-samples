@@ -11,7 +11,7 @@
 //-------------------------------------------------------------------------------------
 
 #define WIN32_LEAN_AND_MEAN
-#include <windows.h>
+#include <Windows.h>
 
 #include <assert.h>
 
@@ -416,7 +416,7 @@ namespace
                         {
                             // Return 'forward' loop
                             *pLoopStart = loops[j].start;
-                            *pLoopLength = loops[j].end + loops[j].start + 1;
+                            *pLoopLength = loops[j].end - loops[j].start + 1;
                             return S_OK;
                         }
                     }
