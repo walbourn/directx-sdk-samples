@@ -1,1 +1,1 @@
-#include "Tutorial06.fx"
+#include "Tutorial06.fxh"

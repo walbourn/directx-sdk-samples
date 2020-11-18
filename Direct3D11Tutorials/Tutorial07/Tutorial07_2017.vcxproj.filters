@@ -26,9 +26,6 @@
     <ClInclude Include="DDSTextureLoader.h" />
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="Tutorial07.fx">
-      <Filter>Shaders</Filter>
-    </FxCompile>
     <FxCompile Include="Tutorial07_PS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
@@ -40,5 +37,10 @@
     <Image Include="seafloor.dds">
       <Filter>Resource Files</Filter>
     </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Tutorial07.fxh">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>
