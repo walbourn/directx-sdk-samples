@@ -13,4 +13,7 @@
     <ClInclude Include="BC6HEncoderCS10.h" />
     <ClInclude Include="EncoderBase.h" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
 </Project>
