@@ -19,8 +19,8 @@
 *.VC.db
 .vs
 Bin
-DirectXTK/Src/Shaders/Compiled/XboxOne*.inc
-DirectXTK/Src/Shaders/Compiled/XboxOne*.pdb
+DirectXTK/Src/Shaders/Compiled/*.inc
+DirectXTK/Src/Shaders/Compiled/*.pdb
 ipch
 Debug
 Debug Win8

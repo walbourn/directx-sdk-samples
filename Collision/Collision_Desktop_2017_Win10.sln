@@ -9,8 +9,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DXUT", "..\DXUT\Core\DXUT_D
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DXUTOpt", "..\DXUT\Optional\DXUTOpt_DirectXTK_2017_Win10.vcxproj", "{61B333C2-C4F7-4CC1-A9BF-83F6D95588EB}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DirectXTK_Desktop_2017_Win10", "..\DirectXTK\DirectXTK_Desktop_2017_Win10.vcxproj", "{E0B52AE7-E160-4D32-BF3F-910B785E5A8E}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32

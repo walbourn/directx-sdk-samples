@@ -65,11 +65,11 @@ namespace
     //-------------------------------------------------------------------------------------
     struct WICTranslate
     {
-        GUID                wic;
+        const GUID&         wic;
         DXGI_FORMAT         format;
     };
 
-    const WICTranslate g_WICFormats[] =
+    constexpr WICTranslate g_WICFormats[] =
     {
         { GUID_WICPixelFormat128bppRGBAFloat,       DXGI_FORMAT_R32G32B32A32_FLOAT },
 
@@ -100,11 +100,11 @@ namespace
 
     struct WICConvert
     {
-        GUID        source;
-        GUID        target;
+        const GUID&        source;
+        const GUID&        target;
     };
 
-    const WICConvert g_WICConvert[] =
+    constexpr WICConvert g_WICConvert[] =
     {
         // Note target GUID in this conversion table must be one of those directly supported formats (above).
 
@@ -354,7 +354,7 @@ namespace
         _In_ unsigned int bindFlags,
         _In_ unsigned int cpuAccessFlags,
         _In_ unsigned int miscFlags,
-        _In_ unsigned int loadFlags,
+        _In_ WIC_LOADER_FLAGS loadFlags,
         _Outptr_opt_ ID3D11Resource** texture,
         _Outptr_opt_ ID3D11ShaderResourceView** textureView) noexcept
     {
@@ -572,7 +572,7 @@ namespace
 
         // Allocate temporary memory for image
         uint64_t rowBytes = (uint64_t(twidth) * uint64_t(bpp) + 7u) / 8u;
-        uint64_t numBytes = rowBytes * uint64_t(height);
+        uint64_t numBytes = rowBytes * uint64_t(theight);
 
         if (rowBytes > UINT32_MAX || numBytes > UINT32_MAX)
             return HRESULT_FROM_WIN32(ERROR_ARITHMETIC_OVERFLOW);
@@ -857,7 +857,7 @@ HRESULT DirectX::CreateWICTextureFromMemoryEx(
     unsigned int bindFlags,
     unsigned int cpuAccessFlags,
     unsigned int miscFlags,
-    unsigned int loadFlags,
+    WIC_LOADER_FLAGS loadFlags,
     ID3D11Resource** texture,
     ID3D11ShaderResourceView** textureView) noexcept
 {
@@ -880,7 +880,7 @@ HRESULT DirectX::CreateWICTextureFromMemoryEx(
     unsigned int bindFlags,
     unsigned int cpuAccessFlags,
     unsigned int miscFlags,
-    unsigned int loadFlags,
+    WIC_LOADER_FLAGS loadFlags,
     ID3D11Resource** texture,
     ID3D11ShaderResourceView** textureView) noexcept
 {
@@ -998,7 +998,7 @@ HRESULT DirectX::CreateWICTextureFromFileEx(
     unsigned int bindFlags,
     unsigned int cpuAccessFlags,
     unsigned int miscFlags,
-    unsigned int loadFlags,
+    WIC_LOADER_FLAGS loadFlags,
     ID3D11Resource** texture,
     ID3D11ShaderResourceView** textureView) noexcept
 {
@@ -1020,7 +1020,7 @@ HRESULT DirectX::CreateWICTextureFromFileEx(
     unsigned int bindFlags,
     unsigned int cpuAccessFlags,
     unsigned int miscFlags,
-    unsigned int loadFlags,
+    WIC_LOADER_FLAGS loadFlags,
     ID3D11Resource** texture,
     ID3D11ShaderResourceView** textureView) noexcept
 {
