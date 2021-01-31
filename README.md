@@ -4,7 +4,7 @@ This repo contains samples that originally shipped in the legacy DirectX SDK. Th
 
 They have all been cleaned up to build using the Windows 8.x SDK or Windows 10 SDK, and _DO NOT_ require the DirectX SDK to build. Projects for Visual Studio 2017 and Visual Studio 2019 are provided.
 
-* [Microsoft Docs](https://docs.microsoft.com/en-us/windows/desktop/directx-sdk--august-2009-)* [Where is the DirectX SDK (2015 Edition)?](https://aka.ms/dxsdk)
+* [Microsoft Docs](https://docs.microsoft.com/en-us/windows/desktop/directx-sdk--august-2009-)* [Where is the DirectX SDK (2021 Edition)?](https://aka.ms/dxsdk)
 * [DirectX SDK Samples Catalog](https://walbourn.github.io/directx-sdk-samples-catalog/)
 * [The Zombie DirectX SDK](https://aka.ms/AA4gfea)
 
