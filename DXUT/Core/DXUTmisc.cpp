@@ -202,7 +202,7 @@ void CDXUTTimer::LimitThreadAffinityToCurrentProc()
 //--------------------------------------------------------------------------------------
 // Returns the string for the given DXGI_FORMAT.
 //--------------------------------------------------------------------------------------
-#define DXUTDXGIFMTSTR( a ) case a: pstr = L#a; break;
+#define DXUTDXGIFMTSTR( a ) case a: pstr = L## #a; break;
 
 _Use_decl_annotations_
 LPCWSTR WINAPI DXUTDXGIFormatToString( DXGI_FORMAT format, bool bWithPrefix )
@@ -552,7 +552,7 @@ HRESULT WINAPI DXUT_Dynamic_D3D11CreateDevice( IDXGIAdapter* pAdapter,
         return DXUTERR_NODIRECT3D;
 }
 
-#define TRACE_ID(iD) case iD: return L#iD;
+#define TRACE_ID(iD) case iD: return L## #iD;
 
 //--------------------------------------------------------------------------------------
 const WCHAR* WINAPI DXUTTraceWindowsMessage( _In_ UINT uMsg )

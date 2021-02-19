@@ -6,7 +6,7 @@ http://go.microsoft.com/fwlink/?LinkId=320437
 
 Copyright (c) Microsoft Corporation. All rights reserved.
 
-**November 17, 2020**
+**February 7, 2021**
 
 DXUT is a "GLUT"-like framework for Direct3D 11.x Win32 desktop applications; primarily samples, demos, and prototypes.
 
@@ -20,7 +20,7 @@ Documentation is available on the [GitHub wiki](https://github.com/Microsoft/DXU
 
 ## Notices
 
-<span style="color:red">*This project is 'archived'. It is still available for use for legacy projects, but use of it for new projects is not recommended.*</span>
+*This project is 'archived'. It is still available for use for legacy projects, but use of it for new projects is not recommended.*
 
 All content and source code for this package are subject to the terms of the [MIT License](http://opensource.org/licenses/MIT).
 
@@ -49,7 +49,7 @@ These are hosted on [GitHub](https://github.com/walbourn/directx-sdk-samples)
 DXUT is being provided as a porting aid for older code that makes use of the legacy DirectX SDK, the deprecated D3DX9/D3DX11 library, and the DXUT11 framework. It is a cleaned up version of the original DXUT11 that will build with the Windows 8.1 / 10 SDK and does not make use of any legacy DirectX SDK or DirectSetup deployed components.
 
 The DXUT framework is for use in Win32 desktop applications. It not usable for Universal Windows Platform apps, Windows Store apps,
-Xbox One apps, or Windows phone.
+Xbox, or Windows phone.
 
 This version of DXUT only supports Direct3D 11, and therefore is not compatible with Windows XP or early versions of Windows Vista.
 
