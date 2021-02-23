@@ -159,10 +159,10 @@
       </Command>
     </PostBuildEvent>
     <CustomBuildStep>
-      <Command>copy /y "$(WindowsSdkDir)redist\d3d\x86\D3DCompile*.DLL" "$(TargetDir)"</Command>
+      <Command>copy /y "$(WindowsSdkDir)redist\d3d\x86\D3DCompiler*.DLL" "$(TargetDir)"</Command>
     </CustomBuildStep>
     <CustomBuildStep>
-      <Outputs>$(TargetDir)D3DCompile_46.DLL</Outputs>
+      <Outputs>$(TargetDir)D3DCompiler_47.DLL</Outputs>
     </CustomBuildStep>
     <CustomBuildStep>
       <TreatOutputAsContent>true</TreatOutputAsContent>
@@ -206,10 +206,10 @@
       </Command>
     </PostBuildEvent>
     <CustomBuildStep>
-      <Command>copy /y "$(WindowsSdkDir)redist\d3d\x64\D3DCompile*.DLL" "$(TargetDir)"</Command>
+      <Command>copy /y "$(WindowsSdkDir)redist\d3d\x64\D3DCompiler*.DLL" "$(TargetDir)"</Command>
     </CustomBuildStep>
     <CustomBuildStep>
-      <Outputs>$(TargetDir)D3DCompile_46.DLL</Outputs>
+      <Outputs>$(TargetDir)D3DCompiler_47.DLL</Outputs>
     </CustomBuildStep>
     <CustomBuildStep>
       <TreatOutputAsContent>true</TreatOutputAsContent>
@@ -256,10 +256,10 @@
       </Command>
     </PostBuildEvent>
     <CustomBuildStep>
-      <Command>copy /y "$(WindowsSdkDir)redist\d3d\x86\D3DCompile*.DLL" "$(TargetDir)"</Command>
+      <Command>copy /y "$(WindowsSdkDir)redist\d3d\x86\D3DCompiler*.DLL" "$(TargetDir)"</Command>
     </CustomBuildStep>
     <CustomBuildStep>
-      <Outputs>$(TargetDir)D3DCompile_46.DLL</Outputs>
+      <Outputs>$(TargetDir)D3DCompiler_47.DLL</Outputs>
     </CustomBuildStep>
     <CustomBuildStep>
       <TreatOutputAsContent>true</TreatOutputAsContent>
@@ -305,10 +305,10 @@
       </Command>
     </PostBuildEvent>
     <CustomBuildStep>
-      <Command>copy /y "$(WindowsSdkDir)redist\d3d\x64\D3DCompile*.DLL" "$(TargetDir)"</Command>
+      <Command>copy /y "$(WindowsSdkDir)redist\d3d\x64\D3DCompiler*.DLL" "$(TargetDir)"</Command>
     </CustomBuildStep>
     <CustomBuildStep>
-      <Outputs>$(TargetDir)D3DCompile_46.DLL</Outputs>
+      <Outputs>$(TargetDir)D3DCompiler_47.DLL</Outputs>
     </CustomBuildStep>
     <CustomBuildStep>
       <TreatOutputAsContent>true</TreatOutputAsContent>
@@ -355,10 +355,10 @@
       </Command>
     </PostBuildEvent>
     <CustomBuildStep>
-      <Command>copy /y "$(WindowsSdkDir)redist\d3d\x86\D3DCompile*.DLL" "$(TargetDir)"</Command>
+      <Command>copy /y "$(WindowsSdkDir)redist\d3d\x86\D3DCompiler*.DLL" "$(TargetDir)"</Command>
     </CustomBuildStep>
     <CustomBuildStep>
-      <Outputs>$(TargetDir)D3DCompile_46.DLL</Outputs>
+      <Outputs>$(TargetDir)D3DCompiler_47.DLL</Outputs>
     </CustomBuildStep>
     <CustomBuildStep>
       <TreatOutputAsContent>true</TreatOutputAsContent>
@@ -404,10 +404,10 @@
       </Command>
     </PostBuildEvent>
     <CustomBuildStep>
-      <Command>copy /y "$(WindowsSdkDir)redist\d3d\x64\D3DCompile*.DLL" "$(TargetDir)"</Command>
+      <Command>copy /y "$(WindowsSdkDir)redist\d3d\x64\D3DCompiler*.DLL" "$(TargetDir)"</Command>
     </CustomBuildStep>
     <CustomBuildStep>
-      <Outputs>$(TargetDir)D3DCompile_46.DLL</Outputs>
+      <Outputs>$(TargetDir)D3DCompiler_47.DLL</Outputs>
     </CustomBuildStep>
     <CustomBuildStep>
       <TreatOutputAsContent>true</TreatOutputAsContent>
