@@ -1227,7 +1227,7 @@ HRESULT CreateRandomTreeMatrices()
         XMFLOAT3 pos;
         pos.x = RPercent() * 140.0f;
         pos.y = RPercent() * 20.0f - 10.0f;
-        pos.z = 15.0f + fabs( RPercent() ) * 200.0f;
+        pos.z = 15.0f + fabsf( RPercent() ) * 200.0f;
 
         pos.x *= -1;
         pos.z *= -1;

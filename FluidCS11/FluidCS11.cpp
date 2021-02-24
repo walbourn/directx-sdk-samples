@@ -948,9 +948,9 @@ void SimulateFluid( ID3D11DeviceContext* pd3dImmediateContext, float fElapsedTim
     pData.fSmoothlen = g_fSmoothlen;
     pData.fPressureStiffness = g_fPressureStiffness;
     pData.fRestDensity = g_fRestDensity;
-    pData.fDensityCoef = g_fParticleMass * 315.0f / (64.0f * XM_PI * pow(g_fSmoothlen, 9));
-    pData.fGradPressureCoef = g_fParticleMass * -45.0f / (XM_PI * pow(g_fSmoothlen, 6));
-    pData.fLapViscosityCoef = g_fParticleMass * g_fViscosity * 45.0f / (XM_PI * pow(g_fSmoothlen, 6));
+    pData.fDensityCoef = g_fParticleMass * 315.0f / (64.0f * XM_PI * powf(g_fSmoothlen, 9));
+    pData.fGradPressureCoef = g_fParticleMass * -45.0f / (XM_PI * powf(g_fSmoothlen, 6));
+    pData.fLapViscosityCoef = g_fParticleMass * g_fViscosity * 45.0f / (XM_PI * powf(g_fSmoothlen, 6));
 
     pData.vGravity = g_vGravity;
     
