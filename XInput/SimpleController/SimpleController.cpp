@@ -5,7 +5,8 @@
 //
 // Note: This sample works with all versions of XInput (1.4, 1.3, and 9.1.0)
 //
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License (MIT).
 //-----------------------------------------------------------------------------
 
 #define WIN32_LEAN_AND_MEAN

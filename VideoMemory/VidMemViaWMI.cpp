@@ -6,7 +6,8 @@
 // often close to the amount of dedicated video memory and usually does not take 
 // into account the amount of shared system memory. 
 //
-// Copyright (c) Microsoft Corp. All rights reserved.
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License (MIT).
 //-----------------------------------------------------------------------------
 #define INITGUID
 #include <windows.h>

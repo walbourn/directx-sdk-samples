@@ -4,7 +4,8 @@
 // Demonstrates an Order Independent Transparency algorithm in D3D11 using Compute 
 // Shaders and scattered writes.
 //
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License (MIT).
 //--------------------------------------------------------------------------------------
 #include "DXUT.h"
 #include "DXUTcamera.h"

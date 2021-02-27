@@ -4,7 +4,8 @@
 // This file contains functions to convert from a Catmull-Clark subdivision
 // representation to a bicubic patch representation.
 // 
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License (MIT).
 //--------------------------------------------------------------------------------------
 
 //Work-around for an optimization rule problem in the June 2010 HLSL Compiler (9.29.952.3111)

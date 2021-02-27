@@ -1,7 +1,8 @@
 //--------------------------------------------------------------------------------------
 // File: GameuxInstallHelper.cpp
 //
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License (MIT).
 //--------------------------------------------------------------------------------------
 #define _WIN32_DCOM
 

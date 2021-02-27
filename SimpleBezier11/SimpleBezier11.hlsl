@@ -4,7 +4,8 @@
 // This sample shows an simple implementation of the DirectX 11 Hardware Tessellator
 // for rendering a Bezier Patch.
 //
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License (MIT).
 //--------------------------------------------------------------------------------------
 
 // This allows us to compile the shader with a #define to choose

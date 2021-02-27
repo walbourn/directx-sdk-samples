@@ -3,7 +3,8 @@
 //
 // This file defines common constants which are included by both CPU code and shader code
 //
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License (MIT).
 //--------------------------------------------------------------------------------------
 
 #define MAX_FACTOR 16

@@ -3,7 +3,8 @@
 //
 // The CS to compute edge tessellation factor acoording to current world, view, projection matrix
 //
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License (MIT).
 //--------------------------------------------------------------------------------------
 
 // http://jgt.akpeters.com/papers/akeninemoller01/tribox.html

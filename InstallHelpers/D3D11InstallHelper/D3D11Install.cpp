@@ -4,7 +4,8 @@
 // Desc: Windows code that calls D3D11InstallHelper sample DLL and displays
 //       the recommended UI prompts and messages.
 //
-// (C) Copyright Microsoft Corp.  All rights reserved.
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License (MIT).
 //-----------------------------------------------------------------------------
 #define _WIN32_DCOM
 

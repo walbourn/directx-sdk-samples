@@ -4,7 +4,8 @@
 // Desc: Windows code that calls GameuxInstallHelper sample dll and displays the results.
 // The Microsoft Platform SDK or Microsoft Windows SDK is required to compile this sample
 //
-// (C) Copyright Microsoft Corp.  All rights reserved.
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License (MIT).
 //-----------------------------------------------------------------------------
 #define _WIN32_DCOM
 #define _CRT_SECURE_NO_DEPRECATE

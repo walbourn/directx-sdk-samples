@@ -8,7 +8,8 @@
 // on systems with large memories and/or large VRAM video cards due to
 // 32-bit overflow. DXGI doesn't suffer from these issues.
 //
-// Copyright (c) Microsoft Corp. All rights reserved.
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License (MIT).
 //-----------------------------------------------------------------------------
 #define INITGUID
 #include <windows.h>

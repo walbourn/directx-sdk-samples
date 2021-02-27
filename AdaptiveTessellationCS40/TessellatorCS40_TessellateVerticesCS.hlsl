@@ -3,7 +3,8 @@
 //
 // The CS to tessellate vertices
 //
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License (MIT).
 //--------------------------------------------------------------------------------------
 
 #include "TessellatorCS40_common.hlsl"

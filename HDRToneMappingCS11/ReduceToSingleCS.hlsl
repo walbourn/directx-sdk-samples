@@ -3,7 +3,8 @@
 //
 // Desc: Reduce an input buffer by a factor of groupthreads
 // 
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License (MIT).
 //-----------------------------------------------------------------------------
 
 StructuredBuffer<float> Input : register( t0 );

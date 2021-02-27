@@ -3,7 +3,8 @@
 //
 // Desc: Sample code that calls FirewallInstallHelper sample dll and displays the results.
 //
-// (C) Copyright Microsoft Corp.  All rights reserved.
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License (MIT).
 //-----------------------------------------------------------------------------
 #define _WIN32_DCOM
 

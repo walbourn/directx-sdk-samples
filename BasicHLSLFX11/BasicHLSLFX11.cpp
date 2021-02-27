@@ -4,7 +4,8 @@
 // This sample shows a simple example of the Microsoft Direct3D 11's High-Level 
 // Shader Language (HLSL) using the Effect interface. 
 //
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License (MIT).
 //--------------------------------------------------------------------------------------
 #include "DXUT.h"
 #include "DXUTcamera.h"

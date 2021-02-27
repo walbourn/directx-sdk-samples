@@ -4,7 +4,8 @@
 // The PSs for doing tone-mapping based on the input luminance, used in CS path of 
 // HDRToneMappingCS11 sample
 // 
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License (MIT).
 //--------------------------------------------------------------------------------------
 struct QuadVS_Input
 {

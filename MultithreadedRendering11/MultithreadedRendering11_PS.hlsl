@@ -3,7 +3,8 @@
 //
 // The pixel shader file for the MultithreadedRendering11 sample.  
 // 
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License (MIT).
 //--------------------------------------------------------------------------------------
 
 // Various debug options

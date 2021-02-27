@@ -4,7 +4,8 @@
 // The PS for converting CS output buffer to a texture, used in CS path of 
 // HDRToneMappingCS11 sample
 // 
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License (MIT).
 //--------------------------------------------------------------------------------------
 StructuredBuffer<float4> buffer : register( t0 );
 

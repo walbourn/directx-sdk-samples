@@ -4,7 +4,8 @@
 // Desc: Demonstrates an application which receives immediate 
 //       joystick data in exclusive mode via a dialog timer.
 //
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License (MIT).
 //-----------------------------------------------------------------------------
 #define STRICT
 #define DIRECTINPUT_VERSION 0x0800

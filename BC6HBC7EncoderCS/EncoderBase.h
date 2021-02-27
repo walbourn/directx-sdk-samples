@@ -4,7 +4,8 @@
 // Common base for Compute Shader 4.0 Accelerated BC6H and BC7 Encoder
 //
 // Advanced Technology Group (ATG)
-// Copyright (C) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License (MIT).
 //--------------------------------------------------------------------------------------
 
 #ifndef __ENCODERBASE_H

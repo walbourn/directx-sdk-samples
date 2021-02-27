@@ -6,7 +6,8 @@
 // the shared system memory minus the amount of memory in use by textures 
 // and render targets. 
 //
-// Copyright (c) Microsoft Corp. All rights reserved.
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License (MIT).
 //-----------------------------------------------------------------------------
 #define INITGUID
 #include <windows.h>

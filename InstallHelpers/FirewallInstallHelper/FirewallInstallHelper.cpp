@@ -1,7 +1,8 @@
 //--------------------------------------------------------------------------------------
 // File: FirewallInstallHelper.cpp
 //
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License (MIT).
 //--------------------------------------------------------------------------------------
 #include <windows.h>
 // The Microsoft Platform SDK or Microsoft Windows SDK is required to compile this sample

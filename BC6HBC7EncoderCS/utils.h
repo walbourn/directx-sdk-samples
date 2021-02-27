@@ -4,7 +4,8 @@
 // Helper utilities for the Compute Shader Accelerated BC6H BC7 Encoder/Decoder
 //
 // Advanced Technology Group (ATG)
-// Copyright (C) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License (MIT).
 //--------------------------------------------------------------------------------------
 
 #ifndef __UTILS_H

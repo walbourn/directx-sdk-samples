@@ -4,7 +4,8 @@
 // The CSs for doing vertical and horizontal blur, used in CS path of 
 // HDRToneMappingCS11 sample
 // 
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License (MIT).
 //--------------------------------------------------------------------------------------
 StructuredBuffer<float4> InputBuf : register( t0 );
 Texture2D InputTex : register( t1 ); 

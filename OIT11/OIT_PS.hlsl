@@ -3,7 +3,8 @@
 //
 // Desc: Pixel shaders used in the Order Independent Transparency sample.
 // 
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License (MIT).
 //-----------------------------------------------------------------------------
 //TODO: Use structured buffers
 RWTexture2D<uint> fragmentCount     : register( u1 );

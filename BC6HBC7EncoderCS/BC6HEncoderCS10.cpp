@@ -4,7 +4,8 @@
 // Compute Shader 4.0 Accelerated BC6H Encoder
 //
 // Advanced Technology Group (ATG)
-// Copyright (C) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License (MIT).
 //--------------------------------------------------------------------------------------
 
 #include <d3d11.h>

@@ -8,7 +8,8 @@
 //      - The element to be scanned is of type uint2, see comments in ScanCS.hlsl 
 //        and below for how to change this type
 //
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License (MIT).
 //--------------------------------------------------------------------------------------
 #include "DXUT.h"
 #include "SDKmisc.h"

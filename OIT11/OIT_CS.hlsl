@@ -3,7 +3,8 @@
 //
 // Desc: Compute shaders for used in the Order Independent Transparency sample.
 // 
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License (MIT).
 //-----------------------------------------------------------------------------
 // TODO: use structured buffers
 RWBuffer<float>     deepBufferDepth     : register( u0 );

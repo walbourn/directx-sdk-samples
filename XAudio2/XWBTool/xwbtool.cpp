@@ -8,8 +8,8 @@
 // For a more full-featured builder, see XACT 3 and the XACTBLD tool in the legacy
 // DirectX SDK (June 2010) release.
 //
-// Copyright (c) Microsoft Corporation. All rights reserved.
-// Licensed under the MIT License.
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License (MIT).
 //
 // http://go.microsoft.com/fwlink/?LinkId=248929
 //--------------------------------------------------------------------------------------
@@ -834,7 +834,7 @@ namespace
     void PrintLogo()
     {
         wprintf(L"Microsoft (R) XACT-style Wave Bank Tool \n");
-        wprintf(L"Copyright (C) Microsoft Corp. All rights reserved.\n");
+        wprintf(L"Copyright (C) Microsoft Corporation.\n");
 #ifdef _DEBUG
         wprintf(L"*** Debug build ***\n");
 #endif

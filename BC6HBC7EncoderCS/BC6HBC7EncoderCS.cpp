@@ -4,7 +4,8 @@
 // The main file of the Compute Shader Accelerated BC6H BC7 Encoder
 //
 // Advanced Technology Group (ATG)
-// Copyright (C) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License (MIT).
 //--------------------------------------------------------------------------------------
 
 #include <stdio.h>

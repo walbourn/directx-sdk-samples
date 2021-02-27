@@ -7,7 +7,8 @@
 // To view the mesh preprocessing code, please find the ExportSubDMesh.cpp file in the 
 // samples content exporter.
 //
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License (MIT).
 //--------------------------------------------------------------------------------------
 #pragma once
 

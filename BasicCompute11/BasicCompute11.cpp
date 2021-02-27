@@ -4,7 +4,8 @@
 // Demonstrates the basics to get DirectX 11 Compute Shader (aka DirectCompute) up and
 // running by implementing Array A + Array B
 //
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License (MIT).
 //--------------------------------------------------------------------------------------
 
 #include <stdio.h>

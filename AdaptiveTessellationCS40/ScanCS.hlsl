@@ -4,7 +4,8 @@
 // A simple inclusive prefix sum(scan) implemented in CS4.0, 
 // using a typical up sweep and down sweep scheme
 //
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License (MIT).
 //--------------------------------------------------------------------------------------
 StructuredBuffer<uint2> Input : register( t0 );     // Change uint2 here if scan other types, and
 RWStructuredBuffer<uint2> Result : register( u0 );  // also here

@@ -3,7 +3,8 @@
 //
 // This file contains the Compute Shader to perform array A + array B
 // 
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License (MIT).
 //--------------------------------------------------------------------------------------
 
 #ifdef USE_STRUCTURED_BUFFERS

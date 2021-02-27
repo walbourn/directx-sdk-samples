@@ -3,7 +3,8 @@
 //
 // Simple playback of a .WAV file using XAudio2
 //
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License (MIT).
 //--------------------------------------------------------------------------------------
 
 #define WIN32_LEAN_AND_MEAN

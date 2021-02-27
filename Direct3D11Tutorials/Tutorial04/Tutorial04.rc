@@ -69,7 +69,7 @@ FONT 8, "System"
 BEGIN
     ICON            IDI_TUTORIAL1,IDC_MYICON,14,9,16,16
     LTEXT           "Tutorial04 Version 1.0",IDC_STATIC,49,10,119,8,SS_NOPREFIX
-    LTEXT           "Copyright (c) Microsoft Corporation. All rights reserved.",IDC_STATIC,49,20,119,8
+    LTEXT           "Copyright (c) Microsoft Corporation.",IDC_STATIC,49,20,119,8
     DEFPUSHBUTTON   "OK",IDOK,195,6,30,11,WS_GROUP
 END
 

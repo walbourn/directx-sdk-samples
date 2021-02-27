@@ -3,7 +3,8 @@
 //
 // Demonstrates how to use compute shaders to perform sorting on the GPU with DirectX 11.
 //
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License (MIT).
 //--------------------------------------------------------------------------------------
 
 #include <stdio.h>

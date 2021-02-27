@@ -4,7 +4,8 @@
 // Desc: Demonstrates an application which sets a force feedback constant force 
 //       determined by the user.
 //
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License (MIT).
 //-----------------------------------------------------------------------------
 #define STRICT
 #define DIRECTINPUT_VERSION 0x0800

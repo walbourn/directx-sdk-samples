@@ -3,7 +3,8 @@
 // 
 // Main program execution.
 //
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License (MIT).
 //-------------------------------------------------------------------------------------
 #ifndef _UNICODE
 #define _UNICODE

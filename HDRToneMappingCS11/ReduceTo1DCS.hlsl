@@ -3,7 +3,8 @@
 //
 // Desc: Reduce an input Texture2D to a buffer
 // 
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License (MIT).
 //-----------------------------------------------------------------------------
 Texture2D Input : register( t0 ); 
 RWStructuredBuffer<float> Result : register( u0 );

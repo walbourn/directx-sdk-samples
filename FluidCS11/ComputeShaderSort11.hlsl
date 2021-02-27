@@ -3,7 +3,8 @@
 //
 // This file contains the compute shaders to perform GPU sorting using DirectX 11.
 // 
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License (MIT).
 //--------------------------------------------------------------------------------------
 
 #define BITONIC_BLOCK_SIZE 512
