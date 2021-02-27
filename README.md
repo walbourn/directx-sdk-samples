@@ -8,6 +8,8 @@ They have all been cleaned up to build using the Windows 10 SDK, and _DO NOT_ re
 * [DirectX SDK Samples Catalog](https://walbourn.github.io/directx-sdk-samples-catalog/)
 * [The Zombie DirectX SDK](https://aka.ms/AA4gfea)
 
+## Notices
+
 All content and source code for this package are subject to the terms of the [MIT License](http://opensource.org/licenses/MIT).
 
 This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/). For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
