@@ -4,9 +4,9 @@
 
 http://go.microsoft.com/fwlink/?LinkId=320437
 
-Copyright (c) Microsoft Corporation. All rights reserved.
+Copyright (c) Microsoft Corporation.
 
-**February 7, 2021**
+**June 2, 2021**
 
 DXUT is a "GLUT"-like framework for Direct3D 11.x Win32 desktop applications; primarily samples, demos, and prototypes.
 

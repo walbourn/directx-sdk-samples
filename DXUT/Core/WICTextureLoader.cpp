@@ -14,7 +14,7 @@
 // For a full-featured DDS file reader, writer, and texture processing pipeline see
 // the 'Texconv' sample and the 'DirectXTex' library.
 //
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 //
 // http://go.microsoft.com/fwlink/?LinkId=248926
@@ -29,14 +29,17 @@
 #include "WICTextureLoader.h"
 
 #include <dxgiformat.h>
-#include <assert.h>
 
 #include <wincodec.h>
 
 #include <wrl\client.h>
 
 #include <algorithm>
+#include <cassert>
+#include <cstring>
+#include <iterator>
 #include <memory>
+#include <new>
 
 #ifdef __clang__
 #pragma clang diagnostic ignored "-Wcovered-switch-default"
@@ -97,14 +100,13 @@ namespace
     //-------------------------------------------------------------------------------------
     // WIC Pixel Format nearest conversion table
     //-------------------------------------------------------------------------------------
-
     struct WICConvert
     {
-        const GUID&        source;
-        const GUID&        target;
+        const GUID& source;
+        const GUID& target;
     };
 
-    constexpr WICConvert g_WICConvert[] =
+    constexpr WICConvert g_WICConvert [] =
     {
         // Note target GUID in this conversion table must be one of those directly supported formats (above).
 
@@ -166,7 +168,7 @@ namespace
 
     bool g_WIC2 = false;
 
-    BOOL WINAPI InitializeWICFactory(PINIT_ONCE, PVOID, PVOID* ifactory) noexcept
+    BOOL WINAPI InitializeWICFactory(PINIT_ONCE, PVOID, PVOID *ifactory) noexcept
     {
 #if (_WIN32_WINNT >= _WIN32_WINNT_WIN8) || defined(_WIN7_PLATFORM_UPDATE)
         HRESULT hr = CoCreateInstance(
@@ -224,7 +226,7 @@ namespace
     //---------------------------------------------------------------------------------
     DXGI_FORMAT _WICToDXGI(const GUID& guid) noexcept
     {
-        for (size_t i = 0; i < _countof(g_WICFormats); ++i)
+        for (size_t i = 0; i < std::size(g_WICFormats); ++i)
         {
             if (memcmp(&g_WICFormats[i].wic, &guid, sizeof(GUID)) == 0)
                 return g_WICFormats[i].format;
@@ -459,7 +461,7 @@ namespace
             }
             else
             {
-                for (size_t i = 0; i < _countof(g_WICConvert); ++i)
+                for (size_t i = 0; i < std::size(g_WICConvert); ++i)
                 {
                     if (memcmp(&g_WICConvert[i].source, &pixelFormat, sizeof(WICPixelFormatGUID)) == 0)
                     {
