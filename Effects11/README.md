@@ -1,4 +1,4 @@
-![DirectX Logo](https://github.com/Microsoft/FX11/wiki/X_jpg.jpg)
+![DirectX Logo](https://github.com/Microsoft/UVAtlas/wiki/Dx_logo.GIF)
 
 # Effects for Direct3D 11 (FX11)
 
