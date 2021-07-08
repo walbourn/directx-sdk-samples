@@ -40,7 +40,7 @@ public:
     static void WINAPI Uninitialize();
 
     static  HRESULT WINAPI  StaticOnCreateDevice();
-    static  bool WINAPI     StaticMsgProc( _In_ HWND hWnd, _In_ UINT uMsg, _In_ WPARAM wParam, _In_ LPARAM lParam );
+    static  bool WINAPI     StaticMsgProc( _In_ HWND hWnd, _In_ UINT uMsg, _In_ WPARAM wParam, _In_ LPARAM& lParam );
 
     static  void WINAPI     SetImeEnableFlag( _In_ bool bFlag );
 

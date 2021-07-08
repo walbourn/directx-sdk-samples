@@ -221,23 +221,19 @@ LPCWSTR WINAPI DXUTGetMediaSearchPath()
 //--------------------------------------------------------------------------------------
 HRESULT WINAPI DXUTSetMediaSearchPath( _In_z_ LPCWSTR strPath )
 {
-    HRESULT hr;
-
     WCHAR* s_strSearchPath = DXUTMediaSearchPath();
 
-    hr = wcscpy_s( s_strSearchPath, MAX_PATH, strPath );
-    if( SUCCEEDED( hr ) )
+    wcscpy_s( s_strSearchPath, MAX_PATH, strPath );
+
+    // append slash if needed
+    const size_t ch = wcsnlen( s_strSearchPath, MAX_PATH);
+
+    if( s_strSearchPath[ch - 1] != L'\\' )
     {
-        // append slash if needed
-        size_t ch = 0;
-        ch = wcsnlen( s_strSearchPath, MAX_PATH);
-        if( SUCCEEDED( hr ) && s_strSearchPath[ch - 1] != L'\\' )
-        {
-            hr = wcscat_s( s_strSearchPath, MAX_PATH, L"\\" );
-        }
+        wcscat_s( s_strSearchPath, MAX_PATH, L"\\" );
     }
 
-    return hr;
+    return S_OK;
 }
 
 
@@ -357,47 +353,47 @@ bool DXUTFindMediaSearchTypicalDirs( WCHAR* strSearchPath, int cchSearch, LPCWST
 
     // Search in .\  
     wcscpy_s( strSearchPath, cchSearch, strLeaf );
-    if( GetFileAttributes( strSearchPath ) != 0xFFFFFFFF )
+    if( GetFileAttributes( strSearchPath ) != INVALID_FILE_ATTRIBUTES )
         return true;
 
     // Search in ..\  
     swprintf_s( strSearchPath, cchSearch, L"..\\%ls", strLeaf );
-    if( GetFileAttributes( strSearchPath ) != 0xFFFFFFFF )
+    if( GetFileAttributes( strSearchPath ) != INVALID_FILE_ATTRIBUTES )
         return true;
 
     // Search in ..\..\ 
     swprintf_s( strSearchPath, cchSearch, L"..\\..\\%ls", strLeaf );
-    if( GetFileAttributes( strSearchPath ) != 0xFFFFFFFF )
+    if( GetFileAttributes( strSearchPath ) != INVALID_FILE_ATTRIBUTES )
         return true;
 
     // Search in ..\..\ 
     swprintf_s( strSearchPath, cchSearch, L"..\\..\\%ls", strLeaf );
-    if( GetFileAttributes( strSearchPath ) != 0xFFFFFFFF )
+    if( GetFileAttributes( strSearchPath ) != INVALID_FILE_ATTRIBUTES )
         return true;
 
     // Search in the %EXE_DIR%\ 
     swprintf_s( strSearchPath, cchSearch, L"%ls\\%ls", strExePath, strLeaf );
-    if( GetFileAttributes( strSearchPath ) != 0xFFFFFFFF )
+    if( GetFileAttributes( strSearchPath ) != INVALID_FILE_ATTRIBUTES )
         return true;
 
     // Search in the %EXE_DIR%\..\ 
     swprintf_s( strSearchPath, cchSearch, L"%ls\\..\\%ls", strExePath, strLeaf );
-    if( GetFileAttributes( strSearchPath ) != 0xFFFFFFFF )
+    if( GetFileAttributes( strSearchPath ) != INVALID_FILE_ATTRIBUTES )
         return true;
 
     // Search in the %EXE_DIR%\..\..\ 
     swprintf_s( strSearchPath, cchSearch, L"%ls\\..\\..\\%ls", strExePath, strLeaf );
-    if( GetFileAttributes( strSearchPath ) != 0xFFFFFFFF )
+    if( GetFileAttributes( strSearchPath ) != INVALID_FILE_ATTRIBUTES )
         return true;
 
     // Search in "%EXE_DIR%\..\%EXE_NAME%\".  This matches the DirectX SDK layout
     swprintf_s( strSearchPath, cchSearch, L"%ls\\..\\%ls\\%ls", strExePath, strExeName, strLeaf );
-    if( GetFileAttributes( strSearchPath ) != 0xFFFFFFFF )
+    if( GetFileAttributes( strSearchPath ) != INVALID_FILE_ATTRIBUTES )
         return true;
 
     // Search in "%EXE_DIR%\..\..\%EXE_NAME%\".  This matches the DirectX SDK layout
     swprintf_s( strSearchPath, cchSearch, L"%ls\\..\\..\\%ls\\%ls", strExePath, strExeName, strLeaf );
-    if( GetFileAttributes( strSearchPath ) != 0xFFFFFFFF )
+    if( GetFileAttributes( strSearchPath ) != INVALID_FILE_ATTRIBUTES )
         return true;
 
     // Search in media search dir 
@@ -405,7 +401,7 @@ bool DXUTFindMediaSearchTypicalDirs( WCHAR* strSearchPath, int cchSearch, LPCWST
     if( s_strSearchPath[0] != 0 )
     {
         swprintf_s( strSearchPath, cchSearch, L"%ls%ls", s_strSearchPath, strLeaf );
-        if( GetFileAttributes( strSearchPath ) != 0xFFFFFFFF )
+        if( GetFileAttributes( strSearchPath ) != INVALID_FILE_ATTRIBUTES )
             return true;
     }
 
@@ -442,7 +438,7 @@ bool DXUTFindMediaSearchParentDirs( WCHAR* strSearchPath, int cchSearch, const W
     while( strFilePart && *strFilePart != '\0' )
     {
         swprintf_s( strFullFileName, MAX_PATH, L"%ls\\%ls", strFullPath, strLeafName );
-        if( GetFileAttributes( strFullFileName ) != 0xFFFFFFFF )
+        if( GetFileAttributes( strFullFileName ) != INVALID_FILE_ATTRIBUTES )
         {
             wcscpy_s( strSearchPath, cchSearch, strFullFileName );
             return true;

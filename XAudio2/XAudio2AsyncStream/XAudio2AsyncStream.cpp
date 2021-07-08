@@ -203,7 +203,8 @@ int main()
             //
             // Get the info we need to play back this wave (need enough space for PCM, ADPCM, and xWMA formats)
             //
-            char formatBuff[ 64 ]; 
+            uint8_t formatBuff[ 64 ];
+            static_assert(sizeof(formatBuff) >= sizeof(WAVEFORMATEX), "Buffer size should be >= size of WAVEFORMATEX");
             WAVEFORMATEX *wfx = reinterpret_cast<WAVEFORMATEX*>(&formatBuff);
 
             if( FAILED( hr = wb.GetFormat( i, wfx, 64 ) ) )
@@ -429,6 +430,7 @@ int main()
 #endif
 
     CoUninitialize();
+    return 0;
 }
 
 
@@ -464,7 +466,7 @@ HRESULT FindMediaFileCch( WCHAR* strDestPath, int cchDest, LPCWSTR strFilename )
     }
 
     wcscpy_s( strDestPath, cchDest, strFilename );
-    if( GetFileAttributes( strDestPath ) != 0xFFFFFFFF )
+    if( GetFileAttributes( strDestPath ) != INVALID_FILE_ATTRIBUTES )
         return S_OK;
 
     // Search all parent directories starting at .\ and using strFilename as the leaf name
@@ -483,7 +485,7 @@ HRESULT FindMediaFileCch( WCHAR* strDestPath, int cchDest, LPCWSTR strFilename )
     while( strFilePart && *strFilePart != '\0' )
     {
         swprintf_s( strFullFileName, MAX_PATH, L"%s\\%s", strFullPath, strLeafName );
-        if( GetFileAttributes( strFullFileName ) != 0xFFFFFFFF )
+        if( GetFileAttributes( strFullFileName ) != INVALID_FILE_ATTRIBUTES )
         {
             wcscpy_s( strDestPath, cchDest, strFullFileName );
             bFound = true;
@@ -491,7 +493,7 @@ HRESULT FindMediaFileCch( WCHAR* strDestPath, int cchDest, LPCWSTR strFilename )
         }
 
         swprintf_s( strFullFileName, MAX_PATH, L"%s\\%s\\%s", strFullPath, strExeName, strLeafName );
-        if( GetFileAttributes( strFullFileName ) != 0xFFFFFFFF )
+        if( GetFileAttributes( strFullFileName ) != INVALID_FILE_ATTRIBUTES )
         {
             wcscpy_s( strDestPath, cchDest, strFullFileName );
             bFound = true;

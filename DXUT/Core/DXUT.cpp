@@ -1905,7 +1905,7 @@ HRESULT DXUTChangeDevice( DXUTDeviceSettings* pNewDeviceSettings,
     else
     {
         // Going to fullscreen mode
-        if( !pOldDeviceSettings || ( pOldDeviceSettings && DXUTGetIsWindowedFromDS( pOldDeviceSettings ) ) )
+        if( !pOldDeviceSettings || ( DXUTGetIsWindowedFromDS( pOldDeviceSettings ) ) )
         {
             // Transistioning to full screen mode from a standard window so 
             if( pOldDeviceSettings )
@@ -2096,7 +2096,7 @@ HRESULT DXUTChangeDevice( DXUTDeviceSettings* pNewDeviceSettings,
             rcResizedWindow.right = nClientWidth;
             rcResizedWindow.top = 0;
             rcResizedWindow.bottom = nClientHeight;
-            AdjustWindowRect( &rcResizedWindow, GetWindowLong( DXUTGetHWNDDeviceWindowed(), GWL_STYLE ),
+            AdjustWindowRect( &rcResizedWindow, (DWORD)GetWindowLongPtr( DXUTGetHWNDDeviceWindowed(), GWL_STYLE ),
                               GetDXUTState().GetMenu() != 0 );
 
             int nWindowWidth = rcResizedWindow.right - rcResizedWindow.left;
@@ -2133,7 +2133,7 @@ HRESULT DXUTChangeDevice( DXUTDeviceSettings* pNewDeviceSettings,
             RECT rcWindow = {};
             rcWindow.right = (long)( DXUTGetBackBufferWidthFromDS(pNewDeviceSettings) );
             rcWindow.bottom = (long)( DXUTGetBackBufferHeightFromDS(pNewDeviceSettings) );
-            AdjustWindowRect( &rcWindow, GetWindowLong( DXUTGetHWNDDeviceWindowed(), GWL_STYLE ), GetDXUTState().GetMenu() != 0 );
+            AdjustWindowRect( &rcWindow, (DWORD)GetWindowLongPtr( DXUTGetHWNDDeviceWindowed(), GWL_STYLE ), GetDXUTState().GetMenu() != 0 );
 
             // Resize the window.  It is important to adjust the window size 
             // after resetting the device rather than beforehand to ensure 
@@ -4476,9 +4476,9 @@ HRESULT DXUTSnapDeviceSettingsToEnumDevice( DXUTDeviceSettings* pDeviceSettings,
     }   
     if (pDeviceSettingsCombo->pOutputInfo)
     {
-        auto bestDisplayMode = pDeviceSettingsCombo->pOutputInfo->displayModeList[ bestModeIndex ];
         if (!pDeviceSettingsCombo->Windowed)
         {
+            auto bestDisplayMode = pDeviceSettingsCombo->pOutputInfo->displayModeList[bestModeIndex];
             pDeviceSettings->d3d11.sd.BufferDesc.Height = bestDisplayMode.Height;
             pDeviceSettings->d3d11.sd.BufferDesc.Width = bestDisplayMode.Width;
             pDeviceSettings->d3d11.sd.BufferDesc.RefreshRate.Numerator = bestDisplayMode.RefreshRate.Numerator;

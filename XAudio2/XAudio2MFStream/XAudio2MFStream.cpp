@@ -435,6 +435,7 @@ int main()
 #endif
 
     CoUninitialize();
+    return 0;
 }
 
 
@@ -543,7 +544,7 @@ HRESULT FindMediaFileCch( WCHAR* strDestPath, int cchDest, LPCWSTR strFilename )
     }
 
     wcscpy_s( strDestPath, cchDest, strFilename );
-    if( GetFileAttributes( strDestPath ) != 0xFFFFFFFF )
+    if( GetFileAttributes( strDestPath ) != INVALID_FILE_ATTRIBUTES )
         return S_OK;
 
     // Search all parent directories starting at .\ and using strFilename as the leaf name
@@ -562,7 +563,7 @@ HRESULT FindMediaFileCch( WCHAR* strDestPath, int cchDest, LPCWSTR strFilename )
     while( strFilePart && *strFilePart != '\0' )
     {
         swprintf_s( strFullFileName, MAX_PATH, L"%s\\%s", strFullPath, strLeafName );
-        if( GetFileAttributes( strFullFileName ) != 0xFFFFFFFF )
+        if( GetFileAttributes( strFullFileName ) != INVALID_FILE_ATTRIBUTES )
         {
             wcscpy_s( strDestPath, cchDest, strFullFileName );
             bFound = true;
@@ -570,7 +571,7 @@ HRESULT FindMediaFileCch( WCHAR* strDestPath, int cchDest, LPCWSTR strFilename )
         }
 
         swprintf_s( strFullFileName, MAX_PATH, L"%s\\%s\\%s", strFullPath, strExeName, strLeafName );
-        if( GetFileAttributes( strFullFileName ) != 0xFFFFFFFF )
+        if( GetFileAttributes( strFullFileName ) != INVALID_FILE_ATTRIBUTES )
         {
             wcscpy_s( strDestPath, cchDest, strFullFileName );
             bFound = true;

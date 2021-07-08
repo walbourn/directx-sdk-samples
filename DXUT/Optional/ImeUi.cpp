@@ -30,11 +30,11 @@
 #define IMEID_VER(dwId)		( ( dwId ) & 0xffff0000 )
 #define IMEID_LANG(dwId)	( ( dwId ) & 0x0000ffff )
 
-#define _CHT_HKL_DAYI				( (HKL)0xE0060404 )	// DaYi
-#define _CHT_HKL_NEW_PHONETIC		( (HKL)0xE0080404 )	// New Phonetic
-#define _CHT_HKL_NEW_CHANG_JIE		( (HKL)0xE0090404 )	// New Chang Jie
-#define _CHT_HKL_NEW_QUICK			( (HKL)0xE00A0404 )	// New Quick
-#define _CHT_HKL_HK_CANTONESE		( (HKL)0xE00B0404 )	// Hong Kong Cantonese
+#define _CHT_HKL_DAYI				( (HKL)(DWORD_PTR)0xE0060404 )	// DaYi
+#define _CHT_HKL_NEW_PHONETIC		( (HKL)(DWORD_PTR)0xE0080404 )	// New Phonetic
+#define _CHT_HKL_NEW_CHANG_JIE		( (HKL)(DWORD_PTR)0xE0090404 )	// New Chang Jie
+#define _CHT_HKL_NEW_QUICK			( (HKL)(DWORD_PTR)0xE00A0404 )	// New Quick
+#define _CHT_HKL_HK_CANTONESE		( (HKL)(DWORD_PTR)0xE00B0404 )	// Hong Kong Cantonese
 #define _CHT_IMEFILENAME	"TINTLGNT.IME"	// New Phonetic
 #define _CHT_IMEFILENAME2	"CINTLGNT.IME"	// New Chang Jie
 #define _CHT_IMEFILENAME3	"MSTCIPHA.IME"	// Phonetic 5.1
@@ -47,7 +47,7 @@
 #define IMEID_CHT_VER60 ( LANG_CHT | MAKEIMEVERSION( 6, 0 ) )	// New(Phonetic/ChanJie)IME6.0 : 6.0.x.x // New IME 6.0(web download)
 #define IMEID_CHT_VER_VISTA ( LANG_CHT | MAKEIMEVERSION( 7, 0 ) )	// All TSF TIP under Cicero UI-less mode: a hack to make GetImeId() return non-zero value
 
-#define _CHS_HKL		( (HKL)0xE00E0804 )	// MSPY
+#define _CHS_HKL		( (HKL)(DWORD_PTR)0xE00E0804 )	// MSPY
 #define _CHS_IMEFILENAME	"PINTLGNT.IME"	// MSPY1.5/2/3
 #define _CHS_IMEFILENAME2	"MSSCIPYA.IME"	// MSPY3 for OfficeXP
 #define IMEID_CHS_VER41	( LANG_CHS | MAKEIMEVERSION( 4, 1 ) )	// MSPY1.5	// SCIME97 or MSPY1.5 (w/Win98, Office97)
@@ -233,7 +233,7 @@ static DWORD                    g_IMECursorChars = 0;
 static TCHAR g_szCandidate[MAX_CANDLIST][MAX_CANDIDATE_LENGTH];
 static DWORD                    g_dwSelection, g_dwCount;
 static UINT                     g_uCandPageSize;
-static DWORD                    g_bDisableImeCompletely = false;
+static bool                     g_bDisableImeCompletely = false;
 static DWORD                    g_dwIMELevel;
 static DWORD                    g_dwIMELevelSaved;
 static TCHAR g_szMultiLineCompString[ 256 *( 3 - sizeof( TCHAR ) ) ];
@@ -605,13 +605,13 @@ static void DrawImeIndicator()
             {
                 PieData[0].sx = ( -SizeOfPie / 2 ) + g_CaretInfo.margins.left - 4;
                 PieData[0].sy = ( float )g_CaretInfo.margins.top + ( g_CaretInfo.margins.bottom -
-                                                                     g_CaretInfo.margins.top ) / 2;
+                                                                     g_CaretInfo.margins.top ) / 2.0F;
             }
             else
             {
                 PieData[0].sx = -( SizeOfPie / 2 ) + g_CaretInfo.margins.right + gSkinIME.symbolHeight + 4;
                 PieData[0].sy = ( float )g_CaretInfo.margins.top + ( g_CaretInfo.margins.bottom -
-                                                                     g_CaretInfo.margins.top ) / 2;
+                                                                     g_CaretInfo.margins.top ) / 2.0F;
             }
             break;
         }
@@ -1000,7 +1000,7 @@ static void DrawCandidateList()
         g_CaretInfo.pFont->GetTextExtent( g_szReadingString, ( DWORD* )&largest.cx, ( DWORD* )&largest.cy );
     else
     {
-        for( i = 0; g_szCandidate[i][0] && i < ( int )g_uCandPageSize; i++ )
+        for( i = 0; i < ( int )g_uCandPageSize && g_szCandidate[i][0]; i++ )
         {
             DWORD tx = 0;
             DWORD ty = 0;
@@ -2666,7 +2666,9 @@ void CTsfUiLessMode::ReleaseSinks()
     if( m_tm && SUCCEEDED( m_tm->QueryInterface( __uuidof( ITfSource ), ( void** )&source ) ) )
     {
         hr = source->UnadviseSink( m_dwUIElementSinkCookie );
+        assert(SUCCEEDED(hr));
         hr = source->UnadviseSink( m_dwAlpnSinkCookie );
+        assert(SUCCEEDED(hr));
         source->Release();
         SetupCompartmentSinks( TRUE );	// Remove all compartment sinks
         m_tm->Deactivate();

@@ -1467,7 +1467,7 @@ HRESULT CD3DSettingsDlg::UpdateD3D11Resolutions()
             {
                 // If "Show All" is not checked, then hide all resolutions
                 // that don't match the aspect ratio of the desktop resolution
-                if (bShowAll || (!bShowAll && fabsf(fDesktopAspectRatio - fAspect) < 0.05f))
+                if (bShowAll || fabsf(fDesktopAspectRatio - fAspect) < 0.05f)
                 {
                     AddD3D11Resolution(DisplayMode.Width, DisplayMode.Height);
                 }
@@ -1494,7 +1494,7 @@ HRESULT CD3DSettingsDlg::UpdateD3D11RefreshRates()
 {
     const DWORD dwWidth = g_DeviceSettings.d3d11.sd.BufferDesc.Width;
     const DWORD dwHeight = g_DeviceSettings.d3d11.sd.BufferDesc.Height;
-    DXGI_FORMAT backBuffer = g_DeviceSettings.d3d11.sd.BufferDesc.Format;
+    const DXGI_FORMAT backBuffer = g_DeviceSettings.d3d11.sd.BufferDesc.Format;
     const DXGI_RATIONAL RefreshRate = g_DeviceSettings.d3d11.sd.BufferDesc.RefreshRate;
 
     auto pRefreshRateComboBox = m_Dialog.GetComboBox( DXUTSETTINGSDLG_D3D11_REFRESH_RATE );

@@ -176,6 +176,7 @@ int main()
 
     pXAudio2.Reset();
     CoUninitialize();
+    return 0;
 }
 
 

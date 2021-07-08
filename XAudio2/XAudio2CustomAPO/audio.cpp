@@ -50,6 +50,8 @@ HRESULT InitAudio()
     if( FAILED( hr  ) )
         return hr;
 
+    assert(g_audioState.pXAudio2 != nullptr);
+
 #if !defined(USING_XAUDIO2_7_DIRECTX) && defined(_DEBUG)
     // To see the trace output, you need to view ETW logs for this application:
     //    Go to Control Panel, Administrative Tools, Event Viewer.
@@ -65,7 +67,6 @@ HRESULT InitAudio()
     //
     // Create a mastering voice
     //
-    assert( g_audioState.pXAudio2 != 0 );
     if( FAILED( hr = g_audioState.pXAudio2->CreateMasteringVoice( &g_audioState.pMasteringVoice ) ) )
     {
         SAFE_RELEASE( g_audioState.pXAudio2 );

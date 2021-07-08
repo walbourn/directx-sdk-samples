@@ -607,19 +607,19 @@ HRESULT CDXUTDialog::OnRender( _In_ float fElapsedTime )
         Top = 1.0f - m_y * 2.0f / m_pManager->m_nBackBufferHeight;
         Bottom = 1.0f - ( m_y + m_height ) * 2.0f / m_pManager->m_nBackBufferHeight;
 
-        DXUT_SCREEN_VERTEX_10 vertices[4] =
-        {
-            Left,  Top,    0.5f, D3DCOLOR_TO_D3DCOLORVALUE( m_colorTopLeft ), 0.0f, 0.0f,
-            Right, Top,    0.5f, D3DCOLOR_TO_D3DCOLORVALUE( m_colorTopRight ), 1.0f, 0.0f,
-            Left,  Bottom, 0.5f, D3DCOLOR_TO_D3DCOLORVALUE( m_colorBottomLeft ), 0.0f, 1.0f,
-            Right, Bottom, 0.5f, D3DCOLOR_TO_D3DCOLORVALUE( m_colorBottomRight ), 1.0f, 1.0f,
-        };
-
         //DXUT_SCREEN_VERTEX_10 *pVB;
         D3D11_MAPPED_SUBRESOURCE MappedData;
         if( SUCCEEDED( pd3dDeviceContext->Map( m_pManager->m_pVBScreenQuad11, 0, D3D11_MAP_WRITE_DISCARD,
                                                0, &MappedData ) ) )
         {
+            DXUT_SCREEN_VERTEX_10 vertices[4] =
+            {
+                Left,  Top,    0.5f, D3DCOLOR_TO_D3DCOLORVALUE(m_colorTopLeft), 0.0f, 0.0f,
+                Right, Top,    0.5f, D3DCOLOR_TO_D3DCOLORVALUE(m_colorTopRight), 1.0f, 0.0f,
+                Left,  Bottom, 0.5f, D3DCOLOR_TO_D3DCOLORVALUE(m_colorBottomLeft), 0.0f, 1.0f,
+                Right, Bottom, 0.5f, D3DCOLOR_TO_D3DCOLORVALUE(m_colorBottomRight), 1.0f, 1.0f,
+            };
+
             memcpy( MappedData.pData, vertices, sizeof( vertices ) );
             pd3dDeviceContext->Unmap( m_pManager->m_pVBScreenQuad11, 0 );
         }
@@ -1132,7 +1132,7 @@ void CDXUTDialog::OnMouseMove( _In_ const POINT& pt )
 
     // Handle mouse entering the new control
     m_pControlMouseOver = pControl;
-    if( pControl )
+    if( m_pControlMouseOver )
         m_pControlMouseOver->OnMouseEnter();
 }
 
@@ -2668,13 +2668,13 @@ void CDXUTDialogResourceManager::EnableKeyboardInputForAllDialogs()
 _Use_decl_annotations_
 int CDXUTDialogResourceManager::AddFont( LPCWSTR strFaceName, LONG height, LONG weight ) 
 {
+    const size_t nFaceLen = wcsnlen( strFaceName, MAX_PATH);
+
     // See if this font already exists
     for( size_t i = 0; i < m_FontCache.size(); ++i )
     {
         auto pFontNode = m_FontCache[ i ];
-        size_t nLen = 0;
-        nLen = wcsnlen( strFaceName, MAX_PATH);
-        if( 0 == _wcsnicmp( pFontNode->strFace, strFaceName, nLen ) &&
+        if( 0 == _wcsnicmp( pFontNode->strFace, strFaceName, nFaceLen ) &&
             pFontNode->nHeight == height &&
             pFontNode->nWeight == weight )
         {
@@ -2703,14 +2703,14 @@ int CDXUTDialogResourceManager::AddFont( LPCWSTR strFaceName, LONG height, LONG 
 //--------------------------------------------------------------------------------------
 int CDXUTDialogResourceManager::AddTexture( _In_z_ LPCWSTR strFilename )
 {
+    const size_t nNameLen = wcsnlen( strFilename, MAX_PATH);
+
     // See if this texture already exists
     for( size_t i = 0; i < m_TextureCache.size(); ++i )
     {
         auto pTextureNode = m_TextureCache[ i ];
-        size_t nLen = 0;
-        nLen = wcsnlen( strFilename, MAX_PATH);
         if( pTextureNode->bFileSource &&  // Sources must match
-            0 == _wcsnicmp( pTextureNode->strFilename, strFilename, nLen ) )
+            0 == _wcsnicmp( pTextureNode->strFilename, strFilename, nNameLen ) )
         {
             return static_cast<int>( i );
         }
@@ -2848,8 +2848,6 @@ CDXUTControl::CDXUTControl( _In_opt_ CDXUTDialog* pDialog ) noexcept
     m_bMouseOver = false;
     m_bHasFocus = false;
     m_bIsDefault = false;
-
-    m_pDialog = nullptr;
 
     m_x = 0;
     m_y = 0;
@@ -3116,11 +3114,7 @@ void CDXUTButton::Render( _In_ float fElapsedTime )
 
     DXUT_CONTROL_STATE iState = DXUT_STATE_NORMAL;
 
-    if( m_bVisible == false )
-    {
-        iState = DXUT_STATE_HIDDEN;
-    }
-    else if( m_bEnabled == false )
+    if( m_bEnabled == false )
     {
         iState = DXUT_STATE_DISABLED;
     }
@@ -3315,9 +3309,7 @@ void CDXUTCheckBox::Render( _In_ float fElapsedTime )
         return;
     DXUT_CONTROL_STATE iState = DXUT_STATE_NORMAL;
 
-    if( m_bVisible == false )
-        iState = DXUT_STATE_HIDDEN;
-    else if( m_bEnabled == false )
+    if( m_bEnabled == false )
         iState = DXUT_STATE_DISABLED;
     else if( m_bPressed )
         iState = DXUT_STATE_PRESSED;
@@ -4403,11 +4395,7 @@ void CDXUTSlider::Render( _In_ float fElapsedTime )
 
     DXUT_CONTROL_STATE iState = DXUT_STATE_NORMAL;
 
-    if( m_bVisible == false )
-    {
-        iState = DXUT_STATE_HIDDEN;
-    }
-    else if( m_bEnabled == false )
+    if( m_bEnabled == false )
     {
         iState = DXUT_STATE_DISABLED;
     }
@@ -4770,7 +4758,7 @@ void CDXUTScrollBar::Render( _In_ float fElapsedTime )
         iState = DXUT_STATE_FOCUS;
 
 
-    float fBlendRate = ( iState == DXUT_STATE_PRESSED ) ? 0.0f : 0.8f;
+    float fBlendRate = 0.8f;
 
     // Background track layer
     auto pElement = m_Elements[ 0 ];
@@ -6208,7 +6196,7 @@ void CDXUTEditBox::SetTextFloatArray( const float* pNumbers, int nCount )
     }
 
     // Don't want the last space
-    if( nCount > 0 && wcslen( wszBuffer ) > 0 )
+    if( nCount > 0 && wszBuffer[0] != L'\0' )
         wszBuffer[wcslen( wszBuffer ) - 1] = 0;
 
     SetText( wszBuffer );
@@ -6390,11 +6378,12 @@ bool CUniBuffer::InsertChar( _In_ int nIndex, _In_ WCHAR wChar )
 //--------------------------------------------------------------------------------------
 bool CUniBuffer::RemoveChar( _In_ int nIndex )
 {
-    if( !wcslen( m_pwszBuffer ) || nIndex < 0 || nIndex >= (int)wcslen( m_pwszBuffer ) )
+    const size_t nBufferLen = wcslen( m_pwszBuffer );
+    if( !nBufferLen || nIndex < 0 || nIndex >= (int)nBufferLen )
         return false;  // Invalid index
 
     MoveMemory( m_pwszBuffer + nIndex, m_pwszBuffer + nIndex + 1, sizeof( WCHAR ) *
-                ( wcslen( m_pwszBuffer ) - nIndex ) );
+                ( nBufferLen - nIndex ) );
     m_bAnalyseRequired = true;
     return true;
 }
