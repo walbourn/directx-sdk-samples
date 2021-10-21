@@ -19,10 +19,6 @@
 // Uncomment to enable the volume limiter on the master voice.
 //#define MASTERING_LIMITER
 
-#ifdef MASTERING_LIMITER
-#include <xapofx.h>
-#endif
-
 using Microsoft::WRL::ComPtr;
 
 //--------------------------------------------------------------------------------------

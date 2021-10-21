@@ -6,11 +6,6 @@
 //--------------------------------------------------------------------------------------
 
 #include "XAudio2Versions.h"
-#ifndef USING_XAUDIO2_7_DIRECTX
-#include <xaudio2fx.h>
-#else
-#include <C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Include\xaudio2fx.h>
-#endif
 
 #include <wrl/client.h>
 

@@ -9,18 +9,6 @@
 
 #include <wrl/client.h>
 
-#ifndef USING_XAUDIO2_7_DIRECTX
-#include <xaudio2fx.h>
-#include <x3daudio.h>
-#else
-#include <C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Include\xaudio2fx.h>
-#pragma warning(push)
-#pragma warning( disable : 4005 )
-#include <C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Include\x3daudio.h>
-#pragma warning(pop)
-#pragma comment(lib,"x3daudio.lib")
-#endif
-
 //-----------------------------------------------------------------------------
 // Global defines
 //-----------------------------------------------------------------------------
