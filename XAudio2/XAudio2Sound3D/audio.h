@@ -7,6 +7,8 @@
 
 #include "XAudio2Versions.h"
 
+#include <wrl/client.h>
+
 #ifndef USING_XAUDIO2_7_DIRECTX
 #include <xaudio2fx.h>
 #include <x3daudio.h>
@@ -44,11 +46,12 @@ struct AUDIO_STATE
 #ifdef USING_XAUDIO2_7_DIRECTX
     HMODULE mXAudioDLL;
 #endif
-    IXAudio2* pXAudio2;
+    Microsoft::WRL::ComPtr<IXAudio2> pXAudio2;
     IXAudio2MasteringVoice* pMasteringVoice;
     IXAudio2SourceVoice* pSourceVoice;
     IXAudio2SubmixVoice* pSubmixVoice;
-    IUnknown* pReverbEffect;
+    Microsoft::WRL::ComPtr<IUnknown> pVolumeLimiter;
+    Microsoft::WRL::ComPtr<IUnknown> pReverbEffect;
     std::unique_ptr<uint8_t[]> waveData;
 
     // 3D

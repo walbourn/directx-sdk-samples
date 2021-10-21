@@ -502,7 +502,7 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
     SAFE_RELEASE( pPixelShaderBuffer );
 
     // Create state
-    D3D11_DEPTH_STENCIL_DESC desc={0};
+    D3D11_DEPTH_STENCIL_DESC desc = {};
     desc.DepthEnable = false;
     desc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
     desc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
@@ -536,11 +536,11 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
     g_HUD.GetButton( IDC_TOGGLEWARP )->SetEnabled( true );
 
     // Create vertex buffers
-    D3D11_BUFFER_DESC vbdesc = {0};
+    D3D11_BUFFER_DESC vbdesc = {};
     vbdesc.Usage = D3D11_USAGE_DEFAULT;
     vbdesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 
-    D3D11_SUBRESOURCE_DATA initData ={0};
+    D3D11_SUBRESOURCE_DATA initData = {};
 
     // Floor
     static const Vertex s_floor[4] = 

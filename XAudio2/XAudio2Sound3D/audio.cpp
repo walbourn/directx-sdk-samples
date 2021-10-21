@@ -11,6 +11,13 @@
 #include "WAVFileReader.h"
 #include "audio.h"
 
+// Uncomment to enable the volume limiter on the master voice.
+//#define MASTERING_LIMITER
+
+#ifdef MASTERING_LIMITER
+#include <xapofx.h>
+#endif
+
 using namespace DirectX;
 
 //--------------------------------------------------------------------------------------
@@ -79,7 +86,7 @@ XAUDIO2FX_REVERB_I3DL2_PARAMETERS g_PRESET_PARAMS[ NUM_PRESETS ] =
 HRESULT InitAudio()
 {
     // Clear struct
-    memset( &g_audioState, 0, sizeof( AUDIO_STATE ) );
+    g_audioState = {};
 
     //
     // Initialize XAudio2
@@ -113,7 +120,7 @@ HRESULT InitAudio()
     //    View->Show Analytic and Debug Logs.
     //    Applications and Services Logs / Microsoft / Windows / XAudio2. 
     //    Right click on Microsoft Windows XAudio2 debug logging, Properties, then Enable Logging, and hit OK 
-    XAUDIO2_DEBUG_CONFIGURATION debug ={0};
+    XAUDIO2_DEBUG_CONFIGURATION debug = {};
     debug.TraceMask = XAUDIO2_LOG_ERRORS | XAUDIO2_LOG_WARNINGS;
     debug.BreakMask = XAUDIO2_LOG_ERRORS;
     g_audioState.pXAudio2->SetDebugConfiguration( &debug, 0 );
@@ -124,7 +131,7 @@ HRESULT InitAudio()
     //
     if( FAILED( hr = g_audioState.pXAudio2->CreateMasteringVoice( &g_audioState.pMasteringVoice ) ) )
     {
-        SAFE_RELEASE( g_audioState.pXAudio2 );
+        g_audioState.pXAudio2.Reset();
         return hr;
     }
 
@@ -139,13 +146,13 @@ HRESULT InitAudio()
 
     if( details.InputChannels > OUTPUTCHANNELS )
     {
-        SAFE_RELEASE( g_audioState.pXAudio2 );
+        g_audioState.pXAudio2.Reset();
         return E_FAIL;
     }
 
     if ( FAILED( hr = g_audioState.pMasteringVoice->GetChannelMask( &dwChannelMask ) ) )
     {
-        SAFE_RELEASE( g_audioState.pXAudio2 );
+        g_audioState.pXAudio2.Reset();
         return E_FAIL;
     }
 
@@ -158,13 +165,13 @@ HRESULT InitAudio()
     XAUDIO2_DEVICE_DETAILS details;
     if( FAILED( hr = g_audioState.pXAudio2->GetDeviceDetails( 0, &details ) ) )
     {
-        SAFE_RELEASE( g_audioState.pXAudio2 );
+        g_audioState.pXAudio2.Reset();
         return hr;
     }
 
     if( details.OutputFormat.Format.nChannels > OUTPUTCHANNELS )
     {
-        SAFE_RELEASE( g_audioState.pXAudio2 );
+        g_audioState.pXAudio2.Reset();
         return E_FAIL;
     }
 
@@ -173,6 +180,33 @@ HRESULT InitAudio()
     g_audioState.nChannels = details.OutputFormat.Format.nChannels;
 
 #endif
+
+#ifdef MASTERING_LIMITER
+    FXMASTERINGLIMITER_PARAMETERS params = {};
+    params.Release = FXMASTERINGLIMITER_DEFAULT_RELEASE;
+    params.Loudness = FXMASTERINGLIMITER_DEFAULT_LOUDNESS;
+
+    hr = CreateFX(__uuidof(FXMasteringLimiter), &g_audioState.pVolumeLimiter, &params, sizeof(params));
+    if (FAILED(hr))
+    {
+        g_audioState.pXAudio2.Reset();
+        return hr;
+    }
+
+    XAUDIO2_EFFECT_DESCRIPTOR desc = {};
+    desc.InitialState = TRUE;
+    desc.OutputChannels = g_audioState.nChannels;
+    desc.pEffect = g_audioState.pVolumeLimiter.Get();
+
+    XAUDIO2_EFFECT_CHAIN chain = { 1, &desc };
+    hr = g_audioState.pMasteringVoice->SetEffectChain(&chain);
+    if (FAILED(hr))
+    {
+        g_audioState.pXAudio2.Reset();
+        g_audioState.pVolumeLimiter.Reset();
+        return hr;
+    }
+#endif // MASTERING_LIMITER
 
     //
     // Create reverb effect
@@ -183,7 +217,7 @@ HRESULT InitAudio()
  #endif
     if( FAILED( hr = XAudio2CreateReverb( &g_audioState.pReverbEffect, rflags ) ) )
     {
-        SAFE_RELEASE( g_audioState.pXAudio2 );
+        g_audioState.pXAudio2.Reset();
         return hr;
     }
 
@@ -194,15 +228,15 @@ HRESULT InitAudio()
     // Performance tip: you need not run global FX with the sample number
     // of channels as the final mix.  For example, this sample runs
     // the reverb in mono mode, thus reducing CPU overhead.
-    XAUDIO2_EFFECT_DESCRIPTOR effects[] = { { g_audioState.pReverbEffect, TRUE, 1 } };
+    XAUDIO2_EFFECT_DESCRIPTOR effects[] = { { g_audioState.pReverbEffect.Get(), TRUE, 1 } };
     XAUDIO2_EFFECT_CHAIN effectChain = { 1, effects };
 
     if( FAILED( hr = g_audioState.pXAudio2->CreateSubmixVoice( &g_audioState.pSubmixVoice, 1,
                                                                nSampleRate, 0, 0,
                                                                nullptr, &effectChain ) ) )
     {
-        SAFE_RELEASE( g_audioState.pXAudio2 );
-        SAFE_RELEASE( g_audioState.pReverbEffect );
+        g_audioState.pXAudio2.Reset();
+        g_audioState.pReverbEffect.Reset();
         return hr;
     }
 
@@ -365,7 +399,7 @@ HRESULT PrepareAudio( _In_z_ const LPWSTR wavname )
                                                         2.0f, nullptr, &sendList ) );
 
     // Submit the wave sample data using an XAUDIO2_BUFFER structure
-    XAUDIO2_BUFFER buffer = {0};
+    XAUDIO2_BUFFER buffer = {};
     buffer.pAudioData = sampleData;
     buffer.Flags = XAUDIO2_END_OF_STREAM;
     buffer.AudioBytes = waveSize;
@@ -564,8 +598,9 @@ VOID CleanupAudio()
     }
 
     g_audioState.pXAudio2->StopEngine();
-    SAFE_RELEASE( g_audioState.pXAudio2 );
-    SAFE_RELEASE( g_audioState.pReverbEffect );
+    g_audioState.pXAudio2.Reset();
+    g_audioState.pVolumeLimiter.Reset();
+    g_audioState.pReverbEffect.Reset();
 
     g_audioState.waveData.reset();
 
