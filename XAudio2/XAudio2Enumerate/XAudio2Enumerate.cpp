@@ -8,8 +8,8 @@
 //--------------------------------------------------------------------------------------
 
 #define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#include <stdio.h>
+#include <Windows.h>
+#include <cstdio>
 
 #include <string>
 #include <vector>
@@ -93,7 +93,7 @@ int main()
     //    View->Show Analytic and Debug Logs.
     //    Applications and Services Logs / Microsoft / Windows / XAudio2. 
     //    Right click on Microsoft Windows XAudio2 debug logging, Properties, then Enable Logging, and hit OK 
-    XAUDIO2_DEBUG_CONFIGURATION debug ={0};
+    XAUDIO2_DEBUG_CONFIGURATION debug = {};
     debug.TraceMask = XAUDIO2_LOG_ERRORS | XAUDIO2_LOG_WARNINGS;
     debug.BreakMask = XAUDIO2_LOG_ERRORS;
     pXAudio2->SetDebugConfiguration( &debug, 0 );

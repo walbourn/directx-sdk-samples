@@ -208,8 +208,8 @@ void CSampleXAPOBase<APOClass, ParameterClass>::Process(
     _ASSERT( IsLocked() );
     _ASSERT( InputProcessParameterCount == 1 );
     _ASSERT( OutputProcessParameterCount == 1 );
-    _ASSERT( pInputProcessParameters != 0 && pOutputProcessParameters != 0 );
-    _Analysis_assume_( pInputProcessParameters != 0 && pOutputProcessParameters != 0 );
+    _ASSERT( pInputProcessParameters != nullptr && pOutputProcessParameters != nullptr);
+    _Analysis_assume_( pInputProcessParameters != nullptr && pOutputProcessParameters != nullptr);
     _ASSERT( pInputProcessParameters[0].pBuffer == pOutputProcessParameters[0].pBuffer );
 
     UNREFERENCED_PARAMETER( OutputProcessParameterCount );

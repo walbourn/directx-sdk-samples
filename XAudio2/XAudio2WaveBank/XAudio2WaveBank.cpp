@@ -10,8 +10,8 @@
 //--------------------------------------------------------------------------------------
 
 #define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#include <stdio.h>
+#include <Windows.h>
+#include <cstdio>
 
 #include <wrl\client.h>
 #include "XAudio2Versions.h"
@@ -79,7 +79,7 @@ int main()
     //    View->Show Analytic and Debug Logs.
     //    Applications and Services Logs / Microsoft / Windows / XAudio2. 
     //    Right click on Microsoft Windows XAudio2 debug logging, Properties, then Enable Logging, and hit OK 
-    XAUDIO2_DEBUG_CONFIGURATION debug ={0};
+    XAUDIO2_DEBUG_CONFIGURATION debug = {};
     debug.TraceMask = XAUDIO2_LOG_ERRORS | XAUDIO2_LOG_WARNINGS;
     debug.BreakMask = XAUDIO2_LOG_ERRORS;
     pXAudio2->SetDebugConfiguration( &debug, 0 );
@@ -241,7 +241,7 @@ HRESULT PlayWaveFromWaveBank( IXAudio2* pXaudio2, WaveBankReader& wb, uint32_t i
     }
 
     // Submit the wave sample data using an XAUDIO2_BUFFER structure
-    XAUDIO2_BUFFER buffer = {0};
+    XAUDIO2_BUFFER buffer = {};
     buffer.pAudioData = waveData;
     buffer.Flags = XAUDIO2_END_OF_STREAM;  // tell the source voice not to expect any data after this buffer
     buffer.AudioBytes = waveSize;
@@ -263,7 +263,7 @@ HRESULT PlayWaveFromWaveBank( IXAudio2* pXaudio2, WaveBankReader& wb, uint32_t i
         if ( tag == WAVE_FORMAT_WMAUDIO2 || tag == WAVE_FORMAT_WMAUDIO3 )
         {
 #if defined(USING_XAUDIO2_7_DIRECTX) || defined(USING_XAUDIO2_9)
-            XAUDIO2_BUFFER_WMA xwmaBuffer = {0};
+            XAUDIO2_BUFFER_WMA xwmaBuffer = {};
             xwmaBuffer.pDecodedPacketCumulativeBytes = seekTable;
             xwmaBuffer.PacketCount = seekTableCount;
             if( FAILED( hr = pSourceVoice->SubmitSourceBuffer( &buffer, &xwmaBuffer ) ) )
@@ -331,8 +331,8 @@ HRESULT FindMediaFileCch( WCHAR* strDestPath, int cchDest, LPCWSTR strFilename )
         return E_INVALIDARG;
 
     // Get the exe name, and exe path
-    WCHAR strExePath[MAX_PATH] = {0};
-    WCHAR strExeName[MAX_PATH] = {0};
+    WCHAR strExePath[MAX_PATH] = {};
+    WCHAR strExeName[MAX_PATH] = {};
     WCHAR* strLastSlash = nullptr;
     GetModuleFileName( nullptr, strExePath, MAX_PATH );
     strExePath[MAX_PATH - 1] = 0;
@@ -355,12 +355,12 @@ HRESULT FindMediaFileCch( WCHAR* strDestPath, int cchDest, LPCWSTR strFilename )
         return S_OK;
 
     // Search all parent directories starting at .\ and using strFilename as the leaf name
-    WCHAR strLeafName[MAX_PATH] = {0};
+    WCHAR strLeafName[MAX_PATH] = {};
     wcscpy_s( strLeafName, MAX_PATH, strFilename );
 
-    WCHAR strFullPath[MAX_PATH] = {0};
-    WCHAR strFullFileName[MAX_PATH] = {0};
-    WCHAR strSearch[MAX_PATH] = {0};
+    WCHAR strFullPath[MAX_PATH] = {};
+    WCHAR strFullFileName[MAX_PATH] = {};
+    WCHAR strSearch[MAX_PATH] = {};
     WCHAR* strFilePart = nullptr;
 
     GetFullPathName( L".", MAX_PATH, strFullPath, &strFilePart );

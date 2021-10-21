@@ -12,6 +12,8 @@
 #include <C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Include\xaudio2fx.h>
 #endif
 
+#include <wrl/client.h>
+
 #include "SimpleAPO.h"
 #include "MonitorAPO.h"
 
@@ -30,7 +32,7 @@ struct AUDIO_STATE
 #ifdef USING_XAUDIO2_7_DIRECTX
     HMODULE mXAudioDLL;
 #endif
-    IXAudio2* pXAudio2;
+    Microsoft::WRL::ComPtr<IXAudio2> pXAudio2;
     IXAudio2MasteringVoice* pMasteringVoice;
     IXAudio2SourceVoice* pSourceVoice;
     std::unique_ptr<uint8_t[]> waveData;

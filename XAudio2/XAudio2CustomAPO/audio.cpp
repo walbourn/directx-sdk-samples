@@ -47,7 +47,7 @@ HRESULT InitAudio()
     flags |= XAUDIO2_DEBUG_ENGINE;
  #endif
     hr = XAudio2Create( &g_audioState.pXAudio2, flags );
-    if( FAILED( hr  ) )
+    if( FAILED( hr ) )
         return hr;
 
 #if !defined(USING_XAUDIO2_7_DIRECTX) && defined(_DEBUG)
@@ -56,7 +56,7 @@ HRESULT InitAudio()
     //    View->Show Analytic and Debug Logs.
     //    Applications and Services Logs / Microsoft / Windows / XAudio2. 
     //    Right click on Microsoft Windows XAudio2 debug logging, Properties, then Enable Logging, and hit OK 
-    XAUDIO2_DEBUG_CONFIGURATION debug ={0};
+    XAUDIO2_DEBUG_CONFIGURATION debug = {};
     debug.TraceMask = XAUDIO2_LOG_ERRORS | XAUDIO2_LOG_WARNINGS;
     debug.BreakMask = XAUDIO2_LOG_ERRORS;
     g_audioState.pXAudio2->SetDebugConfiguration( &debug, 0 );
@@ -65,10 +65,10 @@ HRESULT InitAudio()
     //
     // Create a mastering voice
     //
-    assert( g_audioState.pXAudio2 != 0 );
+    assert( g_audioState.pXAudio2 != nullptr );
     if( FAILED( hr = g_audioState.pXAudio2->CreateMasteringVoice( &g_audioState.pMasteringVoice ) ) )
     {
-        SAFE_RELEASE( g_audioState.pXAudio2 );
+        g_audioState.pXAudio2.Reset();
         return hr;
     }
 
@@ -126,7 +126,7 @@ HRESULT PrepareAudio( const LPWSTR wavname )
     //
 
     // Create the source voice
-    assert( g_audioState.pXAudio2 != 0 );
+    assert( g_audioState.pXAudio2 != nullptr );
     V_RETURN( g_audioState.pXAudio2->CreateSourceVoice( &g_audioState.pSourceVoice, pwfx, 0,
                                                         XAUDIO2_DEFAULT_FREQ_RATIO, nullptr, nullptr ) );
 
@@ -141,7 +141,7 @@ HRESULT PrepareAudio( const LPWSTR wavname )
     CMonitorAPO::CreateInstance( nullptr, 0, &pMonitorPost );
 
     // Create the effect chain
-    XAUDIO2_EFFECT_DESCRIPTOR apoDesc[3] = {0};
+    XAUDIO2_EFFECT_DESCRIPTOR apoDesc[3] = {};
     apoDesc[0].InitialState = true;
     apoDesc[0].OutputChannels = 1;
     apoDesc[0].pEffect = static_cast<IXAPO*>(pMonitorPre);
@@ -152,11 +152,11 @@ HRESULT PrepareAudio( const LPWSTR wavname )
     apoDesc[2].OutputChannels = 1;
     apoDesc[2].pEffect = static_cast<IXAPO*>(pMonitorPost);
 
-    XAUDIO2_EFFECT_CHAIN chain = {0};
+    XAUDIO2_EFFECT_CHAIN chain = {};
     chain.EffectCount = sizeof(apoDesc) / sizeof(apoDesc[0]);
     chain.pEffectDescriptors = apoDesc;
 
-    assert( g_audioState.pSourceVoice != 0 );
+    assert( g_audioState.pSourceVoice != nullptr );
     V_RETURN( g_audioState.pSourceVoice->SetEffectChain( &chain ) );
 
     // Don't need to keep them now that XAudio2 has ownership
@@ -165,7 +165,7 @@ HRESULT PrepareAudio( const LPWSTR wavname )
     pMonitorPost->Release();
 
     // Submit the wave sample data using an XAUDIO2_BUFFER structure
-    XAUDIO2_BUFFER buffer = {0};
+    XAUDIO2_BUFFER buffer = {};
     buffer.pAudioData = sampleData;
     buffer.Flags = XAUDIO2_END_OF_STREAM;
     buffer.AudioBytes = waveSize;
@@ -214,7 +214,7 @@ VOID PauseAudio( bool resume )
     if( !g_audioState.bInitialized )
         return;
 
-    assert( g_audioState.pXAudio2 != 0 );
+    assert( g_audioState.pXAudio2 != nullptr );
 
     if( resume )
         g_audioState.pXAudio2->StartEngine();
@@ -247,7 +247,7 @@ VOID CleanupAudio()
     if ( g_audioState.pXAudio2 )
         g_audioState.pXAudio2->StopEngine();
 
-    SAFE_RELEASE( g_audioState.pXAudio2 );
+    g_audioState.pXAudio2.Reset();
 
     g_audioState.waveData.reset();
 
