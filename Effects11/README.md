@@ -1,4 +1,4 @@
-![DirectX Logo](https://github.com/Microsoft/UVAtlas/wiki/Dx_logo.GIF)
+![DirectX Logo](https://raw.githubusercontent.com/wiki/Microsoft/FX11/Dx_logo.GIF)
 
 # Effects for Direct3D 11 (FX11)
 
@@ -6,7 +6,7 @@ http://go.microsoft.com/fwlink/?LinkId=271568
 
 Copyright (c) Microsoft Corporation. All rights reserved.
 
-**February 7, 2021**
+**December 2, 2021**
 
 Effects for Direct3D 11 (FX11) is a management runtime for authoring HLSL shaders, render state, and runtime variables together.
 
@@ -35,6 +35,14 @@ This project has adopted the [Microsoft Open Source Code of Conduct](https://ope
 ## Trademarks
 
 This project may contain trademarks or logos for projects, products, or services. Authorized use of Microsoft trademarks or logos is subject to and must follow [Microsoft's Trademark & Brand Guidelines](https://www.microsoft.com/en-us/legal/intellectualproperty/trademarks/usage/general). Use of Microsoft trademarks or logos in modified versions of this project must not cause confusion or imply Microsoft sponsorship. Any use of third-party trademarks or logos are subject to those third-party's policies.
+
+## Credits
+
+The Effects library for Direct3D 9 (FX9) was the work of Loren McQuade with contributions from Relja Markovic.
+
+The Effects library for Direct3D 10 (FX10) was the work of John Rapp and Kutta Srinivasan as a rewrite of the FX9 library with contributions from Anuj Gosalia, Kev Gee, Sam Glassenberg, Relja Markovic, and Ian McIntyre.
+
+The Effects library for Direct3D 11 (FX11) is the work of Ian McIntyre based on FX10 with contributions from Michael Oneppo and Chuck Walbourn.
 
 ## Samples
 
