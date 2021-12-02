@@ -10,7 +10,7 @@
 //
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
-    //
+//
 // http://go.microsoft.com/fwlink/?LinkId=248929
 //--------------------------------------------------------------------------------------
 
@@ -38,7 +38,7 @@
 #include <fstream>
 #include <iterator>
 #include <list>
-#include <locale>   
+#include <locale>
 #include <memory>
 #include <set>
 #include <string>
@@ -85,6 +85,9 @@ namespace
 #pragma pack(push, 1)
 
     constexpr size_t DVD_SECTOR_SIZE = 2048;
+
+    // Advanced format (4K native) disk
+    constexpr size_t ALIGNMENT_ADVANCED_FORMAT = 4096;
 
     constexpr size_t ALIGNMENT_MIN = 4;
     constexpr size_t ALIGNMENT_DVD = DVD_SECTOR_SIZE;
@@ -662,6 +665,7 @@ enum OPTIONS : uint32_t
 {
     OPT_RECURSIVE = 1,
     OPT_STREAMING,
+    OPT_ADVANCED_FORMAT,
     OPT_OUTPUTFILE,
     OPT_OUTPUTHEADER,
     OPT_TOLOWER,
@@ -683,7 +687,7 @@ struct SConversion
 
 struct SValue
 {
-    const wchar_t* name;
+    const wchar_t*  name;
     uint32_t        value;
 };
 
@@ -730,6 +734,7 @@ const SValue g_pOptions[] =
 {
     { L"r",         OPT_RECURSIVE },
     { L"s",         OPT_STREAMING },
+    { L"af",        OPT_ADVANCED_FORMAT },
     { L"o",         OPT_OUTPUTFILE },
     { L"l",         OPT_TOLOWER },
     { L"h",         OPT_OUTPUTHEADER },
@@ -752,7 +757,7 @@ namespace
 #pragma prefast(disable : 26018, "Only used with static internal arrays")
 #endif
 
-    uint32_t LookupByName(const wchar_t* pName, const SValue* pArray)
+    uint32_t LookupByName(const wchar_t *pName, const SValue *pArray)
     {
         while (pArray->name)
         {
@@ -925,7 +930,7 @@ namespace
 
     void PrintLogo()
     {
-        wprintf(L"Microsoft (R) XACT-style Wave Bank Tool \n");
+        wprintf(L"Microsoft (R) XACT-style Wave Bank Tool\n");
         wprintf(L"Copyright (C) Microsoft Corporation.\n");
 #ifdef _DEBUG
         wprintf(L"*** Debug build ***\n");
@@ -942,6 +947,8 @@ namespace
         wprintf(L"   -r                  wildcard filename search is recursive\n");
         wprintf(L"   -s                  creates a streaming wave bank,\n");
         wprintf(L"                       otherwise an in-memory bank is created\n");
+        wprintf(L"   -af                 for streaming, use 4K instead of 2K alignment\n");
+        wprintf(L"                       (required for advanced format drives without 512e)\n");
         wprintf(L"   -o <filename>       output filename\n");
         wprintf(L"   -h <h-filename>     output C/C++ header\n");
         wprintf(L"   -l                  force output filename to lower case\n");
@@ -1114,7 +1121,22 @@ int __cdecl wmain(_In_ int argc, _In_z_count_(argc) wchar_t* argv[])
                 wcscpy_s(szHeaderFile, MAX_PATH, pValue);
                 break;
 
+            case OPT_ADVANCED_FORMAT:
+                // Must disable compact version to support 4K
+                if (dwOptions & (1 << OPT_COMPACT))
+                {
+                    wprintf(L"-c and -af are mutually exclusive options\n");
+                    return 1;
+                }
+                dwOptions |= (1 << OPT_NOCOMPACT);
+                break;
+
             case OPT_COMPACT:
+                if (dwOptions & (1 << OPT_ADVANCED_FORMAT))
+                {
+                    wprintf(L"-c and -af are mutually exclusive options\n");
+                    return 1;
+                }
                 if (dwOptions & (1 << OPT_NOCOMPACT))
                 {
                     wprintf(L"-c and -nc are mutually exclusive options\n");
@@ -1138,6 +1160,9 @@ int __cdecl wmain(_In_ int argc, _In_z_count_(argc) wchar_t* argv[])
                     wprintf(L"Error opening -flist file %ls\n", pValue);
                     return 1;
                 }
+
+                inFile.imbue(std::locale::classic());
+
                 ProcessFileList(inFile, conversion);
             }
             break;
@@ -1260,7 +1285,9 @@ int __cdecl wmain(_In_ int argc, _In_z_count_(argc) wchar_t* argv[])
 
     DWORD dwAlignment = ALIGNMENT_MIN;
     if (dwOptions & (1 << OPT_STREAMING))
-        dwAlignment = ALIGNMENT_DVD;
+    {
+        dwAlignment = (dwOptions & (1 << OPT_ADVANCED_FORMAT)) ? ALIGNMENT_ADVANCED_FORMAT : ALIGNMENT_DVD;
+    }
 
     // Convert wave format to miniformat, failing if any won't map
     // Check to see if we can use the compact wave bank format
@@ -1415,7 +1442,7 @@ int __cdecl wmain(_In_ int argc, _In_z_count_(argc) wchar_t* argv[])
             auto cit = conversion.cbegin();
             advance(cit, it->conv);
 
-            wchar_t wEntryName[_MAX_FNAME] = {} ;
+            wchar_t wEntryName[_MAX_FNAME] = {};
             _wsplitpath_s(cit->szSrc, nullptr, 0, nullptr, 0, wEntryName, _MAX_FNAME, nullptr, 0);
 
             int result = WideCharToMultiByte(CP_UTF8, WC_NO_BEST_FIT_CHARS, wEntryName, -1, &entryNames[count * ENTRYNAME_LENGTH], ENTRYNAME_LENGTH, nullptr, nullptr);
