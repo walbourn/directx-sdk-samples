@@ -8,7 +8,4 @@
     <ClInclude Include="..\Common\WaveBankReader.h" />
     <ClInclude Include="..\Common\XAudio2Versions.h" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="ClassDiagram.cd" />
-  </ItemGroup>
 </Project>
