@@ -3,7 +3,9 @@
 //
 // Streaming from a Wave Bank using XAudio2 and asynchronous I/O
 //
-// NOTE: Currently ignores loop regions in the Wave Bank, and only works for PCM data
+// NOTE: Currently ignores loop regions in the Wave Bank, and only works for PCM data.
+//       For streaming of ADPCM, xWMA, and XMA2 content, see *DirectX Tool Kit for Audio*'s
+//       SoundStreamInstance class - http://go.microsoft.com/fwlink/?LinkId=248929
 //
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License (MIT).
@@ -26,7 +28,28 @@ using Microsoft::WRL::ComPtr;
 #define STREAMING_BUFFER_SIZE 65536
 #define MAX_BUFFER_COUNT 3
 
-static_assert( (STREAMING_BUFFER_SIZE % 2048) == 0, "Streaming size must be 2K aligned to use for async I/O" );
+// Use 4k streaming alignment to support Advanced Format (4Kn) drives. See the xwbtool -af switch.
+// Otherwise uses 2K streaming alignment to support DVD, HDDs, and Advanced Format (512e) drives.
+#define SUPPORT_AF_4KN
+
+#ifdef SUPPORT_AF_4KN
+static_assert( (STREAMING_BUFFER_SIZE % 4096) == 0,
+    "Streaming size error for non-buffered async I/O for Advanced Format (4Kn)" );
+#else
+static_assert( (STREAMING_BUFFER_SIZE % 2048) == 0,
+    "Streaming size error for non-buffered async I/O for DVD/HDD" );
+#endif
+
+
+namespace
+{
+#ifdef SUPPORT_AF_4KN
+    const wchar_t* c_bankFileName = L"Media\\Banks\\WaveBank4Kn.xwb";
+#else
+    const wchar_t* c_bankFileName = L"Media\\Banks\\WaveBank.xwb";
+#endif
+}
+
 
 //--------------------------------------------------------------------------------------
 // Callback structure
@@ -115,10 +138,10 @@ int main()
 #endif
 
     ComPtr<IXAudio2> pXAudio2;
-    hr = XAudio2Create( pXAudio2.GetAddressOf(), flags );
-    if( FAILED( hr ) )
+    hr = XAudio2Create(pXAudio2.GetAddressOf(), flags);
+    if (FAILED(hr))
     {
-        wprintf( L"Failed to init XAudio2 engine: %#X\n", hr );
+        wprintf(L"Failed to init XAudio2 engine: %#X\n", hr);
         CoUninitialize();
         return 0;
     }
@@ -132,7 +155,7 @@ int main()
     XAUDIO2_DEBUG_CONFIGURATION debug = {};
     debug.TraceMask = XAUDIO2_LOG_ERRORS | XAUDIO2_LOG_WARNINGS;
     debug.BreakMask = XAUDIO2_LOG_ERRORS;
-    pXAudio2->SetDebugConfiguration( &debug, 0 );
+    pXAudio2->SetDebugConfiguration(&debug, 0);
 #endif
 
     //
@@ -140,9 +163,9 @@ int main()
     //
     IXAudio2MasteringVoice* pMasteringVoice = nullptr;
 
-    if( FAILED( hr = pXAudio2->CreateMasteringVoice( &pMasteringVoice ) ) )
+    if (FAILED(hr = pXAudio2->CreateMasteringVoice(&pMasteringVoice)))
     {
-        wprintf( L"Failed creating mastering voice: %#X\n", hr );
+        wprintf(L"Failed creating mastering voice: %#X\n", hr);
         pXAudio2.Reset();
         CoUninitialize();
         return 0;
@@ -151,11 +174,11 @@ int main()
     //
     // Find our wave bank file
     //
-    WCHAR wavebank[ MAX_PATH ];
+    WCHAR wavebank[MAX_PATH];
 
-    if( FAILED( hr = FindMediaFileCch( wavebank, MAX_PATH, L"Media\\Banks\\wavebank.xwb" ) ) )
+    if (FAILED(hr = FindMediaFileCch(wavebank, MAX_PATH, c_bankFileName)))
     {
-        wprintf( L"Failed to find media file (%#X)\n", hr );
+        wprintf(L"Failed to find media file (%#X)\n", hr);
         pXAudio2.Reset();
         CoUninitialize();
         return 0;
@@ -169,23 +192,35 @@ int main()
     //
     WaveBankReader wb;
 
-    if( FAILED( hr = wb.Open( wavebank ) ) )
+    if (FAILED(hr = wb.Open(wavebank)))
     {
-        wprintf( L"Failed to wavebank data (%#X)\n", hr );
+        wprintf(L"Failed to wavebank data (%#X)\n", hr);
         pXAudio2.Reset();
         CoUninitialize();
         return 0;
     }
 
-    wprintf( L"Wavebank loaded with %u entries.\n", wb.Count() );
+    wprintf(L"Wavebank loaded with %u entries.\n", wb.Count());
 
-    if ( !wb.IsStreamingBank() )
+    if (!wb.IsStreamingBank())
     {
-        wprintf( L"This sample plays back streaming wave banks.\nSee XAudio2WaveBank for playing in-memory wave banks" );
+        wprintf(L"This sample plays back streaming wave banks.\nSee XAudio2WaveBank for playing in-memory wave banks\n");
         pXAudio2.Reset();
         CoUninitialize();
         return 0;
     }
+
+#ifdef SUPPORT_AF_4KN
+    if (wb.GetWaveAlignment() < 4096)
+    {
+        wprintf(L"WARNING: Streaming size must be 4K aligned to use for non-buffered async I/O for Advanced Format (4Kn)\n");
+    }
+#else
+    if (wb.GetWaveAlignment() < 2048)
+    {
+        wprintf(L"WARNING: Streaming size must be 2K aligned to use for non-buffered async I/O for DVD/HDD");
+    }
+#endif
 
     wprintf( L"Press <ESC> to exit.\n" );
 

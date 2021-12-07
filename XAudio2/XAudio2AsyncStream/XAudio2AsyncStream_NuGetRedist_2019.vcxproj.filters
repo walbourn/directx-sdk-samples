@@ -9,7 +9,6 @@
     <ClInclude Include="..\Common\XAudio2Versions.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="ClassDiagram.cd" />
     <None Include="packages.config" />
   </ItemGroup>
 </Project>

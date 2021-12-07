@@ -4,7 +4,6 @@
 // Functions for loading WAV audio files
 //
 // Copyright (c) Microsoft Corporation.
-// Licensed under the MIT License (MIT).
 // Licensed under the MIT License.
 //
 // http://go.microsoft.com/fwlink/?LinkId=248929
@@ -64,8 +63,8 @@ namespace
 
     struct DLSLoop
     {
-        static const uint32_t LOOP_TYPE_FORWARD = 0x00000000;
-        static const uint32_t LOOP_TYPE_RELEASE = 0x00000001;
+        static constexpr uint32_t LOOP_TYPE_FORWARD = 0x00000000;
+        static constexpr uint32_t LOOP_TYPE_RELEASE = 0x00000001;
 
         uint32_t size;
         uint32_t loopType;
@@ -75,8 +74,8 @@ namespace
 
     struct RIFFDLSSample
     {
-        static const uint32_t OPTIONS_NOTRUNCATION = 0x00000001;
-        static const uint32_t OPTIONS_NOCOMPRESSION = 0x00000002;
+        static constexpr uint32_t OPTIONS_NOTRUNCATION = 0x00000001;
+        static constexpr uint32_t OPTIONS_NOCOMPRESSION = 0x00000002;
 
         uint32_t    size;
         uint16_t    unityNote;
@@ -88,9 +87,9 @@ namespace
 
     struct MIDILoop
     {
-        static const uint32_t LOOP_TYPE_FORWARD = 0x00000000;
-        static const uint32_t LOOP_TYPE_ALTERNATING = 0x00000001;
-        static const uint32_t LOOP_TYPE_BACKWARD = 0x00000002;
+        static constexpr uint32_t LOOP_TYPE_FORWARD = 0x00000000;
+        static constexpr uint32_t LOOP_TYPE_ALTERNATING = 0x00000001;
+        static constexpr uint32_t LOOP_TYPE_BACKWARD = 0x00000002;
 
         uint32_t cuePointId;
         uint32_t type;
