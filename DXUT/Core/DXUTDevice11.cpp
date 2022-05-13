@@ -1113,7 +1113,7 @@ float DXUTRankD3D11DeviceCombo( CD3D11EnumDeviceSettingsCombo* pDeviceSettingsCo
             // Match both Resolution & Refresh Rate
             for( size_t idm = 0; idm < pDeviceSettingsCombo->pOutputInfo->displayModeList.size() && !bResolutionFound; idm++ )
             {
-                auto displayMode = pDeviceSettingsCombo->pOutputInfo->displayModeList[ idm ];
+                const auto& displayMode = pDeviceSettingsCombo->pOutputInfo->displayModeList[ idm ];
 
                 float refreshDiff = fabsf( ( float( displayMode.RefreshRate.Numerator ) / float( displayMode.RefreshRate.Denominator ) ) -
                                            ( float( pOptimalDeviceSettings->sd.BufferDesc.RefreshRate.Numerator ) / float( pOptimalDeviceSettings->sd.BufferDesc.RefreshRate.Denominator ) ) );
@@ -1143,7 +1143,7 @@ float DXUTRankD3D11DeviceCombo( CD3D11EnumDeviceSettingsCombo* pDeviceSettingsCo
             // Match just Resolution
             for( size_t idm = 0; idm < pDeviceSettingsCombo->pOutputInfo->displayModeList.size() && !bResolutionFound; idm++ )
             {
-                auto displayMode = pDeviceSettingsCombo->pOutputInfo->displayModeList[ idm ];
+                const auto& displayMode = pDeviceSettingsCombo->pOutputInfo->displayModeList[ idm ];
 
                 if( displayMode.Width == pOptimalDeviceSettings->sd.BufferDesc.Width
                     && displayMode.Height == pOptimalDeviceSettings->sd.BufferDesc.Height )

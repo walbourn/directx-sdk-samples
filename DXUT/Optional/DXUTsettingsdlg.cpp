@@ -1460,7 +1460,7 @@ HRESULT CD3DSettingsDlg::UpdateD3D11Resolutions()
 
         for (size_t idm = 0; idm < pOutputInfo->displayModeList.size(); idm++)
         {
-            auto DisplayMode = pOutputInfo->displayModeList[idm];
+            const auto& DisplayMode = pOutputInfo->displayModeList[idm];
             float fAspect = (float) DisplayMode.Width / (float) DisplayMode.Height;
 
             if (DisplayMode.Format == g_DeviceSettings.d3d11.sd.BufferDesc.Format)
