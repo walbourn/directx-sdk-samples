@@ -4476,7 +4476,7 @@ HRESULT DXUTSnapDeviceSettingsToEnumDevice( DXUTDeviceSettings* pDeviceSettings,
     }   
     if (pDeviceSettingsCombo->pOutputInfo)
     {
-        const auto& bestDisplayMode = pDeviceSettingsCombo->pOutputInfo->displayModeList[ bestModeIndex ];
+        auto const& bestDisplayMode = pDeviceSettingsCombo->pOutputInfo->displayModeList[ bestModeIndex ];
         if (!pDeviceSettingsCombo->Windowed)
         {
             pDeviceSettings->d3d11.sd.BufferDesc.Height = bestDisplayMode.Height;

@@ -22,7 +22,7 @@ Documentation is available on the [GitHub wiki](https://github.com/Microsoft/DXU
 
 *This project is 'archived'. It is still available for use for legacy projects, but use of it for new projects is not recommended.*
 
-All content and source code for this package are subject to the terms of the [MIT License](http://opensource.org/licenses/MIT).
+All content and source code for this package are subject to the terms of the [MIT License](https://github.com/microsoft/DXUT/blob/main/LICENSE).
 
 ## Contributing
 
