@@ -44,7 +44,7 @@ static const EVersionTag g_EffectVersions[] =
 
 // Enumeration of the possible left-hand side values of an assignment,
 // divided up categorically by the type of block they may appear in
-enum ELhsType
+enum ELhsType : int
 {
     ELHS_Invalid,
 
