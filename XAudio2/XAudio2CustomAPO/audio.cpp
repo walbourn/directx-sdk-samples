@@ -84,7 +84,7 @@ HRESULT InitAudio()
 //-----------------------------------------------------------------------------
 // Prepare a looping wave
 //-----------------------------------------------------------------------------
-HRESULT PrepareAudio( const LPWSTR wavname )
+HRESULT PrepareAudio( const LPCWSTR wavname )
 {
     if( !g_audioState.bInitialized )
         return E_FAIL;

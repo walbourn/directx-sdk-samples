@@ -94,7 +94,7 @@ const LPWSTR g_PRESET_NAMES[ NUM_PRESETS ] =
 
 int                             g_moveFlags = 0;
 
-const float                     MOTION_SCALE = 10.0f;
+constexpr float MOTION_SCALE = 10.0f;
 
 
 //--------------------------------------------------------------------------------------
@@ -137,10 +137,10 @@ ID3D11Buffer*   g_pcbVSPerObject11 = nullptr;
 #define IDC_INNERRADIUS         13
 
 // Constants for colors
-static const DWORD              SOURCE_COLOR = 0xffea1b1b;
-static const DWORD              LISTENER_COLOR = 0xff2b2bff;
-static const DWORD              FLOOR_COLOR = 0xff101010;
-static const DWORD              GRID_COLOR = 0xff00a000;
+static constexpr DWORD SOURCE_COLOR = 0xffea1b1b;
+static constexpr DWORD LISTENER_COLOR = 0xff2b2bff;
+static constexpr DWORD FLOOR_COLOR = 0xff101010;
+static constexpr DWORD GRID_COLOR = 0xff00a000;
 
 
 //--------------------------------------------------------------------------------------
@@ -620,7 +620,7 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
     DXUT_SetDebugName( g_pvbInnerRadius, "InnerRadius" );
 
     // Grid
-    const UINT lcount = 2 * ( ( ZMAX - ZMIN + 1 ) + ( XMAX - XMIN + 1 ) );
+    constexpr UINT lcount = 2 * ( ( ZMAX - ZMIN + 1 ) + ( XMAX - XMIN + 1 ) );
     std::unique_ptr<Vertex> vbData( new Vertex[ lcount ] );
 
     auto pVertices = vbData.get();
@@ -696,18 +696,18 @@ void CALLBACK OnD3D11FrameRender( ID3D11Device* pd3dDevice, ID3D11DeviceContext*
     pd3dImmediateContext->PSSetShader( g_pPixelShader11, nullptr, 0 );
 
     // Draw the floor
-    XMMATRIX mScale = XMMatrixScaling( 1.f / ( XMAX - XMIN ), 1.f / ( ZMAX - ZMIN ), 1 );
+    const XMMATRIX mScale = XMMatrixScaling( 1.f / ( XMAX - XMIN ), 1.f / ( ZMAX - ZMIN ), 1 );
 
     HRESULT hr;
-    D3D11_MAPPED_SUBRESOURCE MappedResource;
+    D3D11_MAPPED_SUBRESOURCE MappedResource = {};
     V( pd3dImmediateContext->Map( g_pcbVSPerObject11, 0, D3D11_MAP_WRITE_DISCARD, 0, &MappedResource ) );
     auto pVSPerObject = reinterpret_cast<CB_VS_PER_OBJECT*>( MappedResource.pData );
     XMStoreFloat4x4( &pVSPerObject->m_Transform, XMMatrixTranspose( mScale ) );
     pd3dImmediateContext->Unmap( g_pcbVSPerObject11, 0 );
     pd3dImmediateContext->VSSetConstantBuffers( 0, 1, &g_pcbVSPerObject11 );
 
-    UINT vbstride = sizeof(Vertex);
-    UINT vboffset = 0;
+    const UINT vbstride = sizeof(Vertex);
+    const UINT vboffset = 0;
 
     auto vb = g_pvbFloor;
     pd3dImmediateContext->IASetVertexBuffers( 0, 1, &vb, &vbstride, &vboffset );
@@ -718,16 +718,16 @@ void CALLBACK OnD3D11FrameRender( ID3D11Device* pd3dDevice, ID3D11DeviceContext*
     vb = g_pvbGrid;
     pd3dImmediateContext->IASetVertexBuffers( 0, 1, &vb, &vbstride, &vboffset );
     pd3dImmediateContext->IASetPrimitiveTopology( D3D11_PRIMITIVE_TOPOLOGY_LINELIST );
-    const UINT lcount = 2 * ( ( ZMAX - ZMIN + 1 ) + ( XMAX - XMIN + 1 ) );
+    constexpr UINT lcount = 2 * ( ( ZMAX - ZMIN + 1 ) + ( XMAX - XMIN + 1 ) );
     pd3dImmediateContext->Draw( lcount, 0 );
 
     // Draw the listener
     {
-        XMMATRIX mTrans = XMMatrixTranslation( g_audioState.vListenerPos.x, g_audioState.vListenerPos.z, 0 );
+        const XMMATRIX mTrans = XMMatrixTranslation( g_audioState.vListenerPos.x, g_audioState.vListenerPos.z, 0 );
 
-        XMMATRIX mRot = XMMatrixRotationZ( -g_audioState.fListenerAngle );
+        const XMMATRIX mRot = XMMatrixRotationZ( -g_audioState.fListenerAngle );
 
-        XMMATRIX mat = mRot * mTrans * mScale;
+        const XMMATRIX mat = mRot * mTrans * mScale;
  
         V( pd3dImmediateContext->Map( g_pcbVSPerObject11, 0, D3D11_MAP_WRITE_DISCARD, 0, &MappedResource ) );
         pVSPerObject = reinterpret_cast<CB_VS_PER_OBJECT*>( MappedResource.pData );
@@ -760,9 +760,9 @@ void CALLBACK OnD3D11FrameRender( ID3D11Device* pd3dDevice, ID3D11DeviceContext*
 
     // Draw the source
     {
-        XMMATRIX mTrans = XMMatrixTranslation( g_audioState.vEmitterPos.x, g_audioState.vEmitterPos.z, 0 );
+        const XMMATRIX mTrans = XMMatrixTranslation( g_audioState.vEmitterPos.x, g_audioState.vEmitterPos.z, 0 );
 
-        XMMATRIX mat = mTrans * mScale;
+        const XMMATRIX mat = mTrans * mScale;
  
         V( pd3dImmediateContext->Map( g_pcbVSPerObject11, 0, D3D11_MAP_WRITE_DISCARD, 0, &MappedResource ) );
         pVSPerObject = reinterpret_cast<CB_VS_PER_OBJECT*>( MappedResource.pData );

@@ -234,10 +234,13 @@ int main()
 _Use_decl_annotations_
 HRESULT PlayWave( IXAudio2* pXaudio2, LPCWSTR szFilename )
 {
+    if (!pXaudio2)
+        return E_INVALIDARG;
+
     //
     // Locate the wave file
     //
-    WCHAR strFilePath[MAX_PATH];
+    WCHAR strFilePath[MAX_PATH] = {};
     HRESULT hr = FindMediaFileCch( strFilePath, MAX_PATH, szFilename );
     if( FAILED( hr ) )
     {
@@ -261,7 +264,7 @@ HRESULT PlayWave( IXAudio2* pXaudio2, LPCWSTR szFilename )
     //
 
     // Create the source voice
-    IXAudio2SourceVoice* pSourceVoice;
+    IXAudio2SourceVoice* pSourceVoice = nullptr;
     if( FAILED( hr = pXaudio2->CreateSourceVoice( &pSourceVoice, waveData.wfx ) ) )
     {
         wprintf( L"Error %#X creating source voice\n", hr );

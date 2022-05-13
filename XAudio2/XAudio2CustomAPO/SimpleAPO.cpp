@@ -38,7 +38,7 @@ void CSimpleAPO::DoProcess( const SimpleAPOParams& params, FLOAT32* __restrict p
     // This simple sample shows how to write an audio effect in straight C++.
     // For better performance, use vector operations (VMX or SSE).
     //
-    float gain = params.gain;
+    const float gain = params.gain;
     for( UINT32 i = 0; i < cFrames * cChannels; ++i )
     {
         pData[i] *= gain;

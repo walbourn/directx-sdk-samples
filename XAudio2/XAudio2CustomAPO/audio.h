@@ -49,7 +49,7 @@ extern AUDIO_STATE  g_audioState;
 // External functions
 //--------------------------------------------------------------------------------------
 HRESULT InitAudio();
-HRESULT PrepareAudio( const LPWSTR wavname );
+HRESULT PrepareAudio( const LPCWSTR wavname );
 VOID SetSimpleGain( float gain );
 VOID PauseAudio( bool resume );
 VOID CleanupAudio();

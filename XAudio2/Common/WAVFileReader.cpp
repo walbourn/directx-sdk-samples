@@ -138,7 +138,7 @@ namespace
             if (header->tag == tag)
                 return header;
 
-            auto offset = header->size + sizeof(RIFFChunk);
+            auto const offset = header->size + sizeof(RIFFChunk);
             ptr += offset;
         }
 
@@ -156,8 +156,8 @@ namespace
         _Out_ bool& dpds,
         _Out_ bool& seek) noexcept
     {
-        if (!wavData || !pwfx)
-            return E_POINTER;
+        if (!wavData || !pwfx || !pdata || !dataSize)
+            return E_INVALIDARG;
 
         dpds = seek = false;
 
@@ -496,23 +496,21 @@ namespace
         _Inout_ std::unique_ptr<uint8_t[]>& wavData,
         _Out_ DWORD* bytesRead) noexcept
     {
-        if (!szFileName)
+        if (!szFileName || !bytesRead)
             return E_INVALIDARG;
 
         // open the file
     #if (_WIN32_WINNT >= _WIN32_WINNT_WIN8)
-        ScopedHandle hFile(safe_handle(CreateFile2(szFileName,
-            GENERIC_READ,
-            FILE_SHARE_READ,
-            OPEN_EXISTING,
+        ScopedHandle hFile(safe_handle(CreateFile2(
+            szFileName,
+            GENERIC_READ, FILE_SHARE_READ, OPEN_EXISTING,
             nullptr)));
     #else
-        ScopedHandle hFile(safe_handle(CreateFileW(szFileName,
-            GENERIC_READ,
-            FILE_SHARE_READ,
+        ScopedHandle hFile(safe_handle(CreateFileW(
+            szFileName,
+            GENERIC_READ, FILE_SHARE_READ,
             nullptr,
-            OPEN_EXISTING,
-            FILE_ATTRIBUTE_NORMAL,
+            OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL,
             nullptr)));
     #endif
 

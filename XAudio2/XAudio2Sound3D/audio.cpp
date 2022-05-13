@@ -132,8 +132,8 @@ HRESULT InitAudio()
     }
 
     // Check device details to make sure it's within our sample supported parameters
-    DWORD dwChannelMask;
-    UINT32 nSampleRate;
+    DWORD dwChannelMask = 0;
+    UINT32 nSampleRate = 0;
 
 #ifndef USING_XAUDIO2_7_DIRECTX
 
@@ -249,7 +249,7 @@ HRESULT InitAudio()
     //  SpeedOfSound - speed of sound in user-defined world units/second, used
     //  only for doppler calculations, it must be >= FLT_MIN
     //
-    const float SPEEDOFSOUND = X3DAUDIO_SPEED_OF_SOUND;
+    constexpr float SPEEDOFSOUND = X3DAUDIO_SPEED_OF_SOUND;
 
     X3DAudioInitialize( dwChannelMask, SPEEDOFSOUND, g_audioState.x3DInstance );
 
@@ -346,7 +346,7 @@ HRESULT InitAudio()
 //-----------------------------------------------------------------------------
 // Prepare a looping wave
 //-----------------------------------------------------------------------------
-HRESULT PrepareAudio( _In_z_ const LPWSTR wavname )
+HRESULT PrepareAudio( _In_z_ const LPCWSTR wavname )
 {
     if( !g_audioState.bInitialized )
         return E_FAIL;
@@ -425,8 +425,8 @@ HRESULT UpdateAudio( float fElapsedTime )
         if( g_audioState.vListenerPos.x != g_audioState.listener.Position.x
             || g_audioState.vListenerPos.z != g_audioState.listener.Position.z )
         {
-            XMVECTOR v1 = XMLoadFloat3( &g_audioState.vListenerPos );
-            XMVECTOR v2 = XMVectorSet( g_audioState.listener.Position.x, g_audioState.listener.Position.y, g_audioState.listener.Position.z, 0.f  );
+            const XMVECTOR v1 = XMLoadFloat3( &g_audioState.vListenerPos );
+            const XMVECTOR v2 = XMVectorSet( g_audioState.listener.Position.x, g_audioState.listener.Position.y, g_audioState.listener.Position.z, 0.f  );
 
             XMVECTOR vDelta = v1 - v2;
 
@@ -467,7 +467,7 @@ HRESULT UpdateAudio( float fElapsedTime )
             XMVECTOR v1 = XMLoadFloat3( &g_audioState.vListenerPos );
             XMVECTOR v2 = XMVectorSet( g_audioState.listener.Position.x, g_audioState.listener.Position.y, g_audioState.listener.Position.z, 0 );
 
-            XMVECTOR lVelocity = ( v1 - v2 ) / fElapsedTime;
+            const XMVECTOR lVelocity = ( v1 - v2 ) / fElapsedTime;
             g_audioState.listener.Position.x = g_audioState.vListenerPos.x;
             g_audioState.listener.Position.y = g_audioState.vListenerPos.y;
             g_audioState.listener.Position.z = g_audioState.vListenerPos.z;
@@ -481,7 +481,7 @@ HRESULT UpdateAudio( float fElapsedTime )
             v1 = XMLoadFloat3( &g_audioState.vEmitterPos );
             v2 = XMVectorSet( g_audioState.emitter.Position.x, g_audioState.emitter.Position.y, g_audioState.emitter.Position.z, 0.f );
 
-            XMVECTOR eVelocity = ( v1 - v2 ) / fElapsedTime;
+            const XMVECTOR eVelocity = ( v1 - v2 ) / fElapsedTime;
             g_audioState.emitter.Position.x = g_audioState.vEmitterPos.x;
             g_audioState.emitter.Position.y = g_audioState.vEmitterPos.y;
             g_audioState.emitter.Position.z = g_audioState.vEmitterPos.z;

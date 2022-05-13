@@ -18,10 +18,10 @@
 #define NUM_PRESETS 30
 
 // Constants to define our world space
-const INT           XMIN = -10;
-const INT           XMAX = 10;
-const INT           ZMIN = -10;
-const INT           ZMAX = 10;
+constexpr INT XMIN = -10;
+constexpr INT XMAX = 10;
+constexpr INT ZMIN = -10;
+constexpr INT ZMAX = 10;
 
 //-----------------------------------------------------------------------------
 // Struct to hold audio game state
@@ -76,7 +76,7 @@ extern AUDIO_STATE  g_audioState;
 // External functions
 //--------------------------------------------------------------------------------------
 HRESULT InitAudio();
-HRESULT PrepareAudio( _In_z_ const LPWSTR wavname );
+HRESULT PrepareAudio( _In_z_ const LPCWSTR wavname );
 HRESULT UpdateAudio( float fElapsedTime );
 HRESULT SetReverb( int nReverb );
 VOID PauseAudio( bool resume );
