@@ -4,7 +4,7 @@
 // Direct3D 11 Effects Variable reflection template
 // These templates define the many Effect variable types.
 //
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 //
 // http://go.microsoft.com/fwlink/p/?LinkId=271568

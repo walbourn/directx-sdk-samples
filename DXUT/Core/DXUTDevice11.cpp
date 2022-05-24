@@ -15,8 +15,6 @@
 //--------------------------------------------------------------------------------------
 extern void DXUTGetCallbackD3D11DeviceAcceptable( LPDXUTCALLBACKISD3D11DEVICEACCEPTABLE* ppCallbackIsDeviceAcceptable, void** ppUserContext );
 
-static int __cdecl SortModesCallback( const void* arg1, const void* arg2 );
-
 CD3D11Enumeration*  g_pDXUTD3D11Enumeration = nullptr;
 
 HRESULT WINAPI DXUTCreateD3D11Enumeration()

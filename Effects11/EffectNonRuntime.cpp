@@ -6,7 +6,7 @@
 // are typically called when creating, cloning, or optimizing an 
 // Effect, or reflecting a variable.
 //
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 //
 // http://go.microsoft.com/fwlink/p/?LinkId=271568
@@ -376,7 +376,7 @@ HRESULT SShaderBlock::GetShaderDesc(_Out_ D3DX11_EFFECT_SHADER_DESC *pDesc, _In_
             pDesc->NumPatchConstantSignatureEntries = ShaderDesc.PatchConstantParameters;
         }
     }
-lExit:
+
     return hr;
 }
 

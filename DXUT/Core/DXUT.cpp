@@ -30,10 +30,23 @@ bool                g_bThreadSafe = true;
 class DXUTLock
 {
 public:
+
+#ifdef _PREFAST_
+#pragma prefast(push)
 #pragma prefast( suppress:26166, "g_bThreadSafe controls behavior" )
+#endif
+
     inline _Acquires_lock_(g_cs) DXUTLock() noexcept { if( g_bThreadSafe ) EnterCriticalSection( &g_cs ); }
+
+#ifdef _PREFAST_
 #pragma prefast( suppress:26165, "g_bThreadSafe controls behavior" )
+#endif
+
     inline _Releases_lock_(g_cs) ~DXUTLock() { if( g_bThreadSafe ) LeaveCriticalSection( &g_cs ); }
+
+#ifdef _PREFAST_
+#pragma prefast(pop)
+#endif
 };
 
 //--------------------------------------------------------------------------------------
@@ -707,7 +720,7 @@ HRESULT WINAPI DXUTInit( bool bParseCommandLine,
         memset( &tk, 0, sizeof(tk) );
     GetDXUTState().SetStartupToggleKeys( tk );
 
-    FILTERKEYS fk = {sizeof(FILTERKEYS), 0};
+    FILTERKEYS fk = { sizeof(FILTERKEYS), 0, 0, 0, 0, 0 };
     if ( !SystemParametersInfo(SPI_GETFILTERKEYS, sizeof(FILTERKEYS), &fk, 0) )
         memset( &fk, 0, sizeof(fk) );
     GetDXUTState().SetStartupFilterKeys( fk );
@@ -1570,11 +1583,11 @@ LRESULT CALLBACK DXUTStaticWndProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM 
     // Don't allow the F10 key to act as a shortcut to the menu bar
     // by not passing these messages to the DefWindowProc only when
     // there's no menu present
-    if( !GetDXUTState().GetCallDefWindowProc() || !GetDXUTState().GetMenu() &&
-        ( uMsg == WM_SYSKEYDOWN || uMsg == WM_SYSKEYUP ) && wParam == VK_F10 )
+    if (!GetDXUTState().GetCallDefWindowProc() || (!GetDXUTState().GetMenu() &&
+        (uMsg == WM_SYSKEYDOWN || uMsg == WM_SYSKEYUP) && wParam == VK_F10))
         return 0;
     else
-        return DefWindowProc( hWnd, uMsg, wParam, lParam );
+        return DefWindowProc(hWnd, uMsg, wParam, lParam);
 }
 
 
@@ -1722,7 +1735,7 @@ HRESULT WINAPI DXUTCreateDevice(D3D_FEATURE_LEVEL reqFL,  bool bWindowed, int nS
         memset( &osv, 0, sizeof(osv) );
         osv.dwOSVersionInfoSize = sizeof(osv);
 #pragma warning( suppress : 4996 28159 )
-        GetVersionEx( (LPOSVERSIONINFO)&osv );
+        std::ignore = GetVersionEx( (LPOSVERSIONINFO)&osv );
 
         if ( ( osv.dwMajorVersion > 6 )
             || ( osv.dwMajorVersion == 6 && osv.dwMinorVersion >= 1 ) 
@@ -3107,7 +3120,7 @@ void DXUTCleanup3DEnvironment( _In_ bool bReleaseSettings )
             ID3D11Debug * d3dDebug = nullptr;
             if( SUCCEEDED( pd3dDevice->QueryInterface( IID_PPV_ARGS(&d3dDebug) ) ) )
             {
-                d3dDebug->ReportLiveDeviceObjects( D3D11_RLDO_SUMMARY | D3D11_RLDO_DETAIL );
+                d3dDebug->ReportLiveDeviceObjects( static_cast<D3D11_RLDO_FLAGS>(D3D11_RLDO_SUMMARY | D3D11_RLDO_DETAIL) );
                 d3dDebug->Release();
             }
 #endif
@@ -3527,7 +3540,7 @@ HRESULT WINAPI DXUTToggleFullScreen()
         {
             static const DXGI_MODE_DESC s_adapterDesktopDisplayMode =
             {
-                800, 600, { 0, 0 }, DXGI_FORMAT_R8G8B8A8_UNORM_SRGB
+                800, 600, { 0, 0 }, DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED, DXGI_MODE_SCALING_UNSPECIFIED,
             };
             memcpy(&adapterDesktopDisplayMode, &s_adapterDesktopDisplayMode, sizeof(DXGI_MODE_DESC));
         }

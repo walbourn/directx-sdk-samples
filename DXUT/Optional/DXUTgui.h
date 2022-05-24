@@ -473,30 +473,20 @@ public:
 
     virtual HRESULT OnInit() { return S_OK; }
     virtual void Refresh();
-    virtual void Render( _In_ float fElapsedTime ) { UNREFERENCED_PARAMETER(fElapsedTime); }
+    virtual void Render( _In_ float /*fElapsedTime*/) { }
 
     // Windows message handler
-    virtual bool MsgProc( _In_ UINT uMsg, _In_ WPARAM wParam, _In_ LPARAM lParam )
+    virtual bool MsgProc( _In_ UINT /*uMsg*/, _In_ WPARAM /*wParam*/, _In_ LPARAM /*lParam*/)
     {
-        UNREFERENCED_PARAMETER(uMsg);
-        UNREFERENCED_PARAMETER(wParam);
-        UNREFERENCED_PARAMETER(lParam);
         return false;
     }
 
-    virtual bool HandleKeyboard( _In_ UINT uMsg, _In_ WPARAM wParam, _In_ LPARAM lParam )
+    virtual bool HandleKeyboard( _In_ UINT /*uMsg*/, _In_ WPARAM /*wParam*/, _In_ LPARAM /*lParam*/)
     {
-        UNREFERENCED_PARAMETER(uMsg);
-        UNREFERENCED_PARAMETER(wParam);
-        UNREFERENCED_PARAMETER(lParam);
         return false;
     }
-    virtual bool HandleMouse( _In_ UINT uMsg, _In_ const POINT& pt, _In_ WPARAM wParam, _In_ LPARAM lParam )
+    virtual bool HandleMouse( _In_ UINT /*uMsg*/, _In_ const POINT& /*pt*/, _In_ WPARAM /*wParam*/, _In_ LPARAM /*lParam*/)
     {
-        UNREFERENCED_PARAMETER(uMsg);
-        UNREFERENCED_PARAMETER(pt);
-        UNREFERENCED_PARAMETER(wParam);
-        UNREFERENCED_PARAMETER(lParam);
         return false;
     }
 
@@ -592,9 +582,8 @@ public:
     CDXUTStatic( _In_opt_ CDXUTDialog* pDialog = nullptr ) noexcept;
 
     virtual void Render( _In_ float fElapsedTime ) override;
-    virtual bool ContainsPoint( _In_ const POINT& pt ) override
+    virtual bool ContainsPoint( _In_ const POINT& /*pt*/ ) override
     {
-        UNREFERENCED_PARAMETER( pt );
         return false;
     }
 
@@ -664,7 +653,7 @@ public:
     void SetChecked( _In_ bool bChecked ) { SetCheckedInternal( bChecked, false ); }
 
 protected:
-    virtual void SetCheckedInternal( _In_ bool bChecked, _In_ bool bFromInput );
+    void SetCheckedInternal( _In_ bool bChecked, _In_ bool bFromInput );
 
     bool m_bChecked;
     RECT m_rcButton;
@@ -693,7 +682,7 @@ public:
     UINT GetButtonGroup() const { return m_nButtonGroup; }
 
 protected:
-    virtual void SetCheckedInternal( _In_ bool bChecked, _In_ bool bClearGroup, _In_ bool bFromInput );
+    void SetCheckedInternal( _In_ bool bChecked, _In_ bool bClearGroup, _In_ bool bFromInput );
     UINT m_nButtonGroup;
 };
 

@@ -8,11 +8,11 @@
 //
 // http://go.microsoft.com/fwlink/?LinkId=320437
 //--------------------------------------------------------------------------------------
-#include "dxut.h"
+#include "DXUT.h"
 #include "SDKmisc.h"
 #include "DXUTres.h"
 
-#include "DXUTGui.h"
+#include "DXUTgui.h"
 
 #include "DDSTextureLoader.h"
 #include "WICTextureLoader.h"
@@ -355,37 +355,37 @@ bool DXUTFindMediaSearchTypicalDirs( WCHAR* strSearchPath, int cchSearch, LPCWST
     //      %EXE_DIR%\..\..\%EXE_NAME%
     //      DXSDK media path
 
-    // Search in .\  
+    // Search in ".\"
     wcscpy_s( strSearchPath, cchSearch, strLeaf );
     if( GetFileAttributes( strSearchPath ) != 0xFFFFFFFF )
         return true;
 
-    // Search in ..\  
+    // Search in "..\"
     swprintf_s( strSearchPath, cchSearch, L"..\\%ls", strLeaf );
     if( GetFileAttributes( strSearchPath ) != 0xFFFFFFFF )
         return true;
 
-    // Search in ..\..\ 
+    // Search in "..\..\"
     swprintf_s( strSearchPath, cchSearch, L"..\\..\\%ls", strLeaf );
     if( GetFileAttributes( strSearchPath ) != 0xFFFFFFFF )
         return true;
 
-    // Search in ..\..\ 
+    // Search in "..\..\"
     swprintf_s( strSearchPath, cchSearch, L"..\\..\\%ls", strLeaf );
     if( GetFileAttributes( strSearchPath ) != 0xFFFFFFFF )
         return true;
 
-    // Search in the %EXE_DIR%\ 
+    // Search in the "%EXE_DIR%\"
     swprintf_s( strSearchPath, cchSearch, L"%ls\\%ls", strExePath, strLeaf );
     if( GetFileAttributes( strSearchPath ) != 0xFFFFFFFF )
         return true;
 
-    // Search in the %EXE_DIR%\..\ 
+    // Search in the "%EXE_DIR%\..\"
     swprintf_s( strSearchPath, cchSearch, L"%ls\\..\\%ls", strExePath, strLeaf );
     if( GetFileAttributes( strSearchPath ) != 0xFFFFFFFF )
         return true;
 
-    // Search in the %EXE_DIR%\..\..\ 
+    // Search in the "%EXE_DIR%\..\..\"
     swprintf_s( strSearchPath, cchSearch, L"%ls\\..\\..\\%ls", strExePath, strLeaf );
     if( GetFileAttributes( strSearchPath ) != 0xFFFFFFFF )
         return true;
@@ -524,11 +524,8 @@ public:
         }
     }
 
-    STDMETHOD(Open( D3D_INCLUDE_TYPE IncludeType, LPCSTR pFileName, LPCVOID pParentData, LPCVOID *ppData, UINT *pBytes ) )
+    STDMETHOD(Open( D3D_INCLUDE_TYPE, LPCSTR pFileName, LPCVOID, LPCVOID *ppData, UINT *pBytes ) )
     {
-        UNREFERENCED_PARAMETER(IncludeType);
-        UNREFERENCED_PARAMETER(pParentData);
-
         size_t incIndex = m_nIncludes+1;
 
         // Make sure we have enough room for this include file
@@ -564,9 +561,8 @@ public:
         return S_OK;
     }
 
-    STDMETHOD(Close( LPCVOID pData ))
+    STDMETHOD(Close(LPCVOID))
     {
-        UNREFERENCED_PARAMETER(pData);
         // Defer Closure until the container destructor 
         return S_OK;
     }
@@ -768,22 +764,22 @@ XMMATRIX WINAPI DXUTGetCubeMapViewMatrix( _In_ DWORD dwFace )
 {
     static const XMVECTORF32 s_vLookDir[] =
     {
-        { 1.0f, 0.0f, 0.0f, 0.0f },
-        { -1.0f, 0.0f, 0.0f, 0.0f },
-        { 0.0f, 1.0f, 0.0f, 0.0f },
-        { 0.0f, -1.0f, 0.0f, 0.0f },
-        { 0.0f, 0.0f, 1.0f, 0.0f },
-        { 0.0f, 0.0f, -1.0f, 0.0f },
+        { { { 1.0f, 0.0f, 0.0f, 0.0f } } },
+        { { { -1.0f, 0.0f, 0.0f, 0.0f } } },
+        { { { 0.0f, 1.0f, 0.0f, 0.0f } } },
+        { { { 0.0f, -1.0f, 0.0f, 0.0f } } },
+        { { { 0.0f, 0.0f, 1.0f, 0.0f } } },
+        { { { 0.0f, 0.0f, -1.0f, 0.0f } } },
     };
 
     static const XMVECTORF32 s_vUpDir[] = 
     {
-        { 0.0f, 1.0f, 0.0f, 0.0f },
-        { 0.0f, 1.0f, 0.0f, 0.0f },
-        { 0.0f, 0.0f, -1.0f, 0.0f },
-        { 0.0f, 0.0f, 1.0f, 0.0f },
-        { 0.0f, 1.0f, 0.0f, 0.0f },
-        { 0.0f, 1.0f, 0.0f, 0.0f },
+        { { { 0.0f, 1.0f, 0.0f, 0.0f } } },
+        { { { 0.0f, 1.0f, 0.0f, 0.0f } } },
+        { { { 0.0f, 0.0f, -1.0f, 0.0f } } },
+        { { { 0.0f, 0.0f, 1.0f, 0.0f } } },
+        { { { 0.0f, 1.0f, 0.0f, 0.0f } } },
+        { { { 0.0f, 1.0f, 0.0f, 0.0f } } },
     };
 
     static_assert( _countof(s_vLookDir) == _countof(s_vUpDir), "arrays mismatch" );

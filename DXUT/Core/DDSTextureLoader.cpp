@@ -14,7 +14,7 @@
 // http://go.microsoft.com/fwlink/?LinkId=248929
 //--------------------------------------------------------------------------------------
 
-#include "dxut.h"
+#include "DXUT.h"
 #include "DDSTextureLoader.h"
 
 #include <algorithm>
@@ -125,16 +125,18 @@ namespace
 
     inline HANDLE safe_handle(HANDLE h) noexcept { return (h == INVALID_HANDLE_VALUE) ? nullptr : h; }
 
+    #if defined(_DEBUG) || defined(PROFILE)
     template<UINT TNameLength>
     inline void SetDebugObjectName(_In_ ID3D11DeviceChild* resource, _In_ const char (&name)[TNameLength]) noexcept
     {
-    #if defined(_DEBUG) || defined(PROFILE)
         resource->SetPrivateData(WKPDID_D3DDebugObjectName, TNameLength - 1, name);
-    #else
-        UNREFERENCED_PARAMETER(resource);
-        UNREFERENCED_PARAMETER(name);
-    #endif
     }
+    #else
+    template<UINT TNameLength>
+    inline void SetDebugObjectName(_In_ ID3D11DeviceChild*, _In_ const char(&)[TNameLength]) noexcept
+    {
+    }
+    #endif
 
     //--------------------------------------------------------------------------------------
     HRESULT LoadTextureDataFromMemory(

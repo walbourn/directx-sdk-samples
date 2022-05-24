@@ -15,7 +15,7 @@
 // http://go.microsoft.com/fwlink/?LinkId=248929
 //--------------------------------------------------------------------------------------
 
-#include "dxut.h"
+#include "DXUT.h"
 
 // Does not capture 1D textures or 3D textures (volume maps)
 

@@ -10,7 +10,7 @@
 //--------------------------------------------------------------------------------------
 #include "DXUT.h"
 #include "DXUTgui.h"
-#include "DXUTsettingsDlg.h"
+#include "DXUTsettingsdlg.h"
 
 //--------------------------------------------------------------------------------------
 // Internal functions forward declarations
@@ -516,11 +516,8 @@ void WINAPI CD3DSettingsDlg::StaticOnModeChangeTimer( UINT nIDEvent, void* pUser
 
 //--------------------------------------------------------------------------------------
 _Use_decl_annotations_
-void CD3DSettingsDlg::OnEvent( UINT nEvent, int nControlID, CDXUTControl* pControl )
+void CD3DSettingsDlg::OnEvent( UINT, int nControlID, CDXUTControl* )
 {
-    UNREFERENCED_PARAMETER(nEvent);
-    UNREFERENCED_PARAMETER(pControl);
-
     switch( nControlID )
     {
         case DXUTSETTINGSDLG_ADAPTER:

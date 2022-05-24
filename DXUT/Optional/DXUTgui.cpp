@@ -8,10 +8,10 @@
 //--------------------------------------------------------------------------------------
 #include "DXUT.h"
 #include "DXUTgui.h"
-#include "DXUTsettingsDlg.h"
+#include "DXUTsettingsdlg.h"
 #include "DXUTres.h"
 
-#include "SDKMisc.h"
+#include "SDKmisc.h"
 
 #include "DDSTextureLoader.h"
 
@@ -609,10 +609,10 @@ HRESULT CDXUTDialog::OnRender( _In_ float fElapsedTime )
 
         DXUT_SCREEN_VERTEX_10 vertices[4] =
         {
-            Left,  Top,    0.5f, D3DCOLOR_TO_D3DCOLORVALUE( m_colorTopLeft ), 0.0f, 0.0f,
-            Right, Top,    0.5f, D3DCOLOR_TO_D3DCOLORVALUE( m_colorTopRight ), 1.0f, 0.0f,
-            Left,  Bottom, 0.5f, D3DCOLOR_TO_D3DCOLORVALUE( m_colorBottomLeft ), 0.0f, 1.0f,
-            Right, Bottom, 0.5f, D3DCOLOR_TO_D3DCOLORVALUE( m_colorBottomRight ), 1.0f, 1.0f,
+            { Left,  Top,    0.5f, D3DCOLOR_TO_D3DCOLORVALUE(m_colorTopLeft), 0.0f, 0.0f },
+            { Right, Top,    0.5f, D3DCOLOR_TO_D3DCOLORVALUE(m_colorTopRight), 1.0f, 0.0f },
+            { Left,  Bottom, 0.5f, D3DCOLOR_TO_D3DCOLORVALUE(m_colorBottomLeft), 0.0f, 1.0f },
+            { Right, Bottom, 0.5f, D3DCOLOR_TO_D3DCOLORVALUE(m_colorBottomRight), 1.0f, 1.0f },
         };
 
         //DXUT_SCREEN_VERTEX_10 *pVB;
@@ -1108,9 +1108,8 @@ void CDXUTDialog::SetControlEnabled( _In_ int ID, _In_ bool bEnabled )
 
 
 //--------------------------------------------------------------------------------------
-void CDXUTDialog::OnMouseUp( _In_ const POINT& pt )
+void CDXUTDialog::OnMouseUp( _In_ const POINT& )
 {
-    UNREFERENCED_PARAMETER(pt);
     s_pControlPressed = nullptr;
     m_pControlMouseOver = nullptr;
 }
@@ -1596,10 +1595,8 @@ void CDXUTDialog::RequestFocus( _In_ CDXUTControl* pControl )
 
 //--------------------------------------------------------------------------------------
 _Use_decl_annotations_
-HRESULT CDXUTDialog::DrawRect( const RECT* pRect, DWORD color )
+HRESULT CDXUTDialog::DrawRect( const RECT*, DWORD )
 {
-    UNREFERENCED_PARAMETER(pRect);
-    UNREFERENCED_PARAMETER(color);
     // TODO -
     return E_FAIL;
 }
@@ -1691,15 +1688,12 @@ HRESULT CDXUTDialog::DrawSprite( CDXUTElement* pElement, const RECT* prcDest, fl
 
 //--------------------------------------------------------------------------------------
 _Use_decl_annotations_
-HRESULT CDXUTDialog::CalcTextRect( LPCWSTR strText, CDXUTElement* pElement, const RECT* prcDest, int nCount )
+HRESULT CDXUTDialog::CalcTextRect( LPCWSTR, CDXUTElement* pElement, const RECT*, int)
 {
     auto pFontNode = GetFont( pElement->iFont );
     if( !pFontNode )
         return E_FAIL;
 
-    UNREFERENCED_PARAMETER(strText);
-    UNREFERENCED_PARAMETER(prcDest);
-    UNREFERENCED_PARAMETER(nCount);
     // TODO -
 
     return S_OK;
@@ -2284,12 +2278,8 @@ CDXUTDialogResourceManager::~CDXUTDialogResourceManager()
 
 //--------------------------------------------------------------------------------------
 _Use_decl_annotations_
-bool CDXUTDialogResourceManager::MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam )
+bool CDXUTDialogResourceManager::MsgProc( HWND, UINT, WPARAM, LPARAM )
 {
-    UNREFERENCED_PARAMETER(hWnd);
-    UNREFERENCED_PARAMETER(uMsg);
-    UNREFERENCED_PARAMETER(wParam);
-    UNREFERENCED_PARAMETER(lParam);
     return false;
 }
 
@@ -3053,11 +3043,8 @@ bool CDXUTButton::HandleKeyboard( UINT uMsg, WPARAM wParam, LPARAM lParam )
 
 //--------------------------------------------------------------------------------------
 _Use_decl_annotations_
-bool CDXUTButton::HandleMouse( UINT uMsg, const POINT& pt, WPARAM wParam, LPARAM lParam )
+bool CDXUTButton::HandleMouse( UINT uMsg, const POINT& pt, WPARAM, LPARAM)
 {
-    UNREFERENCED_PARAMETER(wParam);
-    UNREFERENCED_PARAMETER(lParam);
-
     if( !m_bEnabled || !m_bVisible )
         return false;
 
@@ -4398,9 +4385,6 @@ void CDXUTSlider::Render( _In_ float fElapsedTime )
     if( m_bVisible == false )
         return;
 
-    int nOffsetX = 0;
-    int nOffsetY = 0;
-
     DXUT_CONTROL_STATE iState = DXUT_STATE_NORMAL;
 
     if( m_bVisible == false )
@@ -4414,16 +4398,10 @@ void CDXUTSlider::Render( _In_ float fElapsedTime )
     else if( m_bPressed )
     {
         iState = DXUT_STATE_PRESSED;
-
-        nOffsetX = 1;
-        nOffsetY = 2;
     }
     else if( m_bMouseOver )
     {
         iState = DXUT_STATE_MOUSEOVER;
-
-        nOffsetX = -1;
-        nOffsetY = -2;
     }
     else if( m_bHasFocus )
     {
@@ -6000,7 +5978,7 @@ bool CDXUTEditBox::MsgProc( UINT uMsg, WPARAM wParam, LPARAM lParam )
                 case 16:  // Ctrl P
                 case 27:  // Ctrl [
                 case 29:  // Ctrl ]
-                case 28:  // Ctrl \ 
+                case 28:  // Ctrl \ (backslash)
                     break;
 
                 default:

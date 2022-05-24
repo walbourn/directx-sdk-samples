@@ -3,7 +3,7 @@
 //
 // Direct3D 11 Effects helper defines and data structures
 //
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 //
 // http://go.microsoft.com/fwlink/p/?LinkId=271568
@@ -197,14 +197,14 @@ public:
     HRESULT m_hLastError;
 
     CEffectVector<T>() noexcept :
-        m_hLastError(S_OK),
+#if _DEBUG
+        m_pCastData(nullptr),
+#endif
         m_pData(nullptr),
         m_CurSize(0),
-        m_MaxSize(0)
+        m_MaxSize(0),
+        m_hLastError(S_OK)
     {
-#if _DEBUG
-        m_pCastData = nullptr;
-#endif // _DEBUG
     }
 
     ~CEffectVector<T>()

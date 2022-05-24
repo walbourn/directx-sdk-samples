@@ -3,7 +3,7 @@
 //
 // Direct3D 11 shader effects precompiled header
 //
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 //
 // http://go.microsoft.com/fwlink/p/?LinkId=271568
@@ -46,8 +46,8 @@
 
 #include "d3dxGlobal.h"
 
-#include <stddef.h>
-#include <stdlib.h>
+#include <cstddef>
+#include <cstdlib>
 
 #include "Effect.h"
 #include "EffectStateBase11.h"

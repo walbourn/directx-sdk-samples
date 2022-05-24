@@ -138,7 +138,7 @@ const WCHAR* WINAPI DXUTTraceWindowsMessage( _In_ UINT uMsg );
 #else
 #define DXUT_ERR(str,hr)           (hr)
 #define DXUT_ERR_MSGBOX(str,hr)    (hr)
-#define DXUTTRACE                  (__noop)
+#define DXUTTRACE
 #endif
 
 
@@ -224,9 +224,9 @@ const DWORD DXUT_PERFEVENTCOLOR3 = 0xFF6464C8;
 #define DXUT_SetPerfMarker( color, pstrMessage )    DXUT_Dynamic_D3DPERF_SetMarker( color, pstrMessage )
 #else
 // PROFILE is not defined, so these macros do nothing
-#define DXUT_BeginPerfEvent( color, pstrMessage )   (__noop)
-#define DXUT_EndPerfEvent()                         (__noop)
-#define DXUT_SetPerfMarker( color, pstrMessage )    (__noop)
+#define DXUT_BeginPerfEvent( color, pstrMessage )
+#define DXUT_EndPerfEvent()
+#define DXUT_SetPerfMarker( color, pstrMessage )
 #endif
 
 //--------------------------------------------------------------------------------------

@@ -299,10 +299,8 @@ private:
     bool m_bLoading;
     //BYTE*                         m_pBufferData;
     HANDLE m_hFile;
-    HANDLE m_hFileMappingObject;
     std::vector<BYTE*> m_MappedPointers;
     ID3D11Device* m_pDev11;
-    ID3D11DeviceContext* m_pDevContext11;
 
 protected:
     //These are the pointers to the two chunks of data loaded in from the mesh file

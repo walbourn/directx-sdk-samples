@@ -51,16 +51,18 @@
 #define NOMINMAX
 #endif
 
-#include <windows.h>
+#include <cassert>
+#include <climits>
+#include <cmath>
+#include <cstdio>
+#include <new>
+#include <tuple>
+
+#include <Windows.h>
 #include <initguid.h>
-#include <assert.h>
 #include <commctrl.h> // for InitCommonControls() 
 #include <shellapi.h> // for ExtractIcon()
-#include <new.h>      // for placement new
 #include <shlobj.h>
-#include <math.h>
-#include <limits.h>
-#include <stdio.h>
 
 // CRT's memory leak detection
 #if defined(DEBUG) || defined(_DEBUG)
@@ -131,7 +133,7 @@
     ((DWORD)((((a)&0xff)<<24)|(((r)&0xff)<<16)|(((g)&0xff)<<8)|((b)&0xff)))
 #endif
 
-#define DXUT_VERSION 1126
+#define DXUT_VERSION 1127
 
 //--------------------------------------------------------------------------------------
 // Structs

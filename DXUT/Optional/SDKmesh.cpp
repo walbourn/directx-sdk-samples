@@ -12,8 +12,8 @@
 // http://go.microsoft.com/fwlink/?LinkId=320437
 //--------------------------------------------------------------------------------------
 #include "DXUT.h"
-#include "SDKMesh.h"
-#include "SDKMisc.h"
+#include "SDKmesh.h"
+#include "SDKmisc.h"
 
 using namespace DirectX;
 
@@ -704,9 +704,7 @@ CDXUTSDKMesh::CDXUTSDKMesh() noexcept :
     m_NumOutstandingResources(0),
     m_bLoading(false),
     m_hFile(0),
-    m_hFileMappingObject(0),
     m_pDev11(nullptr),
-    m_pDevContext11(nullptr),
     m_pStaticMeshData(nullptr),
     m_pHeapData(nullptr),
     m_pAnimationData(nullptr),

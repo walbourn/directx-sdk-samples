@@ -3,7 +3,7 @@
 //
 // Direct3D Effects file loading code
 //
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 //
 // http://go.microsoft.com/fwlink/p/?LinkId=271568
@@ -184,8 +184,8 @@ inline HRESULT VerifyPointer(uint32_t oBase, uint32_t dwSize, uint32_t dwMaxSize
 
 CEffectHeap::CEffectHeap() noexcept :
     m_pData(nullptr),
-    m_dwSize(0),
-    m_dwBufferSize(0)
+    m_dwBufferSize(0),
+    m_dwSize(0)
 {
 }
 
@@ -1016,7 +1016,7 @@ HRESULT CEffectLoader::LoadTypeAndAddToPool(SType **ppType, uint32_t  dwOffset)
     case EVT_Object:
         VHD( m_msUnstructured.Read((void**) &pObjectType, sizeof(uint32_t)), "Invalid pEffectBuffer: cannot read object type." );
         temporaryType.ObjectType = *pObjectType;
-        VBD( temporaryType.VarType > EOT_Invalid && temporaryType.VarType < EOT_Count, "Invalid pEffectBuffer: invalid object type." );
+        VBD( temporaryType.VarType > EVT_Invalid && temporaryType.VarType < EVT_Count, "Invalid pEffectBuffer: invalid object type." );
         
         VN( pHashBuffer = m_HashBuffer.AddRange(sizeof(temporaryType.VarType) + sizeof(temporaryType.Elements) + 
             sizeof(temporaryType.pTypeName) + sizeof(temporaryType.ObjectType)) );

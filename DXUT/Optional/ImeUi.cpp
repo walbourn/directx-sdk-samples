@@ -6,7 +6,7 @@
 //
 // http://go.microsoft.com/fwlink/?LinkId=320437
 //--------------------------------------------------------------------------------------
-#include "dxut.h"
+#include "DXUT.h"
 #include "ImeUi.h"
 #include <math.h>
 #include <msctf.h>
@@ -17,7 +17,9 @@
 #pragma warning( disable : 4244 )
 #pragma warning( disable : 4311 )
 
+#ifdef _PREFAST_
 #pragma prefast( disable : 28159, "GetTickCount() is fine for a blinking cursor" )
+#endif
 
 #define MAX_CANDIDATE_LENGTH 256
 #define COUNTOF(a) ( sizeof( a ) / sizeof( ( a )[0] ) )
@@ -54,7 +56,7 @@
 #define IMEID_CHS_VER42	( LANG_CHS | MAKEIMEVERSION( 4, 2 ) )	// MSPY2	// Win2k/WinME
 #define IMEID_CHS_VER53	( LANG_CHS | MAKEIMEVERSION( 5, 3 ) )	// MSPY3	// WinXP
 
-static CHAR signature[] = "%%%IMEUILIB:070111%%%";
+static const CHAR signature[] = "%%%IMEUILIB:070111%%%";
 
 static IMEUI_APPEARANCE         gSkinIME =
 {
@@ -458,7 +460,7 @@ static void ComposeCandidateLine( int index, LPCTSTR pszCandidate )
     {
         *psz++ = TEXT( ' ' );
     }
-    while( *pszCandidate && ( COUNTOF(g_szCandidate[index]) > ( psz - g_szCandidate[index] ) ) )
+    while (*pszCandidate && (static_cast<ptrdiff_t>(COUNTOF(g_szCandidate[index])) > (psz - g_szCandidate[index])))
     {
         *psz++ = *pszCandidate++;
     }
@@ -855,8 +857,8 @@ static void DrawCompositionString( _In_ bool bDrawCompAttr )
             {
                 // make sure enough buffer space (possible space, NUL for current line, possible DBCS, 2 more NUL) 
                 // are available in multiline composition string buffer
-                bool bWrite = ( pszMlcs - g_szMultiLineCompString <
-                                COUNTOF( g_szMultiLineCompString ) - 5 * ( 3 - sizeof( TCHAR ) ) );
+                bool bWrite = (pszMlcs - g_szMultiLineCompString <
+                    static_cast<ptrdiff_t>(COUNTOF(g_szMultiLineCompString) - 5 * (3 - sizeof(TCHAR))));
 
                 if( ( LONG )( bgX + wCompChar ) >= g_CaretInfo.margins.right )
                 {
@@ -883,7 +885,7 @@ static void DrawCompositionString( _In_ bool bDrawCompAttr )
                 }
             }
             if( ( saveCandPos && candX == POSITION_UNINITIALIZED ) ||
-                ( IMEID_LANG( GetImeId() ) == LANG_CHS && i / ( 3 - sizeof( TCHAR ) ) == ( int )g_IMECursorChars ) )
+                ( IMEID_LANG( GetImeId() ) == LANG_CHS && static_cast<int>(i / ( 3 - sizeof( TCHAR ) )) == ( int )g_IMECursorChars ) )
             {
                 candX = bgX;
                 candY = bgY;
@@ -910,13 +912,12 @@ static void DrawCompositionString( _In_ bool bDrawCompAttr )
         x = g_CaretInfo.caretX;
         y = g_CaretInfo.caretY;
         pszMlcs = g_szMultiLineCompString;
-        while( *pszMlcs &&
-               pszMlcs - g_szMultiLineCompString < sizeof( g_szMultiLineCompString ) / sizeof
-               ( g_szMultiLineCompString[0] ) )
+        while (*pszMlcs &&
+            pszMlcs - g_szMultiLineCompString < static_cast<ptrdiff_t>(COUNTOF(g_szMultiLineCompString)))
         {
-            g_CaretInfo.pFont->SetPosition( x, y );
-            g_CaretInfo.pFont->DrawText( pszMlcs );
-            pszMlcs += wcslen( pszMlcs ) + 1;
+            g_CaretInfo.pFont->SetPosition(x, y);
+            g_CaretInfo.pFont->DrawText(pszMlcs);
+            pszMlcs += wcslen(pszMlcs) + 1;
             x = g_CaretInfo.margins.left;
             y += hCompChar;
         }
@@ -1461,8 +1462,8 @@ LPARAM ImeUi_ProcessMessage( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM& lParam
                             _ImmReleaseContext( hWnd, himc );
 
                             // don't display selection in candidate list in case of Korean and old Chinese IME.
-                            if( GETPRIMLANG() == LANG_KOREAN ||
-                                GETLANG() == LANG_CHT && !GetImeId() )
+                            if( (GETPRIMLANG() == LANG_KOREAN ||
+                                GETLANG() == LANG_CHT) && !GetImeId() )
                                 g_dwSelection = ( DWORD )-1;
                         }
                         break;
@@ -1663,8 +1664,7 @@ void ImeUi_EnableIme( _In_ bool bEnable )
 
     if( g_hwndCurr == g_hwndMain )
     {
-        HIMC himcDbg;
-        himcDbg = _ImmAssociateContext( g_hwndCurr, bEnable? g_himcOrg : nullptr );
+        std::ignore = _ImmAssociateContext(g_hwndCurr, bEnable ? g_himcOrg : nullptr);
     }
     g_bImeEnabled = bEnable;
     if( bEnable )
@@ -1882,19 +1882,20 @@ static DWORD GetImeId( _In_ UINT uIndex )
                     DWORD dwVer = pVerFixedInfo->dwFileVersionMS;
                     dwVer = ( dwVer & 0x00ff0000 ) << 8 | ( dwVer & 0x000000ff ) << 16;
                     if( _GetReadingString ||
-                        dwLang == LANG_CHT && (
+                        (dwLang == LANG_CHT && (
                         dwVer == MAKEIMEVERSION(4, 2) ||
                         dwVer == MAKEIMEVERSION(4, 3) ||
                         dwVer == MAKEIMEVERSION(4, 4) ||
                         dwVer == MAKEIMEVERSION(5, 0) ||
                         dwVer == MAKEIMEVERSION(5, 1) ||
                         dwVer == MAKEIMEVERSION(5, 2) ||
-                        dwVer == MAKEIMEVERSION(6, 0) )
+                        dwVer == MAKEIMEVERSION(6, 0) ))
                         ||
-                        dwLang == LANG_CHS && (
+                        (dwLang == LANG_CHS && (
                         dwVer == MAKEIMEVERSION(4, 1) ||
                         dwVer == MAKEIMEVERSION(4, 2) ||
-                        dwVer == MAKEIMEVERSION(5, 3) ) )
+                        dwVer == MAKEIMEVERSION(5, 3) ))
+                        )
                     {
                         dwRet[0] = dwVer | dwLang;
                         dwRet[1] = pVerFixedInfo->dwFileVersionLS;
@@ -2109,29 +2110,29 @@ static struct
 }
     aHotKeys[] =
 {
-    false,	false,	false,	VK_APPS,
-    true,	false,	false,	'8',
-    true,	false,	false,	'Y',
-    true,	false,	false,	VK_DELETE,
-    true,	false,	false,	VK_F7,
-    true,	false,	false,	VK_F9,
-    true,	false,	false,	VK_F10,
-    true,	false,	false,	VK_F11,
-    true,	false,	false,	VK_F12,
-    false,	false,	false,	VK_F2,
-    false,	false,	false,	VK_F3,
-    false,	false,	false,	VK_F4,
-    false,	false,	false,	VK_F5,
-    false,	false,	false,	VK_F10,
-    false,	true,	false,	VK_F6,
-    false,	true,	false,	VK_F7,
-    false,	true,	false,	VK_F8,
-    true,	true,	false,	VK_F10,
-    true,	true,	false,	VK_F11,
-    true,	false,	false,	VK_CONVERT,
-    true,	false,	false,	VK_SPACE,
-    true,	false,	true,	0xbc,	// Alt + Ctrl + ',': SW keyboard for Trad. Chinese IME
-    true,   false,  false,  VK_TAB, // ATOK2005's Ctrl+TAB
+    { false,	false,	false,	VK_APPS },
+    { true,	false,	false,	'8' },
+    { true,	false,	false,	'Y' },
+    { true,	false,	false,	VK_DELETE },
+    { true,	false,	false,	VK_F7 },
+    { true,	false,	false,	VK_F9 },
+    { true,	false,	false,	VK_F10 },
+    { true,	false,	false,	VK_F11 },
+    { true,	false,	false,	VK_F12 },
+    { false,	false,	false,	VK_F2 },
+    { false,	false,	false,	VK_F3 },
+    { false,	false,	false,	VK_F4 },
+    { false,	false,	false,	VK_F5 },
+    { false,	false,	false,	VK_F10 },
+    { false,	true,	false,	VK_F6 },
+    { false,	true,	false,	VK_F7 },
+    { false,	true,	false,	VK_F8 },
+    { true,	true,	false,	VK_F10 },
+    { true,	true,	false,	VK_F11 },
+    { true,	false,	false,	VK_CONVERT },
+    { true,	false,	false,	VK_SPACE },
+    { true,	false,	true,	0xbc }, // Alt + Ctrl + ',': SW keyboard for Trad. Chinese IME
+    { true,   false,  false,  VK_TAB }, // ATOK2005's Ctrl+TAB
 };
 
 //
@@ -2169,7 +2170,7 @@ bool ImeUi_IgnoreHotKey( _In_ const MSG* pmsg )
         bCtrl = ( GetKeyState( VK_CONTROL ) & 0x8000 ) ? true : false;
         bShift = ( GetKeyState( VK_SHIFT ) & 0x8000 ) ? true : false;
         bAlt = ( GetKeyState( VK_MENU ) & 0x8000 ) ? true : false;
-        for( int i = 0; i < COUNTOF(aHotKeys); i++ )
+        for( size_t i = 0; i < COUNTOF(aHotKeys); i++ )
         {
             if( aHotKeys[i].m_bCtrl == bCtrl &&
                 aHotKeys[i].m_bShift == bShift &&
@@ -2423,7 +2424,6 @@ void ImeUi_ToggleLanguageBar( _In_ BOOL bRestore )
         if( SUCCEEDED( hr ) && plbm )
         {
             DWORD dwCur;
-            ULONG uRc;
             if( SUCCEEDED( hr ) )
             {
                 if( bRestore )
@@ -2442,7 +2442,7 @@ void ImeUi_ToggleLanguageBar( _In_ BOOL bRestore )
                     }
                 }
             }
-            uRc = plbm->Release();
+            plbm->Release();
         }
         CoUninitialize();
     }
@@ -2659,14 +2659,13 @@ BOOL CTsfUiLessMode::SetupSinks()
 
 void CTsfUiLessMode::ReleaseSinks()
 {
-    HRESULT hr;
-    ITfSource* source;
+    ITfSource* source = nullptr;
 
     // Remove all sinks
     if( m_tm && SUCCEEDED( m_tm->QueryInterface( __uuidof( ITfSource ), ( void** )&source ) ) )
     {
-        hr = source->UnadviseSink( m_dwUIElementSinkCookie );
-        hr = source->UnadviseSink( m_dwAlpnSinkCookie );
+        std::ignore = source->UnadviseSink( m_dwUIElementSinkCookie );
+        std::ignore = source->UnadviseSink( m_dwAlpnSinkCookie );
         source->Release();
         SetupCompartmentSinks( TRUE );	// Remove all compartment sinks
         m_tm->Deactivate();
@@ -2863,7 +2862,7 @@ STDAPI CTsfUiLessMode::CUIElementSink::OnActivated( DWORD dwProfileType, LANGID 
 
     static GUID s_TF_PROFILE_DAYI =
     {
-        0x037B2C25, 0x480C, 0x4D7F, 0xB0, 0x27, 0xD6, 0xCA, 0x6B, 0x69, 0x78, 0x8A
+        0x037B2C25, 0x480C, 0x4D7F, { 0xB0, 0x27, 0xD6, 0xCA, 0x6B, 0x69, 0x78, 0x8A }
     };
     g_iCandListIndexBase = IsEqualGUID( s_TF_PROFILE_DAYI, guidProfile ) ? 0 : 1;
     if( IsEqualIID( catid, GUID_TFCAT_TIP_KEYBOARD ) && ( dwFlags & TF_IPSINK_FLAG_ACTIVE ) )
@@ -3080,7 +3079,7 @@ BOOL CTsfUiLessMode::GetCompartments( ITfCompartmentMgr** ppcm, ITfCompartment**
 
     static GUID _GUID_COMPARTMENT_KEYBOARD_INPUTMODE_CONVERSION =
     {
-        0xCCF05DD8, 0x4A87, 0x11D7, 0xA6, 0xE2, 0x00, 0x06, 0x5B, 0x84, 0x43, 0x5C
+        0xCCF05DD8, 0x4A87, 0x11D7, { 0xA6, 0xE2, 0x00, 0x06, 0x5B, 0x84, 0x43, 0x5C }
     };
 
     HRESULT hr;

@@ -5,7 +5,7 @@
 // This is the binary file interface shared between the Effects 
 // compiler and runtime.
 //
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 //
 // http://go.microsoft.com/fwlink/p/?LinkId=271568
@@ -148,6 +148,7 @@ enum EVarType
     EVT_Object,
     EVT_Struct,
     EVT_Interface,
+    EVT_Count,
 };
 
 enum EScalarType
