@@ -1,0 +1,9 @@
+nuget restore BC6HBC7EncoderCS\packages.config
+nuget restore Collision\packages.config
+nuget restore XAudio2\XAudio2AsyncStream\packages.config
+nuget restore XAudio2\XAudio2BasicSound\packages.config
+nuget restore XAudio2\XAudio2CustomAPO\packages.config
+nuget restore XAudio2\XAudio2Enumerate\packages.config
+nuget restore XAudio2\XAudio2MFStream\packages.config
+nuget restore XAudio2\XAudio2Sound3D\packages.config
+nuget restore XAudio2\XAudio2WaveBank\packages.config

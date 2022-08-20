@@ -6,7 +6,7 @@ http://go.microsoft.com/fwlink/?LinkId=320437
 
 Copyright (c) Microsoft Corporation.
 
-**May 23, 2022**
+**August 17, 2022**
 
 DXUT is a "GLUT"-like framework for Direct3D 11.x Win32 desktop applications; primarily samples, demos, and prototypes.
 
@@ -36,6 +36,10 @@ All content and source code for this package are subject to the terms of the [MI
 For the latest version of DXUT for Direct3D 11, please visit the project site on [GitHub](https://github.com/microsoft/DXUT).
 
 > The legacy versions of **DXUT for DX11/DX9** and **DXUT for DX10/DX9** version are on [GitHub](https://github.com/walbourn/directx-sdk-legacy-samples). These both require using [Microsoft.DXSDK.D3DX](https://www.nuget.org/packages/Microsoft.DXSDK.D3DX).
+
+## Release Notes
+
+* Starting with the July 2022 release, the ``bool forceSRGB`` parameter for DDSTextureLoader ``Ex`` functions is now a ``DDS_LOADER_FLAGS`` typed enum bitmask flag parameter. This may have a *breaking change* impact to client code. Replace ``true`` with ``DDS_LOADER_FORCE_SRGB`` and ``false`` with ``DDS_LOADER_DEFAULT``.
 
 ## Support
 

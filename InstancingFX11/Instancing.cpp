@@ -1101,7 +1101,9 @@ HRESULT LoadTextureArray( ID3D11Device* pd3dDevice, LPCTSTR* szTextureNames, int
         V_RETURN( DXUTFindDXSDKMediaFileCch( str, MAX_PATH, szTextureNames[i] ) );
 
         ID3D11Resource* pRes = nullptr;
-        V_RETURN( CreateDDSTextureFromFileEx( pd3dDevice, str, 0, D3D11_USAGE_STAGING, 0, D3D11_CPU_ACCESS_WRITE | D3D11_CPU_ACCESS_READ, 0, true, &pRes, nullptr, nullptr ) );
+        V_RETURN( CreateDDSTextureFromFileEx( pd3dDevice, str, 0,
+            D3D11_USAGE_STAGING, 0, D3D11_CPU_ACCESS_WRITE | D3D11_CPU_ACCESS_READ, 0,
+            DDS_LOADER_FORCE_SRGB, &pRes, nullptr, nullptr ) );
         if( pRes )
         {
             ID3D11Texture2D* pTemp;
