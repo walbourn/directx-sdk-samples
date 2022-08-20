@@ -831,7 +831,8 @@ HRESULT CDXUTResourceCache::CreateTextureFromFile( ID3D11Device* pDevice, ID3D11
     if ( _wcsicmp( ext, L".dds" ) == 0 )
     {
         hr = DirectX::CreateDDSTextureFromFileEx( pDevice, pSrcFile, 0,
-                                                  D3D11_USAGE_DEFAULT, D3D11_BIND_SHADER_RESOURCE, 0, 0, bSRGB,
+                                                  D3D11_USAGE_DEFAULT, D3D11_BIND_SHADER_RESOURCE, 0, 0,
+                                                  bSRGB ? DirectX::DDS_LOADER_FORCE_SRGB : DirectX::DDS_LOADER_DEFAULT,
                                                   nullptr, ppOutputRV, nullptr );
     }
     else
