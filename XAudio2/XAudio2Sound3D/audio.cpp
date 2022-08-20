@@ -314,7 +314,11 @@ HRESULT InitAudio()
 
     g_audioState.emitter.ChannelCount = INPUTCHANNELS;
     g_audioState.emitter.ChannelRadius = 1.0f;
-    g_audioState.emitter.pChannelAzimuths = g_audioState.emitterAzimuths;
+
+    static_assert(INPUTCHANNELS == 1 || g_audioState.emitter.pChannelAzimuths != nullptr, "Multi-channel sources require emitter azimuths");
+    // For examples of how to configure emitter azimuths for multi-channel sources, see DirectX Tool Kit for Audio
+    // helper method AudioEmitter::EnableDefaultMultiChannel
+    // http://go.microsoft.com/fwlink/?LinkId=248929
 
     // Use of Inner radius allows for smoother transitions as
     // a sound travels directly through, above, or below the listener.
@@ -379,6 +383,8 @@ HRESULT PrepareAudio( _In_z_ const LPCWSTR wavname )
     const uint8_t* sampleData;
     uint32_t waveSize;
     V_RETURN( LoadWAVAudioFromFile( strFilePath, g_audioState.waveData, &pwfx, &sampleData, &waveSize ) );
+
+    assert(pwfx->nChannels == INPUTCHANNELS);
 
     //
     // Play the wave using a source voice that sends to both the submix and mastering voices

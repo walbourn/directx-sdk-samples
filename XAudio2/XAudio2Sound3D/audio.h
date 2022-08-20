@@ -61,7 +61,6 @@ struct AUDIO_STATE
     bool  fUseInnerRadius;
     bool  fUseRedirectToLFE;
 
-    FLOAT32 emitterAzimuths[INPUTCHANNELS];
     FLOAT32 matrixCoefficients[INPUTCHANNELS * OUTPUTCHANNELS];
 };
 
