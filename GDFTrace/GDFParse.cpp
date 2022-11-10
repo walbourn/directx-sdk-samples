@@ -132,6 +132,36 @@ HRESULT CGDFParse::EnumLangs( const WCHAR* strGDFBinPath )
 
 
 //--------------------------------------------------------------------------------------
+static BOOL CALLBACK FindFirstResourceLangProc( HMODULE hMod, LPCWSTR lpType, LPCWSTR lpName, WORD Lang, LONG_PTR lParam )
+{
+    SIZE_T* data = (SIZE_T*) lParam;
+    if( data[1] == Lang || data[2] )
+    {
+        HRSRC hRsrc = FindResourceEx( hMod, lpType, lpName, Lang );
+        data[0] = (SIZE_T) hRsrc;
+    }
+    return !(data[0]);
+}
+
+
+//--------------------------------------------------------------------------------------
+static BOOL CALLBACK FindFirstResourceNameProc( HMODULE hMod, LPCTSTR lpType, LPTSTR lpName, LONG_PTR lParam )
+{
+    SIZE_T* data = (SIZE_T*) lParam;
+    EnumResourceLanguages( hMod, lpType, lpName, FindFirstResourceLangProc, lParam );
+    return !(data[0]);
+}
+
+
+//--------------------------------------------------------------------------------------
+static HRSRC FindFirstResource( HMODULE hMod, LPCWSTR lpType, WORD Lang, bool fAnyLanguage = false )
+{
+    SIZE_T data[3] = { 0, Lang, fAnyLanguage };
+    EnumResourceNames( hMod, lpType, FindFirstResourceNameProc, (SIZE_T) data );
+    return (HRSRC) data[0];
+}
+
+//--------------------------------------------------------------------------------------
 HRESULT CGDFParse::LoadXMLinMemory( const WCHAR* strGDFBinPath, WORD wLanguage, HGLOBAL* phResourceCopy )
 {
    // Extract the GDF XML from the GDF binary 
@@ -770,7 +800,7 @@ HRESULT CGDFParse::OutputGDFIconInfo( WCHAR* strGDFBinPath, BOOL* pIconEightBits
     if( hGDFDll )
     {
         // Extract GDF Icon 
-        hrsrc = FindResourceEx( hGDFDll, RT_GROUP_ICON, (LPCTSTR)101, wLanguage ); 
+        hrsrc = FindFirstResource( hGDFDll, RT_GROUP_ICON, wLanguage );
         if( hrsrc ) 
         { 
             hgResource = LoadResource( hGDFDll, hrsrc ); 
