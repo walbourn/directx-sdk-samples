@@ -362,7 +362,6 @@ HRESULT CDXUTSDKMesh::CreateFromMemory( ID3D11Device* pDev11,
 
     // update bounding volume 
     SDKMESH_MESH* currentMesh = &m_pMeshArray[0];
-    int tris = 0;
     for (UINT meshi=0; meshi < m_pMeshHeader->NumMeshes; ++meshi) {
         lower.x = FLT_MAX; lower.y = FLT_MAX; lower.z = FLT_MAX;
         upper.x = -FLT_MAX; upper.y = -FLT_MAX; upper.z = -FLT_MAX;
@@ -411,7 +410,6 @@ HRESULT CDXUTSDKMesh::CreateFromMemory( ID3D11Device* pDev11,
                 }else {
                     current_ind = ind[vertind];
                 }
-                tris++;
                 XMFLOAT3 *pt = (XMFLOAT3*)&(verts[stride * current_ind]);
                 if (pt->x < lower.x) {
                     lower.x = pt->x;
