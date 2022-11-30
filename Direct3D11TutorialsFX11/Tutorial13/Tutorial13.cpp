@@ -14,12 +14,14 @@
 #include "DXUT.h"
 #include "DXUTcamera.h"
 #include "DXUTgui.h"
-#include "DXUTsettingsDlg.h"
+#include "DXUTsettingsdlg.h"
 #include "SDKmisc.h"
 #include "SDKmesh.h"
 #include "DDSTextureLoader.h"
 
 #include <d3dx11effect.h>
+
+#include <iterator>
 
 #pragma warning( disable : 4100 )
 
@@ -151,7 +153,7 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
         { "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
         { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 24, D3D11_INPUT_PER_VERTEX_DATA, 0 },
     };
-    UINT numElements = ARRAYSIZE( layout );
+    auto const numElements = static_cast<UINT>(std::size(layout));
 
     // Create the input layout
     D3DX11_PASS_DESC PassDesc;
@@ -169,8 +171,8 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
     g_World = XMMatrixIdentity();
 
     // Setup the camera's view parameters
-    static const XMVECTORF32 s_Eye = { 0.0f, 3.0f, -800.0f, 0.f };
-    static const XMVECTORF32 s_At = { 0.0f, 1.0f, 0.0f, 0.f };
+    static const XMVECTORF32 s_Eye = { { { 0.0f, 3.0f, -800.0f, 0.f } } };
+    static const XMVECTORF32 s_At = { { { 0.0f, 1.0f, 0.0f, 0.f } } };
     g_Camera.SetViewParams( s_Eye, s_At );
 
     return S_OK;
@@ -188,15 +190,18 @@ HRESULT CALLBACK OnD3D11ResizedSwapChain( ID3D11Device* pd3dDevice, IDXGISwapCha
     V_RETURN( g_DialogResourceManager.OnD3D11ResizedSwapChain( pd3dDevice, pBackBufferSurfaceDesc ) );
     V_RETURN( g_SettingsDlg.OnD3D11ResizedSwapChain( pd3dDevice, pBackBufferSurfaceDesc ) );
 
+    auto const iwidth = static_cast<int>(pBackBufferSurfaceDesc->Width);
+    auto const iheight = static_cast<int>(pBackBufferSurfaceDesc->Height);
+
     // Setup the camera's projection parameters
-    float fAspectRatio = pBackBufferSurfaceDesc->Width / ( FLOAT )pBackBufferSurfaceDesc->Height;
+    const float fAspectRatio = static_cast<float>(pBackBufferSurfaceDesc->Width) / static_cast<float>(pBackBufferSurfaceDesc->Height);
     g_Camera.SetProjParams( XM_PI / 4, fAspectRatio, 0.1f, 5000.0f );
-    g_Camera.SetWindow( pBackBufferSurfaceDesc->Width, pBackBufferSurfaceDesc->Height );
+    g_Camera.SetWindow( iwidth, iheight );
     g_Camera.SetButtonMasks( MOUSE_LEFT_BUTTON, MOUSE_WHEEL, MOUSE_MIDDLE_BUTTON );
 
-    g_HUD.SetLocation( pBackBufferSurfaceDesc->Width - 170, 0 );
+    g_HUD.SetLocation( iwidth - 170, 0 );
     g_HUD.SetSize( 170, 170 );
-    g_SampleUI.SetLocation( pBackBufferSurfaceDesc->Width - 170, pBackBufferSurfaceDesc->Height - 300 );
+    g_SampleUI.SetLocation( iwidth - 170, iheight - 300 );
     g_SampleUI.SetSize( 170, 300 );
 
     return S_OK;
@@ -211,9 +216,11 @@ void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext 
     // Update the camera's position based on user input 
     g_Camera.FrameMove( fElapsedTime );
 
+    auto const t = static_cast<float>(fTime);
+
     if( g_bSpinning )
     {
-        g_World = XMMatrixRotationY( 60.0f * XMConvertToRadians((float)fTime) );
+        g_World = XMMatrixRotationY( 60.0f * XMConvertToRadians( t ) );
     }
     else
     {
@@ -266,14 +273,13 @@ void CALLBACK OnD3D11FrameRender( ID3D11Device* pd3dDevice, ID3D11DeviceContext*
 
     XMMATRIX mView = g_Camera.GetViewMatrix();
     XMMATRIX mProj = g_Camera.GetProjMatrix();
-    XMMATRIX mWorldViewProjection = g_World * mView * mProj;
 
     //
     // Update variables that change once per frame
     //
-    g_pProjectionVariable->SetMatrix( ( float* )&mProj );
-    g_pViewVariable->SetMatrix( ( float* )&mView );
-    g_pWorldVariable->SetMatrix( ( float* )&g_World );
+    g_pProjectionVariable->SetMatrix( reinterpret_cast<float*>(&mProj) );
+    g_pViewVariable->SetMatrix( reinterpret_cast<float*>(&mView) );
+    g_pWorldVariable->SetMatrix( reinterpret_cast<float*>(&g_World) );
 
     //
     // Set the Vertex Layout
@@ -287,7 +293,7 @@ void CALLBACK OnD3D11FrameRender( ID3D11Device* pd3dDevice, ID3D11DeviceContext*
     UINT Offsets[1];
     ID3D11Buffer* pVB[1];
     pVB[0] = g_Mesh.GetVB11( 0, 0 );
-    Strides[0] = ( UINT )g_Mesh.GetVertexStride( 0, 0 );
+    Strides[0] = static_cast<UINT>(g_Mesh.GetVertexStride( 0, 0 ));
     Offsets[0] = 0;
     pd3dImmediateContext->IASetVertexBuffers( 0, 1, pVB, Strides, Offsets );
     pd3dImmediateContext->IASetIndexBuffer( g_Mesh.GetIB11( 0 ), g_Mesh.GetIBFormat11( 0 ), 0 );
@@ -302,14 +308,14 @@ void CALLBACK OnD3D11FrameRender( ID3D11Device* pd3dDevice, ID3D11DeviceContext*
         {
             auto pSubset = g_Mesh.GetSubset( 0, subset );
 
-            auto PrimType = g_Mesh.GetPrimitiveType11( ( SDKMESH_PRIMITIVE_TYPE )pSubset->PrimitiveType );
+            auto PrimType = g_Mesh.GetPrimitiveType11( static_cast<SDKMESH_PRIMITIVE_TYPE>(pSubset->PrimitiveType) );
             pd3dImmediateContext->IASetPrimitiveTopology( PrimType );
 
             auto pDiffuseRV = g_Mesh.GetMaterial( pSubset->MaterialID )->pDiffuseRV11;
             g_ptxDiffuseVariable->SetResource( pDiffuseRV );
 
             g_pTechnique->GetPassByIndex( p )->Apply( 0, pd3dImmediateContext );
-            pd3dImmediateContext->DrawIndexed( ( UINT )pSubset->IndexCount, 0, ( UINT )pSubset->VertexStart );
+            pd3dImmediateContext->DrawIndexed( static_cast<UINT>(pSubset->IndexCount), 0, static_cast<INT>(pSubset->VertexStart) );
         }
     }
 
@@ -425,7 +431,7 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
 
         case IDC_EXPLODE_SCALE:
         {
-            g_fExplode = ( float )( g_SampleUI.GetSlider( IDC_EXPLODE_SCALE )->GetValue() * 0.01f );
+            g_fExplode = static_cast<float>( g_SampleUI.GetSlider( IDC_EXPLODE_SCALE )->GetValue()) * 0.01f;
 
             WCHAR sz[100];
             swprintf_s( sz, 100, L"Explode Amount: %0.2f", g_fExplode );
@@ -516,10 +522,8 @@ void InitApp()
     iY += 24;
     swprintf_s( sz, 100, L"Explode Amount: %0.2f", g_fExplode );
     g_SampleUI.AddStatic( IDC_EXPLODE_STATIC, sz, 0, iY += 26, 170, 22 );
-    g_SampleUI.AddSlider( IDC_EXPLODE_SCALE, 50, iY += 26, 100, 22, 0, 2000, ( int )( g_fExplode * 100.0f ) );
+    g_SampleUI.AddSlider( IDC_EXPLODE_SCALE, 50, iY += 26, 100, 22, 0, 2000, static_cast<int>( g_fExplode * 100.0f ) );
 
     iY += 24;
     g_SampleUI.AddCheckBox( IDC_TOGGLESPIN, L"Toggle Spinning", 0, iY += 26, 170, 22, g_bSpinning );
 }
-
-

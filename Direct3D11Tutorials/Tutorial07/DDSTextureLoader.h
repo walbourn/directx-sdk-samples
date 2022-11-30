@@ -1,5 +1,5 @@
 //--------------------------------------------------------------------------------------
-// File: DDSTextureLoader.h
+// File: DDSTextureLoader11.h
 //
 // Functions for loading a DDS texture and creating a Direct3D runtime resource for it
 //
@@ -18,6 +18,9 @@
 
 #include <d3d11_1.h>
 
+#pragma comment(lib,"dxguid.lib")
+
+#include <cstddef>
 #include <cstdint>
 
 

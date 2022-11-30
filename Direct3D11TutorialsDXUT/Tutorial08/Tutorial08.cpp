@@ -14,6 +14,8 @@
 #include "DXUT.h"
 #include "SDKmisc.h"
 
+#include <iterator>
+
 #pragma warning( disable : 4100 )
 
 using namespace DirectX;
@@ -111,7 +113,7 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
         { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
         { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
     };
-    UINT numElements = ARRAYSIZE( layout );
+    auto const numElements = static_cast<UINT>(std::size(layout));
 
     // Create the input layout
     hr = pd3dDevice->CreateInputLayout( layout, numElements, pVSBlob->GetBufferPointer(),
@@ -229,9 +231,9 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
     g_World = XMMatrixIdentity();
 
     // Initialize the view matrix
-    static const XMVECTORF32 s_Eye = { 0.0f, 3.0f, -6.0f, 0.f };
-    static const XMVECTORF32 s_At = { 0.0f, 1.0f, 0.0f, 0.f };
-    static const XMVECTORF32 s_Up = { 0.0f, 1.0f, 0.0f, 0.f };
+    static const XMVECTORF32 s_Eye = { { { 0.0f, 3.0f, -6.0f, 0.f } } };
+    static const XMVECTORF32 s_At = { { { 0.0f, 1.0f, 0.0f, 0.f } } };
+    static const XMVECTORF32 s_Up = { { { 0.0f, 1.0f, 0.0f, 0.f } } };
     g_View = XMMatrixLookAtLH( s_Eye, s_At, s_Up );
 
     // Load the Texture
@@ -259,8 +261,8 @@ HRESULT CALLBACK OnD3D11ResizedSwapChain( ID3D11Device* pd3dDevice, IDXGISwapCha
                                           const DXGI_SURFACE_DESC* pBackBufferSurfaceDesc, void* pUserContext )
 {
     // Setup the projection parameters
-    float fAspect = static_cast<float>( pBackBufferSurfaceDesc->Width ) / static_cast<float>( pBackBufferSurfaceDesc->Height );
-    g_Projection = XMMatrixPerspectiveFovLH( XM_PI * 0.25f, fAspect, 0.1f, 100.0f );
+    const float fAspectRatio = static_cast<float>(pBackBufferSurfaceDesc->Width) / static_cast<float>(pBackBufferSurfaceDesc->Height);
+    g_Projection = XMMatrixPerspectiveFovLH( XM_PI * 0.25f, fAspectRatio, 0.1f, 100.0f );
 
     return S_OK;
 }
@@ -271,13 +273,15 @@ HRESULT CALLBACK OnD3D11ResizedSwapChain( ID3D11Device* pd3dDevice, IDXGISwapCha
 //--------------------------------------------------------------------------------------
 void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext )
 {
+    auto const t = static_cast<float>(fTime);
+
     // Rotate cube around the origin
-    g_World = XMMatrixRotationY( 60.0f * XMConvertToRadians((float)fTime) );
+    g_World = XMMatrixRotationY( 60.0f * XMConvertToRadians( t ) );
 
     // Modify the color
-    g_vMeshColor.x = ( sinf( ( float )fTime * 1.0f ) + 1.0f ) * 0.5f;
-    g_vMeshColor.y = ( cosf( ( float )fTime * 3.0f ) + 1.0f ) * 0.5f;
-    g_vMeshColor.z = ( sinf( ( float )fTime * 5.0f ) + 1.0f ) * 0.5f;
+    g_vMeshColor.x = ( sinf( t * 1.0f ) + 1.0f ) * 0.5f;
+    g_vMeshColor.y = ( cosf( t * 3.0f ) + 1.0f ) * 0.5f;
+    g_vMeshColor.z = ( sinf( t * 5.0f ) + 1.0f ) * 0.5f;
 }
 
 

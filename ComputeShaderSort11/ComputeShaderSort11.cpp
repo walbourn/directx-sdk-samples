@@ -62,7 +62,7 @@ struct CB
 //--------------------------------------------------------------------------------------
 HRESULT CompileShaderFromFile( _In_z_ const WCHAR* szFileName, _In_z_ LPCSTR szEntryPoint, _In_z_ LPCSTR szShaderModel, _Outptr_ ID3DBlob** ppBlobOut );
 HRESULT FindDXSDKShaderFileCch( _Out_writes_(cchDest) WCHAR* strDestPath,
-                                _In_ int cchDest, 
+                                _In_ size_t cchDest, 
                                 _In_z_ LPCWSTR strFilename );
 
 //--------------------------------------------------------------------------------------
@@ -99,7 +99,7 @@ HRESULT InitDevice()
         SAFE_RELEASE( g_pd3dImmediateContext );
         SAFE_RELEASE( g_pd3dDevice );
 
-        int result = MessageBox( 0, L"This program needs to use the Direct3D 11 reference device.  This device implements the entire Direct3D 11 feature set, but runs very slowly.  Do you wish to continue?",
+        int result = MessageBoxW( nullptr, L"This program needs to use the Direct3D 11 reference device.  This device implements the entire Direct3D 11 feature set, but runs very slowly.  Do you wish to continue?",
                                  L"Compute Shader Sort", MB_ICONQUESTION | MB_YESNO );
         if( result == IDNO )
             return E_FAIL;
@@ -152,7 +152,7 @@ HRESULT CompileShaderFromFile( const WCHAR* szFileName, LPCSTR szEntryPoint, LPC
     if( FAILED(hr) )
     {
         if( pErrorBlob )
-            OutputDebugStringA( (char*)pErrorBlob->GetBufferPointer() );
+            OutputDebugStringA( static_cast<char*>(pErrorBlob->GetBufferPointer()) );
 
         SAFE_RELEASE( pErrorBlob );
 
@@ -358,7 +358,7 @@ void GPUSort()
     }
 
     // Download the data
-    D3D11_MAPPED_SUBRESOURCE MappedResource = {0}; 
+    D3D11_MAPPED_SUBRESOURCE MappedResource = {};
     g_pd3dImmediateContext->CopyResource( g_pReadBackBuffer, g_pBuffer1 );
     if( SUCCEEDED( g_pd3dImmediateContext->Map( g_pReadBackBuffer, 0, D3D11_MAP_READ, 0, &MappedResource ) ) )
     {
@@ -456,7 +456,7 @@ int __cdecl wmain()
 //--------------------------------------------------------------------------------------
 _Use_decl_annotations_
 HRESULT FindDXSDKShaderFileCch( WCHAR* strDestPath,
-                                int cchDest, 
+                                size_t cchDest, 
                                 LPCWSTR strFilename )
 {
     if( !strFilename || strFilename[0] == 0 || !strDestPath || cchDest < 10 )
