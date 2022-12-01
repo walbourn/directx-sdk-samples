@@ -33,18 +33,18 @@ add_executable(${PROJECT_NAME} WIN32
     Resource.h
 )
 
-target_link_libraries(${PROJECT_NAME} PRIVATE
-    d3dcompiler.lib dxguid.lib winmm.lib comctl32.lib usp10.lib imm32.lib version.lib
-)
+find_package(dxut CONFIG REQUIRED)
+target_link_libraries(${PROJECT_NAME} PRIVATE Microsoft::DXUTOpt Microsoft::DXUT)
+
+find_package(effects11 CONFIG REQUIRED)
+target_link_libraries(${PROJECT_NAME} PRIVATE Microsoft::Effects11)
 
 find_package(directxmath CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE Microsoft::DirectXMath)
 
-find_package(dxut CONFIG REQUIRED)
-target_link_libraries(${PROJECT_NAME} PRIVATE Microsoft::DXUT Microsoft::DXUTOpt)
-
-find_package(effects11 CONFIG REQUIRED)
-target_link_libraries(${PROJECT_NAME} PRIVATE Microsoft::Effects11)
+target_link_libraries(${PROJECT_NAME} PRIVATE
+    d3dcompiler.lib dxguid.lib comctl32.lib usp10.lib imm32.lib version.lib
+)
 
 if(MSVC)
     target_compile_options(${PROJECT_NAME} PRIVATE /Wall /GR /fp:fast "$<$<NOT:$<CONFIG:DEBUG>>:/guard:cf>")
