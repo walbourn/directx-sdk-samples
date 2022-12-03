@@ -51,9 +51,9 @@ public:
     DirectX::XMMATRIX GetTranslationDeltaMatrix() const { return DirectX::XMLoadFloat4x4( &m_mTranslationDelta ); }
     bool IsBeingDragged() const { return m_bDrag; }
     DirectX::XMVECTOR GetQuatNow() const { return DirectX::XMLoadFloat4( &m_qNow ); }
-    void SetQuatNow( _In_ DirectX::FXMVECTOR& q ) { DirectX::XMStoreFloat4( &m_qNow, q ); }
+    void XM_CALLCONV SetQuatNow( _In_ DirectX::FXMVECTOR& q ) { DirectX::XMStoreFloat4( &m_qNow, q ); }
 
-    static DirectX::XMVECTOR QuatFromBallPoints( _In_ DirectX::FXMVECTOR vFrom, _In_ DirectX::FXMVECTOR vTo )
+    static DirectX::XMVECTOR XM_CALLCONV QuatFromBallPoints( _In_ DirectX::FXMVECTOR vFrom, _In_ DirectX::FXMVECTOR vTo )
     {
         using namespace DirectX;
 
@@ -147,7 +147,7 @@ public:
 
     // Functions to change camera matrices
     virtual void Reset();
-    virtual void SetViewParams( _In_ DirectX::FXMVECTOR vEyePt, _In_ DirectX::FXMVECTOR vLookatPt );
+    virtual void SetViewParams( _In_ DirectX::CXMVECTOR vEyePt, _In_ DirectX::CXMVECTOR vLookatPt );
     virtual void SetProjParams( _In_ float fFOV, _In_ float fAspect, _In_ float fNearPlane, _In_ float fFarPlane );
 
     // Functions to change behavior
@@ -194,7 +194,7 @@ protected:
     bool IsKeyDown( _In_ BYTE key ) const { return( ( key & KEY_IS_DOWN_MASK ) == KEY_IS_DOWN_MASK ); }
     bool WasKeyDown( _In_ BYTE key ) const { return( ( key & KEY_WAS_DOWN_MASK ) == KEY_WAS_DOWN_MASK ); }
 
-    DirectX::XMVECTOR ConstrainToBoundary( _In_ DirectX::FXMVECTOR v )
+    DirectX::XMVECTOR XM_CALLCONV ConstrainToBoundary( _In_ DirectX::FXMVECTOR v )
     {
         using namespace DirectX;
 
@@ -310,7 +310,7 @@ public:
     // Functions to change behavior
     virtual void SetDragRect( _In_ const RECT& rc ) override;
     virtual void Reset() override;
-    virtual void SetViewParams( _In_ DirectX::FXMVECTOR pvEyePt, _In_ DirectX::FXMVECTOR pvLookatPt ) override;
+    virtual void SetViewParams( _In_ DirectX::CXMVECTOR pvEyePt, _In_ DirectX::CXMVECTOR pvLookatPt ) override;
     void SetButtonMasks( _In_ int nRotateModelButtonMask = MOUSE_LEFT_BUTTON, _In_ int nZoomButtonMask = MOUSE_WHEEL,
                          _In_ int nRotateCameraButtonMask = MOUSE_RIGHT_BUTTON )
     {
@@ -330,12 +330,12 @@ public:
     }
     void SetModelCenter( _In_ const DirectX::XMFLOAT3& vModelCenter ) { m_vModelCenter = vModelCenter; }
     void SetLimitPitch( _In_ bool bLimitPitch ) { m_bLimitPitch = bLimitPitch; }
-    void SetViewQuat( _In_ DirectX::FXMVECTOR q )
+    void XM_CALLCONV SetViewQuat( _In_ DirectX::FXMVECTOR q )
     {
         m_ViewArcBall.SetQuatNow( q );
         m_bDragSinceLastUpdate = true;
     }
-    void SetWorldQuat( _In_ DirectX::FXMVECTOR q )
+    void XM_CALLCONV SetWorldQuat( _In_ DirectX::FXMVECTOR q )
     {
         m_WorldArcBall.SetQuatNow( q );
         m_bDragSinceLastUpdate = true;
@@ -384,10 +384,10 @@ public:
 
     LRESULT HandleMessages( _In_ HWND hWnd, _In_ UINT uMsg, _In_ WPARAM wParam, _In_ LPARAM lParam );
 
-    HRESULT OnRender( _In_ DirectX::FXMVECTOR color, _In_ DirectX::CXMMATRIX pmView, _In_ DirectX::CXMMATRIX pmProj, _In_ DirectX::FXMVECTOR vEyePt );
+    HRESULT OnRender( _In_ DirectX::CXMVECTOR color, _In_ DirectX::CXMMATRIX pmView, _In_ DirectX::CXMMATRIX pmProj, _In_ DirectX::CXMVECTOR vEyePt );
 
     DirectX::XMVECTOR GetLightDirection() const { return DirectX::XMLoadFloat3( &m_vCurrentDir ); }
-    void SetLightDirection( _In_ DirectX::FXMVECTOR vDir )
+    void XM_CALLCONV SetLightDirection( _In_ DirectX::FXMVECTOR vDir )
     {
         DirectX::XMStoreFloat3( &m_vCurrentDir, vDir );
         m_vDefaultDir = m_vCurrentDir;

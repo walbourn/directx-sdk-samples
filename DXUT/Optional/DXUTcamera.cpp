@@ -251,7 +251,7 @@ CBaseCamera::CBaseCamera() noexcept :
 // Client can call this to change the position and direction of camera
 //--------------------------------------------------------------------------------------
 _Use_decl_annotations_
-void CBaseCamera::SetViewParams( FXMVECTOR vEyePt, FXMVECTOR vLookatPt )
+void CBaseCamera::SetViewParams( CXMVECTOR vEyePt, CXMVECTOR vLookatPt )
 {
     XMStoreFloat3( &m_vEye, vEyePt );
     XMStoreFloat3( &m_vDefaultEye, vEyePt );
@@ -977,7 +977,7 @@ void CModelViewerCamera::Reset()
 // Override for setting the view parameters
 //--------------------------------------------------------------------------------------
 _Use_decl_annotations_
-void CModelViewerCamera::SetViewParams( FXMVECTOR vEyePt, FXMVECTOR vLookatPt )
+void CModelViewerCamera::SetViewParams( CXMVECTOR vEyePt, CXMVECTOR vLookatPt )
 {
     CBaseCamera::SetViewParams( vEyePt, vLookatPt );
 
@@ -1215,7 +1215,7 @@ HRESULT CDXUTDirectionWidget::UpdateLightDir()
 
 //--------------------------------------------------------------------------------------
 _Use_decl_annotations_
-HRESULT CDXUTDirectionWidget::OnRender( FXMVECTOR, CXMMATRIX, CXMMATRIX, FXMVECTOR)
+HRESULT CDXUTDirectionWidget::OnRender(CXMVECTOR, CXMMATRIX, CXMMATRIX, CXMVECTOR)
 {
     // TODO - 
     return S_OK;
