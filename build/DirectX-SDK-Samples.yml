@@ -1,0 +1,80 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+#
+# https://github.com/walbourn/directx-sdk-samples/
+
+schedules:
+- cron: "30 6 * * 0"
+  displayName: 'Nightly build'
+  branches:
+    include:
+    - main
+
+resources:
+  repositories:
+  - repository: self
+    type: git
+    ref: refs/heads/main
+    trigger:
+      branches:
+        include:
+        - main
+      paths:
+        exclude:
+        - README.md
+        - SECURITY.md
+
+name: $(Year:yyyy).$(Month).$(DayOfMonth)$(Rev:.r)
+
+pool:
+  vmImage: windows-2019
+
+variables:
+  GUID_FEED: $(ADOFeedGUID)
+
+jobs:
+- job: BUILD_SAMPLES
+  displayName: 'Build DirectX SDK samples'
+  steps:
+  - checkout: self
+    clean: true
+    fetchTags: false
+  - task: NuGetToolInstaller@1
+    displayName: 'Use NuGet'
+  - task: NuGetCommand@2
+    displayName: NuGet DirectXTex
+    inputs:
+      solution: BC6HBC7EncoderCS/BC6HBC7EncoderCS_2019_Win10.sln
+      feedRestore: $(GUID_FEED)
+      includeNuGetOrg: false
+      packagesDirectory: $(Build.SourcesDirectory)\packages
+  - task: NuGetCommand@2
+    displayName: NuGet DirectXTK
+    inputs:
+      solution: Collision/Collision_Desktop_2019_Win10.sln
+      feedRestore: $(GUID_FEED)
+      includeNuGetOrg: false
+      packagesDirectory: $(Build.SourcesDirectory)\packages
+  - task: NuGetCommand@2
+    displayName: NuGet XAudio2Redist
+    inputs:
+      solution: XAudio2/XAudio2Samples_NuGetRedist_2019.sln
+      feedRestore: $(GUID_FEED)
+      includeNuGetOrg: false
+      packagesDirectory: $(Build.SourcesDirectory)\packages
+  - task: VSBuild@1
+    displayName: Build VS 2019 (Debug)
+    inputs:
+      solution: '**\*2019*.sln'
+      vsVersion: 16.0
+      msbuildArgs: /p:PreferredToolArchitecture=x64
+      platform: x64
+      configuration: Debug
+  - task: VSBuild@1
+    displayName: Build VS 2019 (Release)
+    inputs:
+      solution: '**\*2019*.sln'
+      vsVersion: 16.0
+      msbuildArgs: /p:PreferredToolArchitecture=x64
+      platform: x64
+      configuration: Release
