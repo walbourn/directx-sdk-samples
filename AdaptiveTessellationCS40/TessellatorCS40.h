@@ -17,7 +17,7 @@ public:
     ~CTessellator();
 
     HRESULT SetBaseMesh( ID3D11Device* pd3dDevice, ID3D11DeviceContext* pd3dImmediateContext, 
-                         INT nVertices,
+                         UINT nVertices,
                          ID3D11Buffer* pBaseVB );
 
     enum PARTITIONING_MODE
@@ -41,13 +41,11 @@ public:
     ID3D11ShaderResourceView*   m_pBaseVBSRV;
     ID3D11ShaderResourceView*   m_pTessedVerticesBufSRV;
 
-    INT                         m_nVertices;
+    UINT                        m_nVertices;
 
 private:
     ID3D11Device*               m_pd3dDevice;
     ID3D11DeviceContext*        m_pd3dImmediateContext;
-
-    ID3D11Buffer*               m_pBaseVB;
 
     ID3D11Buffer*               m_pEdgeFactorBuf;
     ID3D11ShaderResourceView*   m_pEdgeFactorBufSRV;

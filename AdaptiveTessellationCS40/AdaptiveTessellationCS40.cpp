@@ -124,7 +124,9 @@ int WINAPI wWinMain( _In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
     DXUTCreateWindow( L"AdaptiveTessellationCS40" );
     CWaitDlg CompilingShadersDlg;
     if ( DXUT_EnsureD3D11APIs() )
+    {
         CompilingShadersDlg.ShowDialog( L"Compiling Shaders" );
+    }
     DXUTCreateDevice(D3D_FEATURE_LEVEL_10_0, true, 1024, 768 );
     CompilingShadersDlg.DestroyDialog();
     DXUTMainLoop(); // Enter into the DXUT render loop
@@ -287,8 +289,8 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
     // Warn the user that in order to support CS4x, a non-hardware device has been created, continue or quit?
     if (DXUTGetDeviceSettings().d3d11.DriverType != D3D_DRIVER_TYPE_HARDWARE && bFirstOnCreateDevice)
     {
-        if (MessageBox(0, L"CS4x capability is missing. "\
-            L"In order to continue, a non-hardware device has been created, "\
+        if (MessageBox(nullptr, L"CS4x capability is missing. "
+            L"In order to continue, a non-hardware device has been created, "
             L"it will be very slow, continue?", L"Warning", MB_ICONEXCLAMATION | MB_YESNO) != IDYES)
             return E_FAIL;
     }
@@ -306,7 +308,7 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
     V_RETURN(DXUTFindDXSDKMediaFileCch(str, MAX_PATH, L"BaseMesh.obj"));
 
     std::wifstream ifs(str);
-    WCHAR line[256] = { 0 };
+    WCHAR line[256] = {};
     std::vector<XMFLOAT4> initdata;
 
     // Parse the .obj file. Both triangle faces and quad faces are supported.
@@ -328,7 +330,7 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
                 }
         }
 
-        ifs.clear(0);
+        ifs.clear();
         ifs.seekg(0);
         while (ifs >> line)
         {
@@ -339,29 +341,32 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
                 {
                     ifs.getline(line, 255);
                     std::wstringstream ss(line);
-                    int idx[4] = { 0 }, i = 0;
+                    int idx[4] = {}, i = 0;
                     while (ss >> line)
                     {
                         std::wstringstream ss2(line);
                         ss2 >> idx[i++];
                     }
 
-                    initdata.push_back(v[idx[0] - 1]); initdata.push_back(v[idx[1] - 1]); initdata.push_back(v[idx[2] - 1]);
+                    initdata.push_back(v[static_cast<size_t>(idx[0] - 1)]);
+                    initdata.push_back(v[static_cast<size_t>(idx[1] - 1)]);
+                    initdata.push_back(v[static_cast<size_t>(idx[2] - 1)]);
                     if (i >= 4) // quad face?
                     {
-                        initdata.push_back(v[idx[2] - 1]); initdata.push_back(v[idx[3] - 1]); initdata.push_back(v[idx[0] - 1]);
+                        initdata.push_back(v[static_cast<size_t>(idx[2] - 1)]);
+                        initdata.push_back(v[static_cast<size_t>(idx[3] - 1)]);
+                        initdata.push_back(v[static_cast<size_t>(idx[0] - 1)]);
                     }
                 }
         }
     }
 
-    D3D11_BUFFER_DESC desc;
+    D3D11_BUFFER_DESC desc = {};
     desc.Usage = D3D11_USAGE_DEFAULT;
     desc.ByteWidth = static_cast<UINT>(sizeof(initdata[0]) * initdata.size());
     desc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_VERTEX_BUFFER;
-    desc.CPUAccessFlags = 0;
-    desc.MiscFlags = 0;
-    D3D11_SUBRESOURCE_DATA InitData;
+
+    D3D11_SUBRESOURCE_DATA InitData = {};
     InitData.pSysMem = &initdata[0];
     V_RETURN(pd3dDevice->CreateBuffer(&desc, &InitData, &g_pBaseVB));
     DXUT_SetDebugName(g_pBaseVB, "Primary");
@@ -379,7 +384,7 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
     DXUT_SetDebugName(g_pBaseVS, "RenderBaseVS");
 
     {
-        D3D11_INPUT_ELEMENT_DESC layout[] =
+        const D3D11_INPUT_ELEMENT_DESC layout[] =
         {
             { "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
         };
@@ -396,11 +401,10 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
     DXUT_SetDebugName(g_pPS, "RenderPS");
 
     // Setup constant buffer
-    D3D11_BUFFER_DESC Desc;
+    D3D11_BUFFER_DESC Desc = {};
     Desc.Usage = D3D11_USAGE_DYNAMIC;
     Desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
     Desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-    Desc.MiscFlags = 0;
     Desc.ByteWidth = sizeof(XMFLOAT4X4);
     V_RETURN(pd3dDevice->CreateBuffer(&Desc, nullptr, &g_pVSCB));
     DXUT_SetDebugName(g_pVSCB, "XMMATRIX");
@@ -413,8 +417,8 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
     DXUT_SetDebugName( g_pRasWireFrame, "WireFrame" );
 
     // Setup the camera's view parameters
-    static const XMVECTORF32 s_vecEye = { 0.f, 0.f, -300.f, 0.f };
-    static const XMVECTORF32 s_vecAt = { 10.0f, 20.0f, 0.0f, 0.f };
+    static const XMVECTORF32 s_vecEye = { { { 0.f, 0.f, -300.f, 0.f } } };
+    static const XMVECTORF32 s_vecAt = { { { 10.0f, 20.0f, 0.0f, 0.f } } };
     g_Camera.SetViewParams( s_vecEye, s_vecAt );
 
     g_Camera.SetScalers( 0.005f, 50 );
@@ -433,13 +437,16 @@ HRESULT CALLBACK OnD3D11ResizedSwapChain( ID3D11Device* pd3dDevice, IDXGISwapCha
     V_RETURN( g_D3DSettingsDlg.OnD3D11ResizedSwapChain( pd3dDevice, pBackBufferSurfaceDesc ) );
     V_RETURN( g_Tessellator.OnD3D11ResizedSwapChain( pBackBufferSurfaceDesc ) );
 
+    auto const iwidth = static_cast<int>(pBackBufferSurfaceDesc->Width);
+    auto const iheight = static_cast<int>(pBackBufferSurfaceDesc->Height);
+
     // Setup the camera's projection parameters
-    float fAspectRatio = pBackBufferSurfaceDesc->Width / ( FLOAT )pBackBufferSurfaceDesc->Height;
+    const float fAspectRatio = static_cast<float>(pBackBufferSurfaceDesc->Width) / static_cast<float>(pBackBufferSurfaceDesc->Height);
     g_Camera.SetProjParams( XM_PI / 4, fAspectRatio, 1.0f, 500000.0f );
 
-    g_HUD.SetLocation( pBackBufferSurfaceDesc->Width - 170, 0 );
+    g_HUD.SetLocation( iwidth - 170, 0 );
     g_HUD.SetSize( 170, 170 );
-    g_SampleUI.SetLocation( pBackBufferSurfaceDesc->Width - 260, pBackBufferSurfaceDesc->Height - 300 );
+    g_SampleUI.SetLocation( iwidth - 260, iheight - 300 );
     g_SampleUI.SetSize( 170, 300 );
 
     return hr;
@@ -465,11 +472,13 @@ void RenderText()
     if ( g_bShowSampleUI )
     {
         auto pBackBufferSurfaceDesc = DXUTGetDXGIBackBufferSurfaceDesc();
-        g_pTxtHelper->SetInsertionPos( 2, pBackBufferSurfaceDesc->Height - 18 * 6 );
+        auto const iheight = static_cast<int>(pBackBufferSurfaceDesc->Height);
+
+        g_pTxtHelper->SetInsertionPos( 2, iheight - 18 * 6 );
         g_pTxtHelper->SetForegroundColor( Colors::Orange );
         g_pTxtHelper->DrawTextLine( L"Controls (F1 to hide):" );
 
-        g_pTxtHelper->SetInsertionPos( 20, pBackBufferSurfaceDesc->Height - 18 * 5 );
+        g_pTxtHelper->SetInsertionPos( 20, iheight - 18 * 5 );
         g_pTxtHelper->DrawTextLine( L"Look: Left drag mouse\n"
                                     L"Move: A,W,S,D or Arrow Keys\n"
                                     L"Move up/down: Q,E or PgUp,PgDn\n"
