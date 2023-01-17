@@ -58,7 +58,7 @@ public:
         if( !m_hDialogWnd )
             return false;
 
-        SetWindowLongPtr( m_hDialogWnd, GWLP_USERDATA, (LONG_PTR)this );
+        SetWindowLongPtr( m_hDialogWnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(this) );
 
         // Set the position
         int left = ( m_AppRect.left + m_AppRect.right ) / 2;
@@ -78,7 +78,7 @@ public:
         return true;
     }
 
-    bool ShowDialog( WCHAR* pszInputText )
+    bool ShowDialog( const wchar_t* pszInputText )
     {
         if ( !DXUTIsWindowed() )
             return false;
@@ -89,7 +89,7 @@ public:
 
         // spawn a thread that does nothing but update the progress bar
         unsigned int threadAddr;
-        m_hThread = (HANDLE)_beginthreadex( nullptr, 0, WaitThread, this, 0, &threadAddr );
+        m_hThread = reinterpret_cast<HANDLE>(_beginthreadex( nullptr, 0, WaitThread, this, 0, &threadAddr ));
         return true;
     }
 
