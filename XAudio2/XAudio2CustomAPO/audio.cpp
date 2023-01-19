@@ -22,13 +22,13 @@ AUDIO_STATE g_audioState;
 HRESULT InitAudio()
 {
     // Clear struct
-    memset( &g_audioState, 0, sizeof( AUDIO_STATE ) );
+    memset(&g_audioState, 0, sizeof(AUDIO_STATE));
 
     //
     // Initialize XAudio2
     //
     HRESULT hr = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
-    if( FAILED( hr ) )
+    if (FAILED(hr))
         return hr;
 
 #ifdef USING_XAUDIO2_7_DIRECTX
@@ -39,15 +39,15 @@ HRESULT InitAudio()
     g_audioState.mXAudioDLL = LoadLibraryExW(L"XAudio2_7.DLL", nullptr, 0x00000800 /* LOAD_LIBRARY_SEARCH_SYSTEM32 */);
 #endif
     if (!g_audioState.mXAudioDLL)
-        return HRESULT_FROM_WIN32( ERROR_NOT_FOUND );
+        return HRESULT_FROM_WIN32(ERROR_NOT_FOUND);
 #endif
 
     UINT32 flags = 0;
- #if defined(USING_XAUDIO2_7_DIRECTX) && defined(_DEBUG)
+#if defined(USING_XAUDIO2_7_DIRECTX) && defined(_DEBUG)
     flags |= XAUDIO2_DEBUG_ENGINE;
- #endif
-    hr = XAudio2Create( &g_audioState.pXAudio2, flags );
-    if( FAILED( hr ) )
+#endif
+    hr = XAudio2Create(&g_audioState.pXAudio2, flags);
+    if (FAILED(hr))
         return hr;
 
 #if !defined(USING_XAUDIO2_7_DIRECTX) && defined(_DEBUG)
@@ -59,14 +59,14 @@ HRESULT InitAudio()
     XAUDIO2_DEBUG_CONFIGURATION debug = {};
     debug.TraceMask = XAUDIO2_LOG_ERRORS | XAUDIO2_LOG_WARNINGS;
     debug.BreakMask = XAUDIO2_LOG_ERRORS;
-    g_audioState.pXAudio2->SetDebugConfiguration( &debug, 0 );
+    g_audioState.pXAudio2->SetDebugConfiguration(&debug, nullptr);
 #endif
 
     //
     // Create a mastering voice
     //
-    assert( g_audioState.pXAudio2 != nullptr );
-    if( FAILED( hr = g_audioState.pXAudio2->CreateMasteringVoice( &g_audioState.pMasteringVoice ) ) )
+    assert(g_audioState.pXAudio2 != nullptr);
+    if (FAILED(hr = g_audioState.pXAudio2->CreateMasteringVoice(&g_audioState.pMasteringVoice)))
     {
         g_audioState.pXAudio2.Reset();
         return hr;
@@ -84,34 +84,34 @@ HRESULT InitAudio()
 //-----------------------------------------------------------------------------
 // Prepare a looping wave
 //-----------------------------------------------------------------------------
-HRESULT PrepareAudio( const LPCWSTR wavname )
+HRESULT PrepareAudio(const LPCWSTR wavname)
 {
-    if( !g_audioState.bInitialized )
+    if (!g_audioState.bInitialized)
         return E_FAIL;
 
-    if( g_audioState.pSourceVoice )
+    if (g_audioState.pSourceVoice)
     {
-        g_audioState.pSourceVoice->Stop( 0 );
+        g_audioState.pSourceVoice->Stop(0);
         g_audioState.pSourceVoice->DestroyVoice();
-        g_audioState.pSourceVoice = 0;
+        g_audioState.pSourceVoice = nullptr;
     }
 
-    SAFE_DELETE( g_audioState.pPipePre );
-    SAFE_DELETE( g_audioState.pPipePost );
+    SAFE_DELETE(g_audioState.pPipePre);
+    SAFE_DELETE(g_audioState.pPipePost);
 
     //
     // Search for media
     //
 
-    WCHAR strFilePath[ MAX_PATH ];
-    WCHAR wavFilePath[ MAX_PATH ];
+    WCHAR strFilePath[MAX_PATH];
+    WCHAR wavFilePath[MAX_PATH];
 
-    wcscpy_s( wavFilePath, MAX_PATH, L"Media\\Wavs\\" );
-    wcscat_s( wavFilePath, MAX_PATH, wavname );
+    wcscpy_s(wavFilePath, MAX_PATH, L"Media\\Wavs\\");
+    wcscat_s(wavFilePath, MAX_PATH, wavname);
 
     HRESULT hr;
 
-    V_RETURN( DXUTFindDXSDKMediaFileCch( strFilePath, MAX_PATH, wavFilePath ) );
+    V_RETURN(DXUTFindDXSDKMediaFileCch(strFilePath, MAX_PATH, wavFilePath));
 
     //
     // Read in the wave file
@@ -119,26 +119,26 @@ HRESULT PrepareAudio( const LPCWSTR wavname )
     const WAVEFORMATEX* pwfx;
     const uint8_t* sampleData;
     uint32_t waveSize;
-    V_RETURN( LoadWAVAudioFromFile( strFilePath, g_audioState.waveData, &pwfx, &sampleData, &waveSize ) );
+    V_RETURN(LoadWAVAudioFromFile(strFilePath, g_audioState.waveData, &pwfx, &sampleData, &waveSize));
 
     //
     // Play the wave using a XAudio2SourceVoice
     //
 
     // Create the source voice
-    assert( g_audioState.pXAudio2 != nullptr );
-    V_RETURN( g_audioState.pXAudio2->CreateSourceVoice( &g_audioState.pSourceVoice, pwfx, 0,
-                                                        XAUDIO2_DEFAULT_FREQ_RATIO, nullptr, nullptr ) );
+    assert(g_audioState.pXAudio2 != nullptr);
+    V_RETURN(g_audioState.pXAudio2->CreateSourceVoice(&g_audioState.pSourceVoice, pwfx, 0,
+        XAUDIO2_DEFAULT_FREQ_RATIO, nullptr, nullptr));
 
     // Create the custom APO instances
     CSimpleAPO* pSimpleAPO = nullptr;
-    CSimpleAPO::CreateInstance( nullptr, 0, &pSimpleAPO );
+    CSimpleAPO::CreateInstance(nullptr, 0, &pSimpleAPO);
 
     CMonitorAPO* pMonitorPre = nullptr;
-    CMonitorAPO::CreateInstance( nullptr, 0, &pMonitorPre );
+    CMonitorAPO::CreateInstance(nullptr, 0, &pMonitorPre);
 
     CMonitorAPO* pMonitorPost = nullptr;
-    CMonitorAPO::CreateInstance( nullptr, 0, &pMonitorPost );
+    CMonitorAPO::CreateInstance(nullptr, 0, &pMonitorPost);
 
     // Create the effect chain
     XAUDIO2_EFFECT_DESCRIPTOR apoDesc[3] = {};
@@ -156,8 +156,8 @@ HRESULT PrepareAudio( const LPCWSTR wavname )
     chain.EffectCount = sizeof(apoDesc) / sizeof(apoDesc[0]);
     chain.pEffectDescriptors = apoDesc;
 
-    assert( g_audioState.pSourceVoice != nullptr );
-    V_RETURN( g_audioState.pSourceVoice->SetEffectChain( &chain ) );
+    assert(g_audioState.pSourceVoice != nullptr);
+    V_RETURN(g_audioState.pSourceVoice->SetEffectChain(&chain));
 
     // Don't need to keep them now that XAudio2 has ownership
     pSimpleAPO->Release();
@@ -171,23 +171,23 @@ HRESULT PrepareAudio( const LPCWSTR wavname )
     buffer.AudioBytes = waveSize;
     buffer.LoopCount = XAUDIO2_LOOP_INFINITE;
 
-    V_RETURN( g_audioState.pSourceVoice->SubmitSourceBuffer( &buffer ) );
+    V_RETURN(g_audioState.pSourceVoice->SubmitSourceBuffer(&buffer));
 
-    V_RETURN( g_audioState.pSourceVoice->Start( 0 ) );
+    V_RETURN(g_audioState.pSourceVoice->Start(0));
 
     // Set the initial effect params
     g_audioState.simpleParams.gain = 1.0f;
-    V_RETURN( g_audioState.pSourceVoice->SetEffectParameters( 1, &g_audioState.simpleParams, sizeof( SimpleAPOParams ) ) );
+    V_RETURN(g_audioState.pSourceVoice->SetEffectParameters(1, &g_audioState.simpleParams, sizeof(SimpleAPOParams)));
 
     g_audioState.pPipePre = new MonitorAPOPipe;
     g_audioState.pPipePost = new MonitorAPOPipe;
 
     MonitorAPOParams mparams;
     mparams.pipe = g_audioState.pPipePre;
-    V_RETURN( g_audioState.pSourceVoice->SetEffectParameters( 0, &mparams, sizeof(mparams) ) );
+    V_RETURN(g_audioState.pSourceVoice->SetEffectParameters(0, &mparams, sizeof(mparams)));
 
     mparams.pipe = g_audioState.pPipePost;
-    V_RETURN( g_audioState.pSourceVoice->SetEffectParameters( 2, &mparams, sizeof(mparams) ) );
+    V_RETURN(g_audioState.pSourceVoice->SetEffectParameters(2, &mparams, sizeof(mparams)));
 
     return S_OK;
 }
@@ -196,27 +196,27 @@ HRESULT PrepareAudio( const LPCWSTR wavname )
 //-----------------------------------------------------------------------------
 // Set simple APO gain
 //-----------------------------------------------------------------------------
-VOID SetSimpleGain( float gain )
+VOID SetSimpleGain(float gain)
 {
-    if( !g_audioState.bInitialized )
+    if (!g_audioState.bInitialized)
         return;
 
     g_audioState.simpleParams.gain = gain;
-    g_audioState.pSourceVoice->SetEffectParameters( 1, &g_audioState.simpleParams, sizeof( SimpleAPOParams ) );
+    g_audioState.pSourceVoice->SetEffectParameters(1, &g_audioState.simpleParams, sizeof(SimpleAPOParams));
 }
 
 
 //-----------------------------------------------------------------------------
 // Pause audio playback
 //-----------------------------------------------------------------------------
-VOID PauseAudio( bool resume )
+VOID PauseAudio(bool resume)
 {
-    if( !g_audioState.bInitialized )
+    if (!g_audioState.bInitialized)
         return;
 
-    assert( g_audioState.pXAudio2 != nullptr );
+    assert(g_audioState.pXAudio2 != nullptr);
 
-    if( resume )
+    if (resume)
         g_audioState.pXAudio2->StartEngine();
     else
         g_audioState.pXAudio2->StopEngine();
@@ -229,30 +229,30 @@ VOID PauseAudio( bool resume )
 //-----------------------------------------------------------------------------
 VOID CleanupAudio()
 {
-    if( !g_audioState.bInitialized )
+    if (!g_audioState.bInitialized)
         return;
 
-    if( g_audioState.pSourceVoice )
+    if (g_audioState.pSourceVoice)
     {
         g_audioState.pSourceVoice->DestroyVoice();
         g_audioState.pSourceVoice = nullptr;
     }
 
-    if( g_audioState.pMasteringVoice )
+    if (g_audioState.pMasteringVoice)
     {
         g_audioState.pMasteringVoice->DestroyVoice();
         g_audioState.pMasteringVoice = nullptr;
     }
 
-    if ( g_audioState.pXAudio2 )
+    if (g_audioState.pXAudio2)
         g_audioState.pXAudio2->StopEngine();
 
     g_audioState.pXAudio2.Reset();
 
     g_audioState.waveData.reset();
 
-    SAFE_DELETE( g_audioState.pPipePre );
-    SAFE_DELETE( g_audioState.pPipePost );
+    SAFE_DELETE(g_audioState.pPipePre);
+    SAFE_DELETE(g_audioState.pPipePost);
 
 #ifdef USING_XAUDIO2_7_DIRECTX
     if (g_audioState.mXAudioDLL)

@@ -16,10 +16,6 @@
 #include <C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Include\xapobase.h>
 #endif
 
-#pragma warning(push)
-#pragma warning(disable : 4481)
-// VS 2010 considers 'override' to be a extension, but it's part of C++11 as of VS 2012
-
 //--------------------------------------------------------------------------------------
 // CSampleXAPOBase
 //
@@ -51,7 +47,7 @@ public:
 
 protected:
     CSampleXAPOBase();
-    ~CSampleXAPOBase(void);
+    ~CSampleXAPOBase() override;
 
     //
     // Accessors
@@ -64,8 +60,8 @@ protected:
     void OnSetParameters (_In_reads_bytes_(cbParams) const void* pParams, UINT32 cbParams) override
     {
         _ASSERT( cbParams == sizeof( ParameterClass ) );
-        cbParams;
-        OnSetParameters( *(ParameterClass*)pParams );
+        UNREFERENCED_PARAMETER(cbParams);
+        OnSetParameters( *reinterpret_cast<const ParameterClass*>(pParams) );
     }
 
     //
@@ -129,7 +125,7 @@ HRESULT CSampleXAPOBase<APOClass, ParameterClass>::CreateInstance( void* pInitDa
     HRESULT hr = S_OK;
 
     *ppAPO = new APOClass;
-    if ( *ppAPO != NULL )
+    if ( *ppAPO != nullptr )
     {
         hr = (*ppAPO)->Initialize( pInitData, cbInitData );
     }
@@ -146,7 +142,7 @@ HRESULT CSampleXAPOBase<APOClass, ParameterClass>::CreateInstance( void* pInitDa
 //--------------------------------------------------------------------------------------
 template<typename APOClass, typename ParameterClass>
 CSampleXAPOBase<APOClass, ParameterClass>::CSampleXAPOBase( )
-: CXAPOParametersBase( &m_regProps, (BYTE*)m_parameters, sizeof( ParameterClass ), FALSE )
+: CXAPOParametersBase( &m_regProps, reinterpret_cast<BYTE*>(m_parameters), sizeof( ParameterClass ), FALSE )
 {
 	ZeroMemory( m_parameters, sizeof( m_parameters ) );
 }
@@ -168,11 +164,11 @@ CSampleXAPOBase<APOClass, ParameterClass>::~CSampleXAPOBase()
 //       we're supposed to be processing
 //--------------------------------------------------------------------------------------
 template<typename APOClass, typename ParameterClass>
-HRESULT CSampleXAPOBase<APOClass, ParameterClass>::LockForProcess(
+STDMETHODIMP CSampleXAPOBase<APOClass, ParameterClass>::LockForProcess(
     UINT32 InputLockedParameterCount,
     const XAPO_LOCKFORPROCESS_BUFFER_PARAMETERS *pInputLockedParameters,
     UINT32 OutputLockedParameterCount,
-    const XAPO_LOCKFORPROCESS_BUFFER_PARAMETERS *pOutputLockedParameters )
+    const XAPO_LOCKFORPROCESS_BUFFER_PARAMETERS *pOutputLockedParameters ) noexcept
 {
     HRESULT hr = CXAPOParametersBase::LockForProcess(
         InputLockedParameterCount,
@@ -198,12 +194,12 @@ HRESULT CSampleXAPOBase<APOClass, ParameterClass>::LockForProcess(
 // Desc: Overridden to call this class's typesafe version
 //--------------------------------------------------------------------------------------
 template<typename APOClass, typename ParameterClass>
-void CSampleXAPOBase<APOClass, ParameterClass>::Process(
+STDMETHODIMP_(void) CSampleXAPOBase<APOClass, ParameterClass>::Process(
     UINT32 InputProcessParameterCount,
     const XAPO_PROCESS_BUFFER_PARAMETERS *pInputProcessParameters,
     UINT32 OutputProcessParameterCount,
     XAPO_PROCESS_BUFFER_PARAMETERS *pOutputProcessParameters,
-    BOOL IsEnabled)
+    BOOL IsEnabled) noexcept
 {
     _ASSERT( IsLocked() );
     _ASSERT( InputProcessParameterCount == 1 );
@@ -217,8 +213,7 @@ void CSampleXAPOBase<APOClass, ParameterClass>::Process(
     UNREFERENCED_PARAMETER( pOutputProcessParameters );
     UNREFERENCED_PARAMETER( IsEnabled );
 
-    ParameterClass* pParams;
-    pParams = (ParameterClass*)BeginProcess();
+    auto pParams = reinterpret_cast<ParameterClass*>(BeginProcess());
     if ( pInputProcessParameters[0].BufferFlags == XAPO_BUFFER_SILENT )
     {
         memset( pInputProcessParameters[0].pBuffer, 0,
@@ -226,7 +221,7 @@ void CSampleXAPOBase<APOClass, ParameterClass>::Process(
 
         DoProcess(
             *pParams,
-            (FLOAT32* __restrict)pInputProcessParameters[0].pBuffer,
+            reinterpret_cast<FLOAT32* __restrict>(pInputProcessParameters[0].pBuffer),
             pInputProcessParameters[0].ValidFrameCount,
             m_wfx.nChannels );
     }
@@ -234,11 +229,9 @@ void CSampleXAPOBase<APOClass, ParameterClass>::Process(
     {
         DoProcess(
             *pParams,
-            (FLOAT32* __restrict)pInputProcessParameters[0].pBuffer,
+            reinterpret_cast<FLOAT32* __restrict>(pInputProcessParameters[0].pBuffer),
             pInputProcessParameters[0].ValidFrameCount,
             m_wfx.nChannels );
     }
     EndProcess();
 }
-
-#pragma warning(pop)

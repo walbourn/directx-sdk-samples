@@ -23,6 +23,14 @@ struct AUDIO_STATE
 {
     bool bInitialized;
 
+    AUDIO_STATE() = default;
+
+    AUDIO_STATE(const AUDIO_STATE&) = delete;
+    AUDIO_STATE& operator=(const AUDIO_STATE&) = delete;
+
+    AUDIO_STATE(AUDIO_STATE&&) = default;
+    AUDIO_STATE& operator=(AUDIO_STATE&&) = default;
+
     // XAudio2
 #ifdef USING_XAUDIO2_7_DIRECTX
     HMODULE mXAudioDLL;
