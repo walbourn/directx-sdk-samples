@@ -87,11 +87,6 @@ jobs:
     displayName: GCC version
     inputs:
       script: g++ --version
-  - task: BatchScript@1
-    displayName: CompileShaders
-    inputs:
-      filename: Src/Shaders/CompileShaders.cmd
-      workingFolder: $(Build.SourcesDirectory)\Src\Shaders
   - task: CmdLine@2
     # Waiting for XAudio 1.2.11 port update before using xaudio2redist
     displayName: VCPKG install headers
@@ -174,11 +169,6 @@ jobs:
         }
 
       workingDirectory: $(Build.SourcesDirectory)
-  - task: BatchScript@1
-    displayName: CompileShaders
-    inputs:
-      filename: Src/Shaders/CompileShaders.cmd
-      workingFolder: $(Build.SourcesDirectory)\Src\Shaders
   - task: CmdLine@2
     displayName: GCC version
     inputs:
