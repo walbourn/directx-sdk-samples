@@ -29,7 +29,7 @@ variables:
   VCPKG_CMAKE_DIR: '$(VCPKG_ROOT)/scripts/buildsystems/vcpkg.cmake'
   GITHUB_PAT: $(GITHUBPUBLICTOKEN)
   VS_GENERATOR: 'Visual Studio 16 2019'
-  REDIST_DIR: $(xaudio2redist_DIR)
+  WIN10_SDK: '10.0.19041.0'
 
 pool:
   vmImage: windows-2019
@@ -78,7 +78,7 @@ jobs:
     displayName: 'CMake (MSVC): Config x64'
     inputs:
       cwd: '$(Build.SourcesDirectory)'
-      cmakeArgs: '-G "$(VS_GENERATOR)" -A x64 -B out -DCMAKE_TOOLCHAIN_FILE="$(VCPKG_CMAKE_DIR)"'
+      cmakeArgs: '-G "$(VS_GENERATOR)" -A x64 -B out -DCMAKE_SYSTEM_VERSION=$(WIN10_SDK) -DCMAKE_TOOLCHAIN_FILE="$(VCPKG_CMAKE_DIR)"'
   - task: CMake@1
     displayName: 'CMake (MSVC): Build x64 Debug'
     inputs:
@@ -89,6 +89,21 @@ jobs:
     inputs:
       cwd: '$(Build.SourcesDirectory)'
       cmakeArgs: --build out -v --config RelWithDebInfo
+  - task: CMake@1
+    displayName: 'CMake (ClangCl): Config x64'
+    inputs:
+      cwd: '$(Build.SourcesDirectory)'
+      cmakeArgs: '-G "$(VS_GENERATOR)" -A x64 -T clangcl -B out2 -DCMAKE_SYSTEM_VERSION=$(WIN10_SDK) -DCMAKE_TOOLCHAIN_FILE="$(VCPKG_CMAKE_DIR)"'
+  - task: CMake@1
+    displayName: 'CMake (ClangCl): Build x64 Debug'
+    inputs:
+      cwd: '$(Build.SourcesDirectory)'
+      cmakeArgs: --build out2 -v --config Debug
+  - task: CMake@1
+    displayName: 'CMake (ClangCl): Build x64 Release'
+    inputs:
+      cwd: '$(Build.SourcesDirectory)'
+      cmakeArgs: --build out2 -v --config RelWithDebInfo
 
 - job: CMAKE_BUILD_X86
   displayName: CMake using VS Generator (x86)
@@ -113,7 +128,7 @@ jobs:
     displayName: VCPKG install headers
     inputs:
       script: |
-        call vcpkg install directxmath:
+        call vcpkg install directxmath
         @if ERRORLEVEL 1 goto error
         call vcpkg install dxut
         @if ERRORLEVEL 1 goto error
@@ -133,7 +148,7 @@ jobs:
     displayName: 'CMake (MSVC): Config x86'
     inputs:
       cwd: '$(Build.SourcesDirectory)'
-      cmakeArgs: '-G "$(VS_GENERATOR)" -A Win32 -B out -DCMAKE_TOOLCHAIN_FILE="$(VCPKG_CMAKE_DIR)"'
+      cmakeArgs: '-G "$(VS_GENERATOR)" -A Win32 -B out -DCMAKE_SYSTEM_VERSION=$(WIN10_SDK) -DCMAKE_TOOLCHAIN_FILE="$(VCPKG_CMAKE_DIR)"'
   - task: CMake@1
     displayName: 'CMake (MSVC): Build x86 Debug'
     inputs:
