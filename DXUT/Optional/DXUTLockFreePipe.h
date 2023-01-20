@@ -21,9 +21,10 @@
 #include <windows.h>
 #pragma pack (pop)
 
-extern "C"
-    void _ReadWriteBarrier();
+#ifdef _MSC_VER
+extern "C" void _ReadWriteBarrier();
 #pragma intrinsic(_ReadWriteBarrier)
+#endif
 
 // Prevent the compiler from rearranging loads
 // and stores, sufficiently for read-acquire

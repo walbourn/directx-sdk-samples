@@ -58,9 +58,17 @@ HRESULT WINAPI DXTraceW( _In_z_ const WCHAR* strFile, _In_ DWORD dwLine, _In_ HR
 //
 //--------------------------------------------------------------------------------------
 #if defined(DEBUG) || defined(_DEBUG)
+#ifdef _MSC_VER
 #define DXTRACE_MSG(str)              DXTrace( __FILEW__, (DWORD)__LINE__, 0, str, false )
 #define DXTRACE_ERR(str,hr)           DXTrace( __FILEW__, (DWORD)__LINE__, hr, str, false )
 #define DXTRACE_ERR_MSGBOX(str,hr)    DXTrace( __FILEW__, (DWORD)__LINE__, hr, str, true )
+#else
+#define DXUT_PASTE(x, y) x##y
+#define DXUT_MAKEWIDE(x) DXUT_PASTE(L,x)
+#define DXTRACE_MSG(str)              DXTrace( DXUT_MAKEWIDE(__FILE__), (DWORD)__LINE__, 0, str, false )
+#define DXTRACE_ERR(str,hr)           DXTrace( DXUT_MAKEWIDE(__FILE__), (DWORD)__LINE__, hr, str, false )
+#define DXTRACE_ERR_MSGBOX(str,hr)    DXTrace( DXUT_MAKEWIDE(__FILE__), (DWORD)__LINE__, hr, str, true )
+#endif
 #else
 #define DXTRACE_MSG(str)              (0L)
 #define DXTRACE_ERR(str,hr)           (hr)

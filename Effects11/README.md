@@ -6,7 +6,7 @@ http://go.microsoft.com/fwlink/?LinkId=271568
 
 Copyright (c) Microsoft Corporation. All rights reserved.
 
-**August 17, 2022**
+**December 10, 2022**
 
 Effects for Direct3D 11 (FX11) is a management runtime for authoring HLSL shaders, render state, and runtime variables together.
 
@@ -37,6 +37,10 @@ Documentation is available on the [GitHub wiki](https://github.com/Microsoft/FX1
 ## Notices
 
 All content and source code for this package are subject to the terms of the [MIT License](https://github.com/microsoft/FX11/blob/main/LICENSE).
+
+## Release Notes
+
+* The library can be built with Visual C++ or with clang/LLVM for Windows. The code is not conformant enough to support the GNUC (MinGW) compiler.
 
 ## Support
 
