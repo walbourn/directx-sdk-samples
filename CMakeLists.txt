@@ -27,10 +27,10 @@ add_subdirectory(Direct3D11TutorialsDXUT/Tutorial08)
 add_subdirectory(Direct3D11TutorialsDXUT/Tutorial09)
 add_subdirectory(Direct3D11TutorialsDXUT/Tutorial10)
 
-add_subdirectory(XAudio2/XAudio2AsyncStream)
-add_subdirectory(XAudio2/XAudio2BasicSound)
-
 if(NOT MINGW)
+  add_subdirectory(XAudio2/XAudio2AsyncStream)
+  add_subdirectory(XAudio2/XAudio2BasicSound)
+
   add_subdirectory(BasicHLSLFX11)
 
   add_subdirectory(Direct3D11TutorialsFX11/Tutorial11)
