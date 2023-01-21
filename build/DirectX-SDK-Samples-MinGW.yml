@@ -108,7 +108,7 @@ jobs:
     displayName: CMake (MinGW32)
     inputs:
       cwd: '$(Build.SourcesDirectory)'
-      cmakeArgs: -B out -DCMAKE_BUILD_TYPE="Debug" -DCMAKE_TOOLCHAIN_FILE="$(VCPKG_CMAKE_DIR)" -DCMAKE_CXX_COMPILER="g++.exe" -G "MinGW Makefiles" -DVCPKG_TARGET_TRIPLET=x86-mingw-static
+      cmakeArgs: -B out -DCMAKE_BUILD_TYPE="Debug" -DDIRECTX_ARCH=x86 -DCMAKE_TOOLCHAIN_FILE="$(VCPKG_CMAKE_DIR)" -DCMAKE_CXX_COMPILER="g++.exe" -G "MinGW Makefiles" -DVCPKG_TARGET_TRIPLET=x86-mingw-static
   - task: CMake@1
     displayName: CMake (MinGW32) Build
     inputs:
@@ -193,7 +193,7 @@ jobs:
     displayName: CMake (MinGW-W64)
     inputs:
       cwd: '$(Build.SourcesDirectory)'
-      cmakeArgs: -B out -DCMAKE_BUILD_TYPE="Debug" -DCMAKE_TOOLCHAIN_FILE="$(VCPKG_CMAKE_DIR)" -DCMAKE_CXX_COMPILER="g++.exe" -G "MinGW Makefiles" -DVCPKG_TARGET_TRIPLET=x64-mingw-static
+      cmakeArgs: -B out -DCMAKE_BUILD_TYPE="Debug" -DDIRECTX_ARCH=x64 -DCMAKE_TOOLCHAIN_FILE="$(VCPKG_CMAKE_DIR)" -DCMAKE_CXX_COMPILER="g++.exe" -G "MinGW Makefiles" -DVCPKG_TARGET_TRIPLET=x64-mingw-static
   - task: CMake@1
     displayName: CMake (MinGW-W64) Build
     inputs:
