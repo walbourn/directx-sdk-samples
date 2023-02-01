@@ -36,30 +36,18 @@ namespace DirectX
     };
 #endif
 
-#ifndef DDS_LOADER_FLAGS_DEFINED
-#define DDS_LOADER_FLAGS_DEFINED
-
-    enum DDS_LOADER_FLAGS : uint32_t
+    inline namespace DX11
     {
-        DDS_LOADER_DEFAULT = 0,
-        DDS_LOADER_FORCE_SRGB = 0x1,
-        DDS_LOADER_IGNORE_SRGB = 0x2,
-    };
-
-#ifdef __clang__
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-dynamic-exception-spec"
-#endif
-
-    DEFINE_ENUM_FLAG_OPERATORS(DDS_LOADER_FLAGS);
-
-#ifdef __clang__
-#pragma clang diagnostic pop
-#endif
-#endif
+        enum DDS_LOADER_FLAGS : uint32_t
+        {
+            DDS_LOADER_DEFAULT = 0,
+            DDS_LOADER_FORCE_SRGB = 0x1,
+            DDS_LOADER_IGNORE_SRGB = 0x2,
+        };
+    }
 
     // Standard version
-    HRESULT CreateDDSTextureFromMemory(
+    HRESULT __cdecl CreateDDSTextureFromMemory(
         _In_ ID3D11Device* d3dDevice,
         _In_reads_bytes_(ddsDataSize) const uint8_t* ddsData,
         _In_ size_t ddsDataSize,
@@ -68,7 +56,7 @@ namespace DirectX
         _In_ size_t maxsize = 0,
         _Out_opt_ DDS_ALPHA_MODE* alphaMode = nullptr) noexcept;
 
-    HRESULT CreateDDSTextureFromFile(
+    HRESULT __cdecl CreateDDSTextureFromFile(
         _In_ ID3D11Device* d3dDevice,
         _In_z_ const wchar_t* szFileName,
         _Outptr_opt_ ID3D11Resource** texture,
@@ -77,7 +65,7 @@ namespace DirectX
         _Out_opt_ DDS_ALPHA_MODE* alphaMode = nullptr) noexcept;
 
     // Standard version with optional auto-gen mipmap support
-    HRESULT CreateDDSTextureFromMemory(
+    HRESULT __cdecl CreateDDSTextureFromMemory(
         _In_ ID3D11Device* d3dDevice,
         _In_opt_ ID3D11DeviceContext* d3dContext,
         _In_reads_bytes_(ddsDataSize) const uint8_t* ddsData,
@@ -87,7 +75,7 @@ namespace DirectX
         _In_ size_t maxsize = 0,
         _Out_opt_ DDS_ALPHA_MODE* alphaMode = nullptr) noexcept;
 
-    HRESULT CreateDDSTextureFromFile(
+    HRESULT __cdecl CreateDDSTextureFromFile(
         _In_ ID3D11Device* d3dDevice,
         _In_opt_ ID3D11DeviceContext* d3dContext,
         _In_z_ const wchar_t* szFileName,
@@ -97,7 +85,7 @@ namespace DirectX
         _Out_opt_ DDS_ALPHA_MODE* alphaMode = nullptr) noexcept;
 
     // Extended version
-    HRESULT CreateDDSTextureFromMemoryEx(
+    HRESULT __cdecl CreateDDSTextureFromMemoryEx(
         _In_ ID3D11Device* d3dDevice,
         _In_reads_bytes_(ddsDataSize) const uint8_t* ddsData,
         _In_ size_t ddsDataSize,
@@ -111,7 +99,7 @@ namespace DirectX
         _Outptr_opt_ ID3D11ShaderResourceView** textureView,
         _Out_opt_ DDS_ALPHA_MODE* alphaMode = nullptr) noexcept;
 
-    HRESULT CreateDDSTextureFromFileEx(
+    HRESULT __cdecl CreateDDSTextureFromFileEx(
         _In_ ID3D11Device* d3dDevice,
         _In_z_ const wchar_t* szFileName,
         _In_ size_t maxsize,
@@ -125,7 +113,7 @@ namespace DirectX
         _Out_opt_ DDS_ALPHA_MODE* alphaMode = nullptr) noexcept;
 
     // Extended version with optional auto-gen mipmap support
-    HRESULT CreateDDSTextureFromMemoryEx(
+    HRESULT __cdecl CreateDDSTextureFromMemoryEx(
         _In_ ID3D11Device* d3dDevice,
         _In_opt_ ID3D11DeviceContext* d3dContext,
         _In_reads_bytes_(ddsDataSize) const uint8_t* ddsData,
@@ -140,7 +128,7 @@ namespace DirectX
         _Outptr_opt_ ID3D11ShaderResourceView** textureView,
         _Out_opt_ DDS_ALPHA_MODE* alphaMode = nullptr) noexcept;
 
-    HRESULT CreateDDSTextureFromFileEx(
+    HRESULT __cdecl CreateDDSTextureFromFileEx(
         _In_ ID3D11Device* d3dDevice,
         _In_opt_ ID3D11DeviceContext* d3dContext,
         _In_z_ const wchar_t* szFileName,
@@ -153,4 +141,18 @@ namespace DirectX
         _Outptr_opt_ ID3D11Resource** texture,
         _Outptr_opt_ ID3D11ShaderResourceView** textureView,
         _Out_opt_ DDS_ALPHA_MODE* alphaMode = nullptr) noexcept;
+
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-dynamic-exception-spec"
+#endif
+
+    inline namespace DX11
+    {
+        DEFINE_ENUM_FLAG_OPERATORS(DDS_LOADER_FLAGS);
+    }
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
 }
