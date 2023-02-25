@@ -103,6 +103,10 @@ elseif ( CMAKE_CXX_COMPILER_ID MATCHES "MSVC" )
     if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 19.34)
         target_compile_options(${PROJECT_NAME} PRIVATE /wd5262 /wd5264)
     endif()
+
+    if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 19.35)
+        target_compile_options(${PROJECT_NAME} PRIVATE /Zc:templateScope)
+    endif()
 endif()
 
 if(WIN32)
