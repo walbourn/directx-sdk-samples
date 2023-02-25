@@ -27,10 +27,11 @@ add_subdirectory(Direct3D11TutorialsDXUT/Tutorial08)
 add_subdirectory(Direct3D11TutorialsDXUT/Tutorial09)
 add_subdirectory(Direct3D11TutorialsDXUT/Tutorial10)
 
-if(NOT MINGW)
-  add_subdirectory(XAudio2/XAudio2AsyncStream)
-  add_subdirectory(XAudio2/XAudio2BasicSound)
+add_subdirectory(XAudio2/XAudio2AsyncStream)
+add_subdirectory(XAudio2/XAudio2BasicSound)
 
+if(NOT MINGW)
+  # Effects for Direct3D 11 is not compatible with MinGW
   add_subdirectory(BasicHLSLFX11)
 
   add_subdirectory(Direct3D11TutorialsFX11/Tutorial11)
@@ -38,5 +39,6 @@ if(NOT MINGW)
   add_subdirectory(Direct3D11TutorialsFX11/Tutorial13)
   add_subdirectory(Direct3D11TutorialsFX11/Tutorial14)
 
+  # xapobase.lib is not compatible with MinGW
   add_subdirectory(XAudio2/XAudio2CustomAPO)
 endif()
