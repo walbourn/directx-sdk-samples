@@ -397,7 +397,7 @@ STDAPI DoUpdateForDirect3D11( DWORD dwFlags, D3D11UPDATEPROGRESSCB pfnProgress,
 
         ISearchResult* pWUResult = NULL;
         ISearchJob* pJob = NULL;
-        VARIANT pVar = { 0 };
+        VARIANT pVar = {};
         ISCC completeCB( pfnProgress, pContext );
         hr = pWUSearcher->BeginSearch( bstrCriteria, &completeCB, pVar, &pJob );
 
@@ -509,7 +509,7 @@ STDAPI DoUpdateForDirect3D11( DWORD dwFlags, D3D11UPDATEPROGRESSCB pfnProgress,
             {
                 IDownloadResult *pWUResult = NULL;
                 IDownloadJob* pJob = NULL;
-                VARIANT pVar = { 0 };
+                VARIANT pVar = {};
                 IDPC progressCB( pfnProgress, pContext );
                 IDCC completeCB( pfnProgress, pContext );
                 hr = pWUDownloader->BeginDownload( &progressCB, &completeCB, pVar, &pJob );
@@ -584,7 +584,7 @@ STDAPI DoUpdateForDirect3D11( DWORD dwFlags, D3D11UPDATEPROGRESSCB pfnProgress,
     
                 IInstallationResult *pWUResult = NULL;
                 IInstallationJob* pJob = NULL;
-                VARIANT pVar = { 0 };
+                VARIANT pVar = {};
                 IIPC progressCB( pfnProgress, pContext );
                 IICC completeCB( pfnProgress, pContext );
                 hr = pWUInstaller->BeginInstall( &progressCB, &completeCB, pVar, &pJob );

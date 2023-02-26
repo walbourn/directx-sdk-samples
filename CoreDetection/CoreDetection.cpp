@@ -168,7 +168,7 @@ int wmain()
                                         &dwSystemAffinity ) )
             {
                 // Get the number of logical processors on the system.
-                SYSTEM_INFO si = { 0 };
+                SYSTEM_INFO si = {};
                 GetSystemInfo( &si );
                 DWORD dwLogProcs = si.dwNumberOfProcessors;
 

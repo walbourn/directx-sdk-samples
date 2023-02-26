@@ -10,6 +10,7 @@ project(DirctX-SDK-Samples
 add_subdirectory(AdaptiveTessellationCS40)
 add_subdirectory(BasicCompute11)
 add_subdirectory(BasicHLSL11)
+add_subdirectory(CascadedShadowMaps11)
 add_subdirectory(ComputeShaderSort11)
 add_subdirectory(EmptyProject11)
 add_subdirectory(SimpleBezier11)

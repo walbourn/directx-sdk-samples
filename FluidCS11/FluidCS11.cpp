@@ -188,7 +188,7 @@ ID3D11UnorderedAccessView*          g_pGridIndicesUAV = nullptr;
 // Constant Buffer Layout
 #pragma warning(push)
 #pragma warning(disable:4324) // structure was padded due to __declspec(align())
-__declspec(align(16)) struct CBSimulationConstants
+XM_ALIGNED_STRUCT(16) CBSimulationConstants
 {
     UINT iNumParticles;
     FLOAT fTimeStep;
@@ -206,13 +206,13 @@ __declspec(align(16)) struct CBSimulationConstants
     XMFLOAT3A vPlanes[4];
 };
 
-__declspec(align(16)) struct CBRenderConstants
+XM_ALIGNED_STRUCT(16) CBRenderConstants
 {
     XMFLOAT4X4 mViewProjection;
     FLOAT fParticleSize;
 };
 
-__declspec(align(16)) struct SortCB
+XM_ALIGNED_STRUCT(16) SortCB
 {
     UINT iLevel;
     UINT iLevelMask;

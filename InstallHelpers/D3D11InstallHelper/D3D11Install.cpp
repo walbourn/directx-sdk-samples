@@ -71,7 +71,7 @@ static HWND LocCreateDialog( UINT uId, DLGPROC lpDialogFunc );
 
 //-----------------------------------------------------------------------------
 HINSTANCE g_hInstance;
-WCHAR g_appName[ 64 ] = { 0 };
+WCHAR g_appName[ 64 ] = {};
 WORD g_langId = 1024; // MAKELANGID( LANG_NEUTRAL, SUBLANG_DEFAULT )
 
 //-----------------------------------------------------------------------------

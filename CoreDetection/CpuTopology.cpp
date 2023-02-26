@@ -728,7 +728,7 @@ public:
         DWORD_PTR dwProcessAffinity, dwSystemAffinity;
         GetProcessAffinityMask( GetCurrentProcess(), &dwProcessAffinity, &dwSystemAffinity );
 
-        BYTE pkgCoreIds[MaxLogicalProcessors] = { 0 };
+        BYTE pkgCoreIds[MaxLogicalProcessors] = {};
         DWORD nPkgCoreIds = 0;
 
         for( DWORD i = 0; i < m_nItems; ++i )
@@ -747,7 +747,7 @@ public:
     //-----------------------------------------------------------------------------
     /*virtual*/ DWORD       NumberOfSystemCores() const override
     {
-        BYTE pkgCoreIds[MaxLogicalProcessors] = { 0 };
+        BYTE pkgCoreIds[MaxLogicalProcessors] = {};
         DWORD nPkgCoreIds = 0;
         for( DWORD i = 0; i < m_nItems; ++i )
         {
@@ -764,7 +764,7 @@ public:
     //-----------------------------------------------------------------------------
     /*virtual*/ DWORD_PTR   CoreAffinityMask( DWORD coreIdx ) const override
     {
-        BYTE pkgCoreIds[MaxLogicalProcessors] = { 0 };
+        BYTE pkgCoreIds[MaxLogicalProcessors] = {};
         DWORD nPkgCoreIds = 0;
         for( DWORD i = 0; i < m_nItems; ++i )
         {

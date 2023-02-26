@@ -8,13 +8,13 @@
 //--------------------------------------------------------------------------------------
 #pragma once
 
-#include <D3DCompiler.h>
+#include <d3dcompiler.h>
 #include <DirectXMath.h>
 
 #define MAX_CASCADES 8
 
 // Used to do selection of the shadow buffer format.
-enum SHADOW_TEXTURE_FORMAT 
+enum SHADOW_TEXTURE_FORMAT
 {
     CASCADE_DXGI_FORMAT_R32_TYPELESS,
     CASCADE_DXGI_FORMAT_R24G8_TYPELESS,
@@ -22,19 +22,19 @@ enum SHADOW_TEXTURE_FORMAT
     CASCADE_DXGI_FORMAT_R8_TYPELESS
 };
 
-enum SCENE_SELECTION 
+enum SCENE_SELECTION
 {
     POWER_PLANT_SCENE,
     TEST_SCENE
 };
 
-enum FIT_PROJECTION_TO_CASCADES 
+enum FIT_PROJECTION_TO_CASCADES
 {
     FIT_TO_CASCADES,
     FIT_TO_SCENE
 };
 
-enum FIT_TO_NEAR_FAR 
+enum FIT_TO_NEAR_FAR
 {
     FIT_NEARFAR_PANCAKING,
     FIT_NEARFAR_ZERO_ONE,
@@ -42,13 +42,13 @@ enum FIT_TO_NEAR_FAR
     FIT_NEARFAR_SCENE_AABB
 };
 
-enum CASCADE_SELECTION 
+enum CASCADE_SELECTION
 {
     CASCADE_SELECTION_MAP,
     CASCADE_SELECTION_INTERVAL
 };
 
-enum CAMERA_SELECTION 
+enum CAMERA_SELECTION
 {
     EYE_CAMERA,
     LIGHT_CAMERA,
@@ -62,7 +62,7 @@ enum CAMERA_SELECTION
     ORTHO_CAMERA8
 };
 // when these paramters change, we must reallocate the shadow resources.
-struct CascadeConfig 
+struct CascadeConfig
 {
     INT m_nCascadeLevels;
     SHADOW_TEXTURE_FORMAT m_ShadowBufferFormat;
@@ -86,17 +86,17 @@ struct CB_ALL_SHADOW_DATA
 
     // For Map based selection scheme, this keeps the pixels inside of the the valid range.
     // When there is no boarder, these values are 0 and 1 respectivley.
-    FLOAT       m_fMinBorderPadding;     
+    FLOAT       m_fMinBorderPadding;
     FLOAT       m_fMaxBorderPadding;
-    FLOAT       m_fShadowBiasFromGUI;  // A shadow map offset to deal with self shadow artifacts.  
+    FLOAT       m_fShadowBiasFromGUI;  // A shadow map offset to deal with self shadow artifacts.
                                         //These artifacts are aggravated by PCF.
-    FLOAT       m_fShadowPartitionSize; 
+    FLOAT       m_fShadowPartitionSize;
     FLOAT       m_fCascadeBlendArea; // Amount to overlap when blending between cascades.
     FLOAT       m_fTexelSize; // Shadow map texel size.
     FLOAT       m_fNativeTexelSizeInX; // Texel size in native map ( textures are packed ).
     FLOAT       m_fPaddingForCB3;// Padding variables CBs must be a multiple of 16 bytes.
     FLOAT       m_fCascadeFrustumsEyeSpaceDepths[8]; // The values along Z that seperate the cascades.
-    DirectX::XMFLOAT4 m_fCascadeFrustumsEyeSpaceDepthsFloat4[8];// the values along Z that separte the cascades.  
+    DirectX::XMFLOAT4 m_fCascadeFrustumsEyeSpaceDepthsFloat4[8];// the values along Z that separte the cascades.
                                                           // Wastefully stored in float4 so they are array indexable :(
     DirectX::XMFLOAT4 m_vLightDir;
 };

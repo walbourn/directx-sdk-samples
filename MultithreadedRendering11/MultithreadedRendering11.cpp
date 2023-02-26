@@ -277,7 +277,7 @@ ID3D11DepthStencilState*    g_pDepthStencilStateNoStencil = nullptr;
 ID3D11Texture2D*            g_pShadowTexture[g_iNumShadows] = { nullptr };
 ID3D11ShaderResourceView*   g_pShadowResourceView[g_iNumShadows] = { nullptr };
 ID3D11DepthStencilView*     g_pShadowDepthStencilView[g_iNumShadows] = { nullptr };
-D3D11_VIEWPORT              g_ShadowViewport[g_iNumShadows] = { 0 };
+D3D11_VIEWPORT              g_ShadowViewport[g_iNumShadows] = {};
 FLOAT                       g_fShadowResolutionX[g_iNumShadows];
 FLOAT                       g_fShadowResolutionY[g_iNumShadows];
 

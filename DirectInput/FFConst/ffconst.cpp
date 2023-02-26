@@ -251,7 +251,7 @@ HRESULT InitDirectInput(HWND hDlg) noexcept
     // This application needs only one effect: Applying raw forces.
     DWORD rgdwAxes[2] = { DIJOFS_X, DIJOFS_Y };
     LONG rglDirection[2] = { 0, 0 };
-    DICONSTANTFORCE cf = { 0 };
+    DICONSTANTFORCE cf = {};
 
     DIEFFECT eff = {};
     eff.dwSize = sizeof(DIEFFECT);
