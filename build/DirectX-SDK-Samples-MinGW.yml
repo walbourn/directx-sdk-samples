@@ -96,6 +96,10 @@ jobs:
         @if ERRORLEVEL 1 goto error
         call vcpkg install dxut
         @if ERRORLEVEL 1 goto error
+        call vcpkg install directxtk
+        @if ERRORLEVEL 1 goto error
+        call vcpkg install xaudio2redist
+        @if ERRORLEVEL 1 goto error
         :finish
         @echo --- VCPKG COMPLETE ---
         exit /b 0
@@ -180,6 +184,10 @@ jobs:
         call vcpkg install directxmath
         @if ERRORLEVEL 1 goto error
         call vcpkg install dxut
+        @if ERRORLEVEL 1 goto error
+        call vcpkg install directxtk
+        @if ERRORLEVEL 1 goto error
+        call vcpkg install xaudio2redist
         @if ERRORLEVEL 1 goto error
         :finish
         @echo --- VCPKG COMPLETE ---

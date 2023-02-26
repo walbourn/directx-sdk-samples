@@ -64,6 +64,8 @@ jobs:
         @if ERRORLEVEL 1 goto error
         call vcpkg install effects11
         @if ERRORLEVEL 1 goto error
+        call vcpkg install directxtk
+        @if ERRORLEVEL 1 goto error
         call vcpkg install xaudio2redist
         @if ERRORLEVEL 1 goto error
         :finish
@@ -133,6 +135,8 @@ jobs:
         call vcpkg install dxut
         @if ERRORLEVEL 1 goto error
         call vcpkg install effects11
+        @if ERRORLEVEL 1 goto error
+        call vcpkg install directxtk
         @if ERRORLEVEL 1 goto error
         call vcpkg install xaudio2redist
         @if ERRORLEVEL 1 goto error

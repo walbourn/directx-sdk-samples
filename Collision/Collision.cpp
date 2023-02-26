@@ -10,8 +10,8 @@
 #include "DXUT.h"
 #include "DXUTgui.h"
 #include "DXUTmisc.h"
-#include "DXUTCamera.h"
-#include "DXUTSettingsDlg.h"
+#include "DXUTcamera.h"
+#include "DXUTsettingsdlg.h"
 #include "SDKmisc.h"
 #include "resource.h"
 
@@ -176,8 +176,9 @@ int WINAPI wWinMain( _In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
     // as early in the program as possible
     if ( !XMVerifyCPUSupport() )
     {
-        MessageBox( NULL, TEXT("This application requires the processor support SSE2 instructions."),
-                    TEXT("Collision"), MB_OK | MB_ICONEXCLAMATION);
+        std::ignore = MessageBoxW( nullptr,
+            L"This application requires the processor support SSE2 instructions.",
+            L"Collision", MB_OK | MB_ICONEXCLAMATION);
         return -1;
     }
 
@@ -324,7 +325,7 @@ void InitializeObjects()
 //--------------------------------------------------------------------------------------
 void Animate( double fTime )
 {
-    float t = ( FLOAT )(fTime * 0.2);
+    auto t = static_cast<float>(fTime * 0.2);
 
     const float camera0OriginX = XMVectorGetX( g_CameraOrigins[0] );
     const float camera1OriginX = XMVectorGetX( g_CameraOrigins[1] );
@@ -552,7 +553,6 @@ inline XMVECTOR GetCollisionColor( ContainmentType collision, int groupnumber )
     {
     case DISJOINT:      return Colors::Green;
     case INTERSECTS:    return Colors::Yellow;
-    case CONTAINS:
     default:            return Colors::Red;
     }
 }
@@ -566,11 +566,11 @@ void RenderObjects()
     // Draw ground planes
     for( int i = 0; i < CAMERA_COUNT; ++i )
     {
-        static const XMVECTORF32 s_vXAxis = { 20.f, 0.f, 0.f, 0.f };
-        static const XMVECTORF32 s_vYAxis = { 0.f, 0.f, 20.f, 0.f };
+        static const XMVECTORF32 s_vXAxis = { { { 20.f, 0.f, 0.f, 0.f } } };
+        static const XMVECTORF32 s_vYAxis = { { { 0.f, 0.f, 20.f, 0.f } } };
 
-        static const XMVECTORF32 s_Offset = { 0.f, 10.f, 0.f, 0.f };
-        XMVECTOR vOrigin = g_CameraOrigins[i] - s_Offset;
+        static const XMVECTORF32 s_Offset = { { { 0.f, 10.f, 0.f, 0.f } } };
+        XMVECTOR vOrigin = XMVectorSubtract(g_CameraOrigins[i], s_Offset.v);
 
         const int iXDivisions = 20;
         const int iYDivisions = 20;
@@ -623,9 +623,9 @@ void SetViewForGroup( int group )
 
     g_Camera.Reset();
 
-    static const XMVECTORF32 s_Offset0 = { 0.f, 20.f, 20.f, 0.f };
-    static const XMVECTORF32 s_Offset = { 0.f, 20.f, -20.f, 0.f };
-    XMVECTOR vecEye = g_CameraOrigins[group] + ( ( group == 0 ) ? s_Offset0 : s_Offset );
+    static const XMVECTORF32 s_Offset0 = { { { 0.f, 20.f, 20.f, 0.f } } };
+    static const XMVECTORF32 s_Offset = { { { 0.f, 20.f, -20.f, 0.f } } };
+    XMVECTOR vecEye = XMVectorAdd(g_CameraOrigins[group], ( group == 0 ) ? s_Offset0 : s_Offset);
 
     g_Camera.SetViewParams( vecEye, g_CameraOrigins[group] );
 
@@ -805,32 +805,31 @@ void DrawObb( const BoundingOrientedBox& obb, FXMVECTOR color )
 //--------------------------------------------------------------------------------------
 void DrawRing( FXMVECTOR Origin, FXMVECTOR MajorAxis, FXMVECTOR MinorAxis, CXMVECTOR color )
 {
-    static const DWORD dwRingSegments = 32;
+    constexpr DWORD dwRingSegments = 32;
 
     VertexPositionColor verts[ dwRingSegments + 1 ];
 
-    FLOAT fAngleDelta = XM_2PI / ( float )dwRingSegments;
+    constexpr float fAngleDelta = XM_2PI / float(dwRingSegments);
     // Instead of calling cos/sin for each segment we calculate
     // the sign of the angle delta and then incrementally calculate sin
     // and cosine from then on.
     XMVECTOR cosDelta = XMVectorReplicate( cosf( fAngleDelta ) );
     XMVECTOR sinDelta = XMVectorReplicate( sinf( fAngleDelta ) );
     XMVECTOR incrementalSin = XMVectorZero();
-    static const XMVECTOR initialCos =
+    static const XMVECTORF32 initialCos =
     {
-        1.0f, 1.0f, 1.0f, 1.0f
+        { { 1.0f, 1.0f, 1.0f, 1.0f } }
     };
-    XMVECTOR incrementalCos = initialCos;
+    XMVECTOR incrementalCos = initialCos.v;
     for( DWORD i = 0; i < dwRingSegments; i++ )
     {
-        XMVECTOR Pos;
-        Pos = XMVectorMultiplyAdd( MajorAxis, incrementalCos, Origin );
-        Pos = XMVectorMultiplyAdd( MinorAxis, incrementalSin, Pos );
-        XMStoreFloat3( &verts[i].position, Pos );
-        XMStoreFloat4( &verts[i].color, color );
+        XMVECTOR pos = XMVectorMultiplyAdd(MajorAxis, incrementalCos, Origin);
+        pos = XMVectorMultiplyAdd(MinorAxis, incrementalSin, pos);
+        XMStoreFloat3(&verts[i].position, pos);
+        XMStoreFloat4(&verts[i].color, color);
         // Standard formula to rotate a vector.
-        XMVECTOR newCos = incrementalCos * cosDelta - incrementalSin * sinDelta;
-        XMVECTOR newSin = incrementalCos * sinDelta + incrementalSin * cosDelta;
+        const XMVECTOR newCos = XMVectorSubtract(XMVectorMultiply(incrementalCos, cosDelta), XMVectorMultiply(incrementalSin, sinDelta));
+        const XMVECTOR newSin = XMVectorAdd(XMVectorMultiply(incrementalCos, sinDelta), XMVectorMultiply(incrementalSin, cosDelta));
         incrementalCos = newCos;
         incrementalSin = newSin;
     }
@@ -857,9 +856,9 @@ void DrawSphere( const BoundingSphere& sphere, FXMVECTOR color )
 
     const float fRadius = sphere.Radius;
 
-    XMVECTOR xaxis = g_XMIdentityR0 * fRadius;
-    XMVECTOR yaxis = g_XMIdentityR1 * fRadius;
-    XMVECTOR zaxis = g_XMIdentityR2 * fRadius;
+    const XMVECTOR xaxis = XMVectorScale(g_XMIdentityR0, fRadius);
+    const XMVECTOR yaxis = XMVectorScale(g_XMIdentityR1, fRadius);
+    const XMVECTOR zaxis = XMVectorScale(g_XMIdentityR2, fRadius);
 
     DrawRing( origin, xaxis, zaxis, color );
     DrawRing( origin, xaxis, yaxis, color );
@@ -982,7 +981,7 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
 
     // Setup the camera's view parameters
     auto pComboBox = g_SampleUI.GetComboBox( IDC_GROUP );
-    SetViewForGroup( (pComboBox) ? (int)PtrToInt( pComboBox->GetSelectedData() ) : 0 );
+    SetViewForGroup( (pComboBox) ? PtrToInt( pComboBox->GetSelectedData() ) : 0 );
 
     g_HUD.GetButton( IDC_TOGGLEWARP )->SetEnabled( true );
 
@@ -1001,15 +1000,18 @@ HRESULT CALLBACK OnD3D11ResizedSwapChain( ID3D11Device* pd3dDevice, IDXGISwapCha
     V_RETURN( g_DialogResourceManager.OnD3D11ResizedSwapChain( pd3dDevice, pBackBufferSurfaceDesc ) );
     V_RETURN( g_SettingsDlg.OnD3D11ResizedSwapChain( pd3dDevice, pBackBufferSurfaceDesc ) );
 
+    auto const iwidth = static_cast<int>(pBackBufferSurfaceDesc->Width);
+    auto const iheight = static_cast<int>(pBackBufferSurfaceDesc->Height);
+
     // Setup the camera's projection parameters
-    float fAspectRatio = pBackBufferSurfaceDesc->Width / ( FLOAT )pBackBufferSurfaceDesc->Height;
+    const float fAspectRatio = static_cast<float>(pBackBufferSurfaceDesc->Width) / static_cast<float>(pBackBufferSurfaceDesc->Height);
     g_Camera.SetProjParams( XM_PI / 4, fAspectRatio, 0.1f, 1000.0f );
-    g_Camera.SetWindow( pBackBufferSurfaceDesc->Width, pBackBufferSurfaceDesc->Height );
+    g_Camera.SetWindow( iwidth, iheight );
     g_Camera.SetButtonMasks( MOUSE_LEFT_BUTTON, MOUSE_WHEEL, MOUSE_MIDDLE_BUTTON );
 
-    g_HUD.SetLocation( pBackBufferSurfaceDesc->Width - 170, 0 );
+    g_HUD.SetLocation( iwidth - 170, 0 );
     g_HUD.SetSize( 170, 170 );
-    g_SampleUI.SetLocation( pBackBufferSurfaceDesc->Width - 170, pBackBufferSurfaceDesc->Height - 300 );
+    g_SampleUI.SetLocation( iwidth - 170, iheight - 300 );
     g_SampleUI.SetSize( 170, 300 );
 
     return S_OK;
@@ -1162,7 +1164,7 @@ void CALLBACK OnKeyboard( UINT nChar, bool bKeyDown, bool bAltDown, void* pUserC
     case '3':
     case '4':
         {
-            int group = (nChar - '1');
+            int group = static_cast<int>(nChar - '1');
             auto pComboBox = g_SampleUI.GetComboBox( IDC_GROUP );
             assert(pComboBox != NULL);
             pComboBox->SetSelectedByData( IntToPtr( group ) );
@@ -1194,8 +1196,8 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
             break;
         case IDC_GROUP:
             {
-                auto pComboBox = reinterpret_cast<CDXUTComboBox*>( pControl );
-                SetViewForGroup( (int)PtrToInt( pComboBox->GetSelectedData() ) );
+                auto pComboBox = static_cast<CDXUTComboBox*>( pControl );
+                SetViewForGroup( PtrToInt( pComboBox->GetSelectedData() ) );
             }
             break;
     }
