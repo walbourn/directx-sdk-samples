@@ -56,7 +56,9 @@ struct CollisionFrustum
     ContainmentType collision;
 };
 
-struct CollisionTriangle
+#pragma warning(disable : 4324)
+
+XM_ALIGNED_STRUCT(16) CollisionTriangle
 {
     XMVECTOR pointa;
     XMVECTOR pointb;
@@ -64,7 +66,7 @@ struct CollisionTriangle
     ContainmentType collision;
 };
 
-struct CollisionRay
+XM_ALIGNED_STRUCT(16) CollisionRay
 {
     XMVECTOR origin;
     XMVECTOR direction;
@@ -385,9 +387,9 @@ void Animate( double fTime )
     g_SecondaryAABoxes[2].aabox.Center.z = 8 * cosf( 3.5f * t );
 
     // triangle points in local space - equilateral triangle with radius of 2
-    const XMVECTOR TrianglePointA = { 0, 2, 0, 0 };
-    const XMVECTOR TrianglePointB = { 1.732f, -1, 0, 0 };
-    const XMVECTOR TrianglePointC = { -1.732f, -1, 0, 0 };
+    const XMVECTORF32 TrianglePointA = { { { 0, 2, 0, 0 } } };
+    const XMVECTORF32 TrianglePointB = { { { 1.732f, -1, 0, 0 } } };
+    const XMVECTORF32 TrianglePointC = { { { -1.732f, -1, 0, 0 } } };
 
     // animate triangle 0 around the frustum
     XMMATRIX TriangleCoords = XMMatrixRotationRollPitchYaw( t * 1.4f, t * 2.5f, t );
@@ -730,16 +732,16 @@ void DrawFrustum( const BoundingFrustum& frustum, FXMVECTOR color )
 //--------------------------------------------------------------------------------------
 void DrawCube( CXMMATRIX mWorld, FXMVECTOR color )
 {
-    static const XMVECTOR s_verts[8] =
+    static const XMVECTORF32 s_verts[8] =
     {
-        { -1, -1, -1, 0 },
-        { 1, -1, -1, 0 },
-        { 1, -1, 1, 0 },
-        { -1, -1, 1, 0 },
-        { -1, 1, -1, 0 },
-        { 1, 1, -1, 0 },
-        { 1, 1, 1, 0 },
-        { -1, 1, 1, 0 }
+        { { { -1, -1, -1, 0 } } },
+        { { { 1, -1, -1, 0 } } },
+        { { { 1, -1, 1, 0 } } },
+        { { { -1, -1, 1, 0 } } },
+        { { { -1, 1, -1, 0 } } },
+        { { { 1, 1, -1, 0 } } },
+        { { { 1, 1, 1, 0 } } },
+        { { { -1, 1, 1, 0 } } }
     };
     static const WORD s_indices[] =
     {

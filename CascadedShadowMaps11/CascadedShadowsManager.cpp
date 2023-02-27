@@ -518,7 +518,8 @@ void CascadedShadowsManager::CreateFrustumPointsFromCascadeInterval( float fCasc
 //--------------------------------------------------------------------------------------
 // Used to compute an intersection of the orthographic projection and the Scene AABB
 //--------------------------------------------------------------------------------------
-struct Triangle
+#pragma warning(disable : 4324)
+XM_ALIGNED_STRUCT(16) Triangle
 {
     XMVECTOR pt[3];
     bool culled;
