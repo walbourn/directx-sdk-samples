@@ -8,8 +8,9 @@
 // Licensed under the MIT License (MIT).
 //--------------------------------------------------------------------------------------
 
-#include <d3d11.h>
 #include <vector>
+
+#include <d3d11.h>
 #include "EncoderBase.h"
 #include "BC6HEncoderCS10.h"
 #include <DirectXTex.h>
@@ -17,9 +18,21 @@
 
 namespace
 {
-#include "Shaders\Compiled\BC6HEncode_EncodeBlockCS.inc"
-#include "Shaders\Compiled\BC6HEncode_TryModeG10CS.inc"
-#include "Shaders\Compiled\BC6HEncode_TryModeLE10CS.inc"
+    constexpr INT MAX_BLOCK_BATCH = 64;
+
+    namespace cs5
+    {
+#include "BC6HEncode_EncodeBlockCS.inc"
+#include "BC6HEncode_TryModeG10CS.inc"
+#include "BC6HEncode_TryModeLE10CS.inc"
+    }
+
+    namespace cs4
+    {
+#include "BC6HEncode_EncodeBlockCS_cs40.inc"
+#include "BC6HEncode_TryModeG10CS_cs40.inc"
+#include "BC6HEncode_TryModeLE10CS_cs40.inc"
+    }
 }
 
 //--------------------------------------------------------------------------------------
@@ -27,14 +40,28 @@ namespace
 //--------------------------------------------------------------------------------------
 HRESULT CGPUBC6HEncoder::Initialize( ID3D11Device* pDevice, ID3D11DeviceContext* pContext )
 {
-    HRESULT hr = S_OK;  
-    
-    V_RETURN( EncoderBase::Initialize( pDevice, pContext ) );          
+    HRESULT hr = S_OK;
 
-    // Compile and create Compute Shader 
-    V_RETURN( pDevice->CreateComputeShader( BC6HEncode_TryModeG10CS, sizeof(BC6HEncode_TryModeG10CS), nullptr, &m_pTryModeG10CS ) );
-    V_RETURN( pDevice->CreateComputeShader( BC6HEncode_TryModeLE10CS, sizeof(BC6HEncode_TryModeLE10CS), nullptr, &m_pTryModeLE10CS ) );
-    V_RETURN( pDevice->CreateComputeShader( BC6HEncode_EncodeBlockCS, sizeof(BC6HEncode_EncodeBlockCS), nullptr, &m_pEncodeBlockCS ) );
+    // Check for DirectCompute support
+    V_RETURN( EncoderBase::Initialize( pDevice, pContext ) );
+
+    // Compile and create Compute Shader
+    const D3D_FEATURE_LEVEL fl = pDevice->GetFeatureLevel();
+
+    // Modes 11-14
+    auto blob = (fl >= D3D_FEATURE_LEVEL_11_0) ? cs5::BC6HEncode_TryModeG10CS : cs4::BC6HEncode_TryModeG10CS;
+    auto blobSize = (fl >= D3D_FEATURE_LEVEL_11_0) ? sizeof(cs5::BC6HEncode_TryModeG10CS) : sizeof(cs4::BC6HEncode_TryModeG10CS);
+    V_RETURN(pDevice->CreateComputeShader(blob, blobSize, nullptr, &m_pTryModeG10CS));
+
+    // Modes 1-10
+    blob = (fl >= D3D_FEATURE_LEVEL_11_0) ? cs5::BC6HEncode_TryModeLE10CS : cs4::BC6HEncode_TryModeLE10CS;
+    blobSize = (fl >= D3D_FEATURE_LEVEL_11_0) ? sizeof(cs5::BC6HEncode_TryModeLE10CS) : sizeof(cs4::BC6HEncode_TryModeLE10CS);
+    V_RETURN(pDevice->CreateComputeShader(blob, blobSize, nullptr, &m_pTryModeLE10CS));
+
+    // Encode
+    blob = (fl >= D3D_FEATURE_LEVEL_11_0) ? cs5::BC6HEncode_EncodeBlockCS : cs4::BC6HEncode_EncodeBlockCS;
+    blobSize = (fl >= D3D_FEATURE_LEVEL_11_0) ? sizeof(cs5::BC6HEncode_EncodeBlockCS) : sizeof(cs4::BC6HEncode_EncodeBlockCS);
+    V_RETURN(pDevice->CreateComputeShader(blob, blobSize, nullptr, &m_pEncodeBlockCS));
 
 #if defined(_DEBUG) || defined(PROFILE)
     if (m_pTryModeG10CS)
@@ -52,7 +79,7 @@ HRESULT CGPUBC6HEncoder::Initialize( ID3D11Device* pDevice, ID3D11DeviceContext*
 // Cleanup before exit
 //--------------------------------------------------------------------------------------
 void CGPUBC6HEncoder::Cleanup()
-{    
+{
     SAFE_RELEASE( m_pTryModeG10CS );
     SAFE_RELEASE( m_pTryModeLE10CS );
     SAFE_RELEASE( m_pEncodeBlockCS );
@@ -64,7 +91,7 @@ void CGPUBC6HEncoder::Cleanup()
 // The job of breaking down texture arrays, or texture with multiple mip levels is taken care of in the base class
 //--------------------------------------------------------------------------------------
 HRESULT CGPUBC6HEncoder::GPU_Encode( ID3D11Device* pDevice, ID3D11DeviceContext* pContext,
-                                     ID3D11Texture2D* pSrcTexture, 
+                                     ID3D11Texture2D* pSrcTexture,
                                      DXGI_FORMAT dstFormat, ID3D11Buffer** ppDstTextureAsBufOut )
 {
     ID3D11ShaderResourceView* pSRV = nullptr;
@@ -72,10 +99,13 @@ HRESULT CGPUBC6HEncoder::GPU_Encode( ID3D11Device* pDevice, ID3D11DeviceContext*
     ID3D11UnorderedAccessView* pUAV = nullptr;
     ID3D11UnorderedAccessView* pErrBestModeUAV[2] = { nullptr, nullptr };
     ID3D11ShaderResourceView* pErrBestModeSRV[2] = { nullptr, nullptr };
-    ID3D11Buffer* pCBCS = nullptr;        
+    ID3D11Buffer* pCBCS = nullptr;
     D3D11_BUFFER_DESC sbOutDesc = {};
+    INT start_block_id = 0;
+    INT num_total_blocks = 0;
+    INT num_blocks = 0;
 
-    if ( !(dstFormat == DXGI_FORMAT_BC6H_SF16 || dstFormat == DXGI_FORMAT_BC6H_UF16) || 
+    if ( !(dstFormat == DXGI_FORMAT_BC6H_SF16 || dstFormat == DXGI_FORMAT_BC6H_UF16) ||
          !ppDstTextureAsBufOut )
         return E_INVALIDARG;
 
@@ -90,7 +120,7 @@ HRESULT CGPUBC6HEncoder::GPU_Encode( ID3D11Device* pDevice, ID3D11DeviceContext*
         SRVDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
         SRVDesc.Format = DXGI_FORMAT_UNKNOWN;
         SRVDesc.Texture2D.MipLevels = 1;
-        SRVDesc.Texture2D.MostDetailedMip = 0;        
+        SRVDesc.Texture2D.MostDetailedMip = 0;
         V_GOTO( pDevice->CreateShaderResourceView( pSrcTexture, &SRVDesc, &pSRV ) )
 #if defined(_DEBUG) || defined(PROFILE)
         if ( pSRV )
@@ -122,7 +152,7 @@ HRESULT CGPUBC6HEncoder::GPU_Encode( ID3D11Device* pDevice, ID3D11DeviceContext*
 #endif
     }
 
-    // Create UAV of the output resources    
+    // Create UAV of the output resources
     {
         D3D11_UNORDERED_ACCESS_VIEW_DESC UAVDesc = {};
         UAVDesc.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
@@ -193,17 +223,14 @@ HRESULT CGPUBC6HEncoder::GPU_Encode( ID3D11Device* pDevice, ID3D11DeviceContext*
             pCBCS->SetPrivateData( WKPDID_D3DDebugObjectName, sizeof( "BC6HEncode" ) - 1, "BC6HEncode" );
         }
 #endif
-    }       
+    }
 
-    const INT MAX_BLOCK_BATCH = 64;
-	INT num_total_blocks = texSrcDesc.Width / BLOCK_SIZE_X * texSrcDesc.Height / BLOCK_SIZE_Y;
-    INT num_blocks = num_total_blocks;
-    INT start_block_id = 0;
+    num_blocks = num_total_blocks = texSrcDesc.Width / BLOCK_SIZE_X * texSrcDesc.Height / BLOCK_SIZE_Y;
     while ( num_blocks > 0 )
     {
         INT n = __min( num_blocks, MAX_BLOCK_BATCH );
         UINT uThreadGroupCount = n;
-        
+
         {
             D3D11_MAPPED_SUBRESOURCE cbMapped;
             pContext->Map( pCBCS, 0, D3D11_MAP_WRITE_DISCARD, 0, &cbMapped );
@@ -248,7 +275,7 @@ HRESULT CGPUBC6HEncoder::GPU_Encode( ID3D11Device* pDevice, ID3D11DeviceContext*
 
         start_block_id += n;
         num_blocks -= n;
-    }   
+    }
 
 quit:
     SAFE_RELEASE(pSRV);

@@ -8,13 +8,16 @@
 // Licensed under the MIT License (MIT).
 //--------------------------------------------------------------------------------------
 
-#include <stdio.h>
-#include <assert.h>
-#include <d3d11.h>
-#include "DirectXTex.h"
-#include <shlobj.h>
+#include <cassert>
+#include <cstdio>
 #include <string>
 #include <vector>
+
+#include <d3d11.h>
+#include "DirectXTex.h"
+
+#include <shlobj.h>
+
 #include "utils.h"
 
 using namespace DirectX;
@@ -45,9 +48,9 @@ HRESULT WINAPI Dynamic_D3D11CreateDevice( IDXGIAdapter* pAdapter,
 {
     typedef HRESULT (WINAPI * LPD3D11CREATEDEVICE)( IDXGIAdapter*, D3D_DRIVER_TYPE, HMODULE, UINT32, D3D_FEATURE_LEVEL*, UINT, UINT32, ID3D11Device**, D3D_FEATURE_LEVEL*, ID3D11DeviceContext** );
     static LPD3D11CREATEDEVICE  s_DynamicD3D11CreateDevice = nullptr;
-    
+
     if ( !s_DynamicD3D11CreateDevice )
-    {            
+    {
         HMODULE hModD3D11 = LoadLibrary( L"d3d11.dll" );
 
         if ( !hModD3D11 )
@@ -55,7 +58,7 @@ HRESULT WINAPI Dynamic_D3D11CreateDevice( IDXGIAdapter* pAdapter,
             // Ensure this "D3D11 absent" message is shown only once. As sometimes, the app would like to try
             // to create device multiple times
             static bool bMessageAlreadyShwon = false;
-            
+
             if ( !bMessageAlreadyShwon )
             {
                 OSVERSIONINFOEX osv;
@@ -65,7 +68,7 @@ HRESULT WINAPI Dynamic_D3D11CreateDevice( IDXGIAdapter* pAdapter,
                 GetVersionEx( (LPOSVERSIONINFO)&osv );
 
                 if ( ( osv.dwMajorVersion > 6 )
-                    || ( osv.dwMajorVersion == 6 && osv.dwMinorVersion >= 1 ) 
+                    || ( osv.dwMajorVersion == 6 && osv.dwMinorVersion >= 1 )
                     || ( osv.dwMajorVersion == 6 && osv.dwMinorVersion == 0 && osv.dwBuildNumber > 6002 ) )
                 {
 
@@ -95,12 +98,12 @@ HRESULT WINAPI Dynamic_D3D11CreateDevice( IDXGIAdapter* pAdapter,
                 }
 
                 bMessageAlreadyShwon = true;
-            }            
+            }
 
             return E_FAIL;
         }
 
-        s_DynamicD3D11CreateDevice = ( LPD3D11CREATEDEVICE )GetProcAddress( hModD3D11, "D3D11CreateDevice" );           
+        s_DynamicD3D11CreateDevice = ( LPD3D11CREATEDEVICE )GetProcAddress( hModD3D11, "D3D11CreateDevice" );
     }
 
     return s_DynamicD3D11CreateDevice( pAdapter, DriverType, Software, Flags, pFeatureLevels, FeatureLevels,
@@ -114,7 +117,7 @@ HRESULT CreateDevice( ID3D11Device** ppDeviceOut, ID3D11DeviceContext** ppContex
 {
     *ppDeviceOut = nullptr;
     *ppContextOut = nullptr;
-    
+
     HRESULT hr = S_OK;
 
     UINT uCreationFlags = D3D11_CREATE_DEVICE_SINGLETHREADED;
@@ -122,7 +125,7 @@ HRESULT CreateDevice( ID3D11Device** ppDeviceOut, ID3D11DeviceContext** ppContex
     uCreationFlags |= D3D11_CREATE_DEVICE_DEBUG;
 #endif
     D3D_FEATURE_LEVEL flOut = D3D_FEATURE_LEVEL_9_1;
-    
+
     if ( !bForceRef )
     {
         // IMPORTANT: this following device creation call caps the to-be-created device feature level to FL10,
@@ -131,30 +134,30 @@ HRESULT CreateDevice( ID3D11Device** ppDeviceOut, ID3D11DeviceContext** ppContex
         //
         // This sample only uses CS4x shaders, so it can run on 10.0 hardware.
         // We use FL 11.0 when available to support the maximum texutre size of 16k by 16k.
-        
+
         D3D_FEATURE_LEVEL flIn[] = { D3D_FEATURE_LEVEL_11_0, D3D_FEATURE_LEVEL_10_0 };
-        
+
         hr = Dynamic_D3D11CreateDevice( nullptr,                      // Use default graphics card
                                          D3D_DRIVER_TYPE_HARDWARE,    // Try to create a hardware accelerated device
                                          nullptr,                     // Do not use external software rasterizer module
                                          uCreationFlags,              // Device creation flags
-                                         flIn,                        // For the purpose of this sample, we cap the FL to 10 to reduce test burden, 
+                                         flIn,                        // For the purpose of this sample, we cap the FL to 10 to reduce test burden,
                                                                       // In practice, it is generally recommended to leave this parameter nullptr (and next parameter 0),
                                                                       // which will try to get greatest feature level available
                                          _countof(flIn),              // # of elements in the previous array
                                          D3D11_SDK_VERSION,           // SDK version
                                          ppDeviceOut,                 // Device out
                                          &flOut,                      // Actual feature level created
-                                         ppContextOut );              // Context out                
+                                         ppContextOut );              // Context out
     }
-    
+
     if ( bForceRef || FAILED(hr) )
     {
         // Either because of failure on creating a hardware device or we are forced to create a ref device, we create a ref device here
 
         SAFE_RELEASE( *ppDeviceOut );
         SAFE_RELEASE( *ppContextOut );
-        
+
         hr = Dynamic_D3D11CreateDevice( nullptr,                      // Use default graphics card
                                          D3D_DRIVER_TYPE_REFERENCE,   // Try to create a hardware accelerated device
                                          nullptr,                     // Do not use external software rasterizer module
@@ -181,12 +184,12 @@ HRESULT CreateDevice( ID3D11Device** ppDeviceOut, ID3D11DeviceContext** ppContex
 //--------------------------------------------------------------------------------------
 void RunComputeShader( ID3D11DeviceContext* pd3dImmediateContext,
                        ID3D11ComputeShader* pComputeShader,
-                       ID3D11ShaderResourceView** pShaderResourceViews, 
+                       ID3D11ShaderResourceView** pShaderResourceViews,
 					   UINT uNumSRVs,
-                       ID3D11Buffer* pCBCS, 
+                       ID3D11Buffer* pCBCS,
                        ID3D11UnorderedAccessView* pUnorderedAccessView,
                        UINT X, UINT Y, UINT Z )
-{    
+{
     pd3dImmediateContext->CSSetShader( pComputeShader, nullptr, 0 );
     pd3dImmediateContext->CSSetShaderResources( 0, uNumSRVs, pShaderResourceViews );
     pd3dImmediateContext->CSSetUnorderedAccessViews( 0, 1, &pUnorderedAccessView, nullptr );
@@ -205,12 +208,12 @@ void RunComputeShader( ID3D11DeviceContext* pd3dImmediateContext,
 //--------------------------------------------------------------------------------------
 // Loads a texture from file
 // This function also generates mip levels as necessary using the specified filter
-//-------------------------------------------------------------------------------------- 
+//--------------------------------------------------------------------------------------
 HRESULT LoadTextureFromFile( ID3D11Device* pd3dDevice, LPCTSTR lpFileName, DXGI_FORMAT fmtLoadAs, BOOL bNoMips,
     DirectX::TEX_FILTER_FLAGS dwFilter, ID3D11Texture2D** ppTextureOut )
 {
     HRESULT hr = S_OK;
-    
+
     WCHAR ext[_MAX_EXT];
     WCHAR fname[_MAX_FNAME];
     _wsplitpath_s( lpFileName, nullptr, 0, nullptr, 0, fname, _MAX_FNAME, ext, _MAX_EXT );
@@ -244,7 +247,7 @@ HRESULT LoadTextureFromFile( ID3D11Device* pd3dDevice, LPCTSTR lpFileName, DXGI_
     {
         hr = LoadFromWICFile( lpFileName, WIC_FLAGS_NONE | dwFilter, &info, *image );
         if ( FAILED(hr) )
-        {            
+        {
             delete image;
             return hr;
         }
@@ -316,8 +319,8 @@ HRESULT LoadTextureFromFile( ID3D11Device* pd3dDevice, LPCTSTR lpFileName, DXGI_
             delete image;
             return E_OUTOFMEMORY;
         }
-        
-        hr = GenerateMipMaps( image->GetImages(), image->GetImageCount(), image->GetMetadata(), dwFilter /*| dwFilterOpts*/, 0, *timage );        
+
+        hr = GenerateMipMaps( image->GetImages(), image->GetImageCount(), image->GetMetadata(), dwFilter /*| dwFilterOpts*/, 0, *timage );
         if ( FAILED(hr) )
         {
             delete timage;
@@ -339,10 +342,10 @@ HRESULT LoadTextureFromFile( ID3D11Device* pd3dDevice, LPCTSTR lpFileName, DXGI_
         delete image;
         image = timage;
     }
-    
+
     if ( !bNoMips )
     {
-        // The user didn't disable mip, then use the full input resource, 
+        // The user didn't disable mip, then use the full input resource,
         // which contains mip levels either directly read from the file, or generated from above
         hr = CreateTexture( pd3dDevice, image->GetImages(), image->GetImageCount(), image->GetMetadata(), (ID3D11Resource**)ppTextureOut );
         if ( FAILED(hr) )
@@ -350,7 +353,7 @@ HRESULT LoadTextureFromFile( ID3D11Device* pd3dDevice, LPCTSTR lpFileName, DXGI_
             delete image;
             return hr;
         }
-    } 
+    }
     else
     {
         // The user explicitly disabled mip, then we only use mip 0 from all faces of the input resource
@@ -365,14 +368,14 @@ HRESULT LoadTextureFromFile( ID3D11Device* pd3dDevice, LPCTSTR lpFileName, DXGI_
             delete image;
             return hr;
         }
-    }   
+    }
 
     return hr;
 }
 
 //--------------------------------------------------------------------------------------
 // Create a CPU accessible buffer and download the content of a GPU buffer into it
-//-------------------------------------------------------------------------------------- 
+//--------------------------------------------------------------------------------------
 ID3D11Buffer* CreateAndCopyToCPUBuf( ID3D11Device* pDevice, ID3D11DeviceContext* pd3dImmediateContext, ID3D11Buffer* pBuffer )
 {
     ID3D11Buffer* cpubuf = nullptr;
@@ -394,7 +397,7 @@ ID3D11Buffer* CreateAndCopyToCPUBuf( ID3D11Device* pDevice, ID3D11DeviceContext*
     return cpubuf;
 }
 
-//-------------------------------------------------------------------------------------- 
+//--------------------------------------------------------------------------------------
 bool FileExists( const WCHAR* pszFilename )
 {
     FILE *f = nullptr;
