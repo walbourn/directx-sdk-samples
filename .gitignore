@@ -19,8 +19,10 @@
 *.VC.db
 .vs
 Bin
-DirectXTK/Src/Shaders/Compiled/*.inc
-DirectXTK/Src/Shaders/Compiled/*.pdb
+BC6HBC7EncoderCS/Shaders/Compiled/*.inc
+BC6HBC7EncoderCS/Shaders/Compiled/*.pdb
+BC6HBC7EncoderCS/Shaders/Compiled/*.inc
+BC6HBC7EncoderCS/Shaders/Compiled/*.pdb
 ipch
 Debug
 Debug Win8

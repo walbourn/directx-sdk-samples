@@ -50,25 +50,25 @@ HRESULT CreateDevice( ID3D11Device** ppDeviceOut, ID3D11DeviceContext** ppContex
 //--------------------------------------------------------------------------------------
 void RunComputeShader( ID3D11DeviceContext* pd3dImmediateContext,
                        ID3D11ComputeShader* pComputeShader,
-                       ID3D11ShaderResourceView** pShaderResourceViews, 
+                       ID3D11ShaderResourceView** pShaderResourceViews,
 					   UINT uNumSRVs,
-                       ID3D11Buffer* pCBCS, 
+                       ID3D11Buffer* pCBCS,
                        ID3D11UnorderedAccessView* pUnorderedAccessView,
                        UINT X, UINT Y, UINT Z );
 
 
 //--------------------------------------------------------------------------------------
 // Loads a texture from file
-//-------------------------------------------------------------------------------------- 
+//--------------------------------------------------------------------------------------
 HRESULT LoadTextureFromFile( ID3D11Device* pd3dDevice, LPCTSTR lpFileName, DXGI_FORMAT fmtLoadAs, BOOL bNoMips,
     DirectX::TEX_FILTER_FLAGS dwFilter, ID3D11Texture2D** ppTextureOut );
 
 //--------------------------------------------------------------------------------------
 // Create a CPU accessible buffer and download the content of a GPU buffer into it
-//-------------------------------------------------------------------------------------- 
+//--------------------------------------------------------------------------------------
 ID3D11Buffer* CreateAndCopyToCPUBuf( ID3D11Device* pDevice, ID3D11DeviceContext* pd3dImmediateContext, ID3D11Buffer* pBuffer );
 
-//-------------------------------------------------------------------------------------- 
+//--------------------------------------------------------------------------------------
 bool FileExists( const WCHAR* pszFilename );
 
 #endif

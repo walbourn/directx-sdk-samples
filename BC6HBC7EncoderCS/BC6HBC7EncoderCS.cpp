@@ -8,10 +8,12 @@
 // Licensed under the MIT License (MIT).
 //--------------------------------------------------------------------------------------
 
-#include <stdio.h>
-#include <d3d11.h>
+#include <cstdio>
 #include <string>
 #include <vector>
+
+#include <d3d11.h>
+
 #include "EncoderBase.h"
 #include "BC6HEncoderCS10.h"
 #include "BC7EncoderCS10.h"
@@ -27,13 +29,13 @@ ID3D11Texture2D*            g_pSourceTexture = nullptr;
 CGPUBC6HEncoder             g_GPUBC6HEncoder;
 CGPUBC7Encoder              g_GPUBC7Encoder;
 
-struct CommandLineOptions 
+struct CommandLineOptions
 {
     enum Mode
     {
         MODE_ENCODE_BC6HS,
         MODE_ENCODE_BC6HU,
-        MODE_ENCODE_BC7,        
+        MODE_ENCODE_BC7,
         MODE_NOT_SET
     } mode;
 
@@ -72,7 +74,7 @@ struct SValue
     DWORD dwValue;
 };
 
-SValue g_pFilters[] = 
+SValue g_pFilters[] =
 {
     { L"POINT",         TEX_FILTER_POINT                                },
     { L"LINEAR",        TEX_FILTER_LINEAR                               },
@@ -92,9 +94,9 @@ void PrintList(SValue* pValue)
 {
     while ( pValue->pName )
     {
-        wprintf( L"\t/%s\n", pValue->pName );        
+        wprintf( L"\t/%s\n", pValue->pName );
         pValue++;
-    }    
+    }
 }
 
 //--------------------------------------------------------------------------------------
@@ -156,9 +158,9 @@ HRESULT Encode( WCHAR* strSrcFilename, ID3D11Texture2D* pSourceTexture, DXGI_FOR
 // Cleanup before exit
 //--------------------------------------------------------------------------------------
 void Cleanup()
-{    
+{
     g_GPUBC6HEncoder.Cleanup();
-    g_GPUBC7Encoder.Cleanup();    
+    g_GPUBC7Encoder.Cleanup();
     SAFE_RELEASE( g_pSourceTexture );
     SAFE_RELEASE( g_pContext );
     SAFE_RELEASE( g_pDevice );
@@ -168,12 +170,12 @@ void Cleanup()
 // Simple helper to test whether a string can be interpreted as a float
 //--------------------------------------------------------------------------------------
 #include <sstream>
-bool isFloat( std::wstring myString ) 
+bool isFloat( std::wstring myString )
 {
     std::wistringstream  iss(myString);
     float f;
-    iss >> std::noskipws >> f;    
-    return iss.eof() && !iss.fail(); 
+    iss >> std::noskipws >> f;
+    return iss.eof() && !iss.fail();
 }
 
 //--------------------------------------------------------------------------------------
@@ -229,7 +231,7 @@ BOOL ParseCommandLine( int argc, WCHAR* argv[] )
             {
                 wprintf( L"Unknown option %s\n", argv[i] );
                 return FALSE;
-            }                        
+            }
         }
     }
 
@@ -247,11 +249,11 @@ BOOL ParseCommandLine( int argc, WCHAR* argv[] )
 int __cdecl wmain(int argc, WCHAR* argv[])
 {
     int nReturn = 0;
-    
+
     printf( "Microsoft (R) Direct3D11 DirectCompute Accelerated BC6H BC7 Encoder\n\n" );
 
     if ( argc < 3 )
-    {                
+    {
         printf( "Usage: BC6HBC7EncoderCS.exe (options) (filter) Filename0 Filename1 Filename2...\n\n" );
 
         printf( "\tWhere (options) can be the following:\n\n" );
@@ -298,35 +300,36 @@ int __cdecl wmain(int argc, WCHAR* argv[])
     }
     printf( "done\n" );
 
-    // Check for Compute Shader 4.x support    
+    if (g_pDevice->GetFeatureLevel() < D3D_FEATURE_LEVEL_11_0)
     {
-        printf( "Checking CS4x capability..." );
-        D3D11_FEATURE_DATA_D3D10_X_HARDWARE_OPTIONS hwopts;
-        g_pDevice->CheckFeatureSupport( D3D11_FEATURE_D3D10_X_HARDWARE_OPTIONS, &hwopts, sizeof(hwopts) );
-        if ( !hwopts.ComputeShaders_Plus_RawAndStructuredBuffers_Via_Shader_4_x )
+        // Check for Compute Shader 4.x support
+        printf("Checking CS4x capability...");
+        D3D11_FEATURE_DATA_D3D10_X_HARDWARE_OPTIONS hwopts = {};
+        g_pDevice->CheckFeatureSupport(D3D11_FEATURE_D3D10_X_HARDWARE_OPTIONS, &hwopts, sizeof(hwopts));
+        if (!hwopts.ComputeShaders_Plus_RawAndStructuredBuffers_Via_Shader_4_x)
         {
-            printf( "Sorry your driver and/or video card doesn't support DirectCompute 4.x\n" );
+            printf("Sorry your driver and/or video card doesn't support DirectCompute\n");
             nReturn = 1;
             Cleanup();
             return  nReturn;
         }
+    }
 
-        // CS4x capability found, initialize our CS accelerated encoders
-        printf( "Using CS Accelerated Encoder\n" );        
-        if ( FAILED( g_GPUBC7Encoder.Initialize( g_pDevice, g_pContext ) ) )
-        {
-            nReturn = 1;
-            Cleanup();
-            return  nReturn;
-        }
-        g_GPUBC7Encoder.SetAlphaWeight( g_CommandLineOptions.fBC7AlphaWeight );
+    // Initialize our CS accelerated encoders
+    printf( "Using CS Accelerated Encoder\n" );
+    if ( FAILED( g_GPUBC7Encoder.Initialize( g_pDevice, g_pContext ) ) )
+    {
+        nReturn = 1;
+        Cleanup();
+        return  nReturn;
+    }
+    g_GPUBC7Encoder.SetAlphaWeight( g_CommandLineOptions.fBC7AlphaWeight );
 
-        if ( FAILED( g_GPUBC6HEncoder.Initialize( g_pDevice, g_pContext ) ) )
-        {
-            nReturn = 1;
-            Cleanup();
-            return  nReturn;
-        }
+    if ( FAILED( g_GPUBC6HEncoder.Initialize( g_pDevice, g_pContext ) ) )
+    {
+        nReturn = 1;
+        Cleanup();
+        return  nReturn;
     }
 
     // Process the input files
@@ -340,7 +343,7 @@ int __cdecl wmain(int argc, WCHAR* argv[])
         {
             wprintf( L"\nFile not found: %s\n", argv[i] );
             continue;
-        } 
+        }
 
         wprintf( L"\nProcessing source texture %s...\n", argv[i] );
 
@@ -354,7 +357,7 @@ int __cdecl wmain(int argc, WCHAR* argv[])
         {
             fmtLoadAs = DXGI_FORMAT_R8G8B8A8_UNORM;
         }
-                
+
         SAFE_RELEASE( g_pSourceTexture );
         if ( FAILED( LoadTextureFromFile( g_pDevice, argv[i], fmtLoadAs,
             g_CommandLineOptions.bNoMips, static_cast<TEX_FILTER_FLAGS>(g_CommandLineOptions.dwFilter), &g_pSourceTexture ) ) )
@@ -368,20 +371,20 @@ int __cdecl wmain(int argc, WCHAR* argv[])
             // Encode to BC7
             if ( g_CommandLineOptions.bSRGB )
             {
-                if ( FAILED( Encode( argv[i], g_pSourceTexture, DXGI_FORMAT_BC7_UNORM_SRGB, &g_GPUBC7Encoder ) ) )  
+                if ( FAILED( Encode( argv[i], g_pSourceTexture, DXGI_FORMAT_BC7_UNORM_SRGB, &g_GPUBC7Encoder ) ) )
                 {
                     printf("\nFailed BC7 SRGB encoding %S\n", argv[i] );
                     nReturn = 1;
-                    continue; 
+                    continue;
                 }
-            } 
+            }
             else
             {
-                if ( FAILED( Encode( argv[i], g_pSourceTexture, DXGI_FORMAT_BC7_UNORM, &g_GPUBC7Encoder ) ) )  
+                if ( FAILED( Encode( argv[i], g_pSourceTexture, DXGI_FORMAT_BC7_UNORM, &g_GPUBC7Encoder ) ) )
                 {
                     printf("\nFailed BC7 encoding %S\n", argv[i] );
                     nReturn = 1;
-                    continue; 
+                    continue;
                 }
             }
         } else if ( g_CommandLineOptions.mode == CommandLineOptions::MODE_ENCODE_BC6HU )
@@ -391,7 +394,7 @@ int __cdecl wmain(int argc, WCHAR* argv[])
             {
                 printf("\nFailed BC6HU encoding %S\n", argv[i] );
                 nReturn = 1;
-                continue; 
+                continue;
             }
         } else if ( g_CommandLineOptions.mode == CommandLineOptions::MODE_ENCODE_BC6HS )
         {
@@ -400,7 +403,7 @@ int __cdecl wmain(int argc, WCHAR* argv[])
             {
                 printf("\nFailed BC6HS encoding %S\n", argv[i] );
                 nReturn = 1;
-                continue; 
+                continue;
             }
         }
     }

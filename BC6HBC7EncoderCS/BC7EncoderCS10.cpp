@@ -8,8 +8,9 @@
 // Licensed under the MIT License (MIT).
 //--------------------------------------------------------------------------------------
 
-#include <d3d11.h>
 #include <vector>
+
+#include <d3d11.h>
 #include "EncoderBase.h"
 #include "BC7EncoderCS10.h"
 #include <DirectXTex.h>
@@ -17,10 +18,23 @@
 
 namespace
 {
-#include "Shaders\Compiled\BC7Encode_EncodeBlockCS.inc"
-#include "Shaders\Compiled\BC7Encode_TryMode02CS.inc"
-#include "Shaders\Compiled\BC7Encode_TryMode137CS.inc"
-#include "Shaders\Compiled\BC7Encode_TryMode456CS.inc"
+    constexpr int MAX_BLOCK_BATCH = 64;
+
+    namespace cs5
+    {
+#include "BC7Encode_EncodeBlockCS.inc"
+#include "BC7Encode_TryMode02CS.inc"
+#include "BC7Encode_TryMode137CS.inc"
+#include "BC7Encode_TryMode456CS.inc"
+    }
+
+    namespace cs4
+    {
+#include "BC7Encode_EncodeBlockCS_cs40.inc"
+#include "BC7Encode_TryMode02CS_cs40.inc"
+#include "BC7Encode_TryMode137CS_cs40.inc"
+#include "BC7Encode_TryMode456CS_cs40.inc"
+    }
 }
 
 //--------------------------------------------------------------------------------------
@@ -28,15 +42,32 @@ namespace
 //--------------------------------------------------------------------------------------
 HRESULT CGPUBC7Encoder::Initialize( ID3D11Device* pDevice, ID3D11DeviceContext* pContext )
 {
-    HRESULT hr = S_OK;    
-    
+    HRESULT hr = S_OK;
+
     V_RETURN( EncoderBase::Initialize( pDevice, pContext ) );
-    
-    // Compile and create Compute Shader 
-    V_RETURN( pDevice->CreateComputeShader( BC7Encode_TryMode456CS, sizeof(BC7Encode_TryMode456CS), nullptr, &m_pTryMode456CS ) );
-    V_RETURN( pDevice->CreateComputeShader( BC7Encode_TryMode137CS, sizeof(BC7Encode_TryMode137CS), nullptr, &m_pTryMode137CS ) );
-    V_RETURN( pDevice->CreateComputeShader( BC7Encode_TryMode02CS, sizeof(BC7Encode_TryMode02CS), nullptr, &m_pTryMode02CS ) );
-    V_RETURN( pDevice->CreateComputeShader( BC7Encode_EncodeBlockCS, sizeof(BC7Encode_EncodeBlockCS), nullptr, &m_pEncodeBlockCS ) );
+
+    // Compile and create Compute Shader
+    const D3D_FEATURE_LEVEL fl = pDevice->GetFeatureLevel();
+
+    // Modes 4, 5, 6
+    auto blob = (fl >= D3D_FEATURE_LEVEL_11_0) ? cs5::BC7Encode_TryMode456CS : cs4::BC7Encode_TryMode456CS;
+    auto blobSize = (fl >= D3D_FEATURE_LEVEL_11_0) ? sizeof(cs5::BC7Encode_TryMode456CS) : sizeof(cs4::BC7Encode_TryMode456CS);
+    V_RETURN(pDevice->CreateComputeShader(blob, blobSize, nullptr, &m_pTryMode456CS));
+
+    // Modes 1, 3, 7
+    blob = (fl >= D3D_FEATURE_LEVEL_11_0) ? cs5::BC7Encode_TryMode137CS : cs4::BC7Encode_TryMode137CS;
+    blobSize = (fl >= D3D_FEATURE_LEVEL_11_0) ? sizeof(cs5::BC7Encode_TryMode137CS) : sizeof(cs4::BC7Encode_TryMode137CS);
+    V_RETURN(pDevice->CreateComputeShader(blob, blobSize, nullptr, &m_pTryMode137CS));
+
+    // Modes 0, 2
+    blob = (fl >= D3D_FEATURE_LEVEL_11_0) ? cs5::BC7Encode_TryMode02CS : cs4::BC7Encode_TryMode02CS;
+    blobSize = (fl >= D3D_FEATURE_LEVEL_11_0) ? sizeof(cs5::BC7Encode_TryMode02CS) : sizeof(cs4::BC7Encode_TryMode02CS);
+    V_RETURN(pDevice->CreateComputeShader(blob, blobSize, nullptr, &m_pTryMode02CS));
+
+    // Encode
+    blob = (fl >= D3D_FEATURE_LEVEL_11_0) ? cs5::BC7Encode_EncodeBlockCS : cs4::BC7Encode_EncodeBlockCS;
+    blobSize = (fl >= D3D_FEATURE_LEVEL_11_0) ? sizeof(cs5::BC7Encode_EncodeBlockCS) : sizeof(cs4::BC7Encode_EncodeBlockCS);
+    V_RETURN(pDevice->CreateComputeShader(blob, blobSize, nullptr, &m_pEncodeBlockCS));
 
 #if defined(_DEBUG) || defined(PROFILE)
     if (m_pTryMode456CS)
@@ -56,7 +87,7 @@ HRESULT CGPUBC7Encoder::Initialize( ID3D11Device* pDevice, ID3D11DeviceContext* 
 // Cleanup before exit
 //--------------------------------------------------------------------------------------
 void CGPUBC7Encoder::Cleanup()
-{    
+{
     SAFE_RELEASE( m_pTryMode456CS );
     SAFE_RELEASE( m_pTryMode137CS );
     SAFE_RELEASE( m_pTryMode02CS );
@@ -69,7 +100,7 @@ void CGPUBC7Encoder::Cleanup()
 // The job of breaking down texture arrays, or texture with multiple mip levels is taken care of in the base class
 //--------------------------------------------------------------------------------------
 HRESULT CGPUBC7Encoder::GPU_Encode( ID3D11Device* pDevice, ID3D11DeviceContext* pContext,
-                                    ID3D11Texture2D* pSrcTexture, 
+                                    ID3D11Texture2D* pSrcTexture,
                                     DXGI_FORMAT dstFormat, ID3D11Buffer** ppDstTextureAsBufOut )
 {
     ID3D11ShaderResourceView* pSRV = nullptr;
@@ -78,8 +109,11 @@ HRESULT CGPUBC7Encoder::GPU_Encode( ID3D11Device* pDevice, ID3D11DeviceContext* 
     ID3D11UnorderedAccessView* pErrBestModeUAV[2] = { nullptr, nullptr };
     ID3D11ShaderResourceView* pErrBestModeSRV[2] = { nullptr, nullptr };
     ID3D11Buffer* pCBCS = nullptr;
+    int start_block_id = 0;
+    int num_total_blocks = 0;
+    int num_blocks = 0;
 
-    if ( !(dstFormat == DXGI_FORMAT_BC7_UNORM || dstFormat == DXGI_FORMAT_BC7_UNORM_SRGB) || 
+    if ( !(dstFormat == DXGI_FORMAT_BC7_UNORM || dstFormat == DXGI_FORMAT_BC7_UNORM_SRGB) ||
          !ppDstTextureAsBufOut )
     {
         return E_INVALIDARG;
@@ -90,7 +124,7 @@ HRESULT CGPUBC7Encoder::GPU_Encode( ID3D11Device* pDevice, ID3D11DeviceContext* 
 
     HRESULT hr = S_OK;
 
-    // Create a SRV for input texture        
+    // Create a SRV for input texture
     {
         D3D11_SHADER_RESOURCE_VIEW_DESC SRVDesc = {};
         SRVDesc.Texture2D.MipLevels = texSrcDesc.MipLevels;
@@ -107,7 +141,7 @@ HRESULT CGPUBC7Encoder::GPU_Encode( ID3D11Device* pDevice, ID3D11DeviceContext* 
 #endif
     }
 
-    // Create output buffer    
+    // Create output buffer
     D3D11_BUFFER_DESC sbOutDesc;
     {
         sbOutDesc.BindFlags = D3D11_BIND_UNORDERED_ACCESS | D3D11_BIND_SHADER_RESOURCE;
@@ -139,7 +173,7 @@ HRESULT CGPUBC7Encoder::GPU_Encode( ID3D11Device* pDevice, ID3D11DeviceContext* 
 #endif
     }
 
-    // Create UAV of the output texture    
+    // Create UAV of the output texture
     {
         D3D11_UNORDERED_ACCESS_VIEW_DESC UAVDesc = {};
         UAVDesc.Buffer.FirstElement = 0;
@@ -168,7 +202,7 @@ HRESULT CGPUBC7Encoder::GPU_Encode( ID3D11Device* pDevice, ID3D11DeviceContext* 
         }
 #endif
     }
-    
+
     {
         D3D11_SHADER_RESOURCE_VIEW_DESC SRVDesc = {};
         SRVDesc.Buffer.FirstElement = 0;
@@ -193,7 +227,7 @@ HRESULT CGPUBC7Encoder::GPU_Encode( ID3D11Device* pDevice, ID3D11DeviceContext* 
 #endif
     }
 
-    // Create constant buffer    
+    // Create constant buffer
     {
         D3D11_BUFFER_DESC cbDesc;
         cbDesc.Usage = D3D11_USAGE_DYNAMIC;
@@ -211,11 +245,7 @@ HRESULT CGPUBC7Encoder::GPU_Encode( ID3D11Device* pDevice, ID3D11DeviceContext* 
 #endif
     }
 
-    int const MAX_BLOCK_BATCH = 64;
-
-    int num_total_blocks = texSrcDesc.Width / BLOCK_SIZE_X * texSrcDesc.Height / BLOCK_SIZE_Y;
-    int num_blocks = num_total_blocks;
-    int start_block_id = 0;
+    num_blocks = num_total_blocks = texSrcDesc.Width / BLOCK_SIZE_X * texSrcDesc.Height / BLOCK_SIZE_Y;
     while (num_blocks > 0)
     {
         int n = min(num_blocks, MAX_BLOCK_BATCH);
@@ -238,7 +268,7 @@ HRESULT CGPUBC7Encoder::GPU_Encode( ID3D11Device* pDevice, ID3D11DeviceContext* 
         }
 
         ID3D11ShaderResourceView* pSRVs[] = { pSRV, nullptr };
-        RunComputeShader( pContext, m_pTryMode456CS, pSRVs, 2, pCBCS, pErrBestModeUAV[0], __max(uThreadGroupCount / 4, 1), 1, 1 );        
+        RunComputeShader( pContext, m_pTryMode456CS, pSRVs, 2, pCBCS, pErrBestModeUAV[0], __max(uThreadGroupCount / 4, 1), 1, 1 );
 
         for (int i = 0; i < 3; ++ i)
         {
@@ -261,7 +291,7 @@ HRESULT CGPUBC7Encoder::GPU_Encode( ID3D11Device* pDevice, ID3D11DeviceContext* 
 
             pSRVs[1] = pErrBestModeSRV[i & 1];
             RunComputeShader( pContext, m_pTryMode137CS, pSRVs, 2, pCBCS,  pErrBestModeUAV[!(i & 1)], uThreadGroupCount, 1, 1 );
-        }               
+        }
 
         for (int i = 0; i < 2; ++ i)
         {
@@ -287,7 +317,7 @@ HRESULT CGPUBC7Encoder::GPU_Encode( ID3D11Device* pDevice, ID3D11DeviceContext* 
         }
 
         pSRVs[1] = pErrBestModeSRV[1];
-        RunComputeShader( pContext, m_pEncodeBlockCS, pSRVs, 2, pCBCS,  pUAV, __max(uThreadGroupCount / 4, 1), 1, 1 );        
+        RunComputeShader( pContext, m_pEncodeBlockCS, pSRVs, 2, pCBCS,  pUAV, __max(uThreadGroupCount / 4, 1), 1, 1 );
 
         start_block_id += n;
         num_blocks -= n;
