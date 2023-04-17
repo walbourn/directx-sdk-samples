@@ -76,7 +76,7 @@ jobs:
         $sdkroot = Get-ItemProperty -Path 'HKLM:\SOFTWARE\Wow6432Node\Microsoft\Windows Kits\Installed Roots' | Select-Object -ExpandProperty KitsRoot10
         $windows11sdk = "{0}bin\$(WIN11_SDK)\" -f $sdkroot
         if (Test-Path "$windows11sdk") {
-            Write-Host "##vso[task.setvariable variable=WindowsSdkVerBinPath;]$windows11sdk"
+            Write-Host "##vso[task.prependpath]$(windows11sdk)/x86"
         }
         else {
             Write-Error -Message "##[error]Can't find Windows SDK ($(WIN11_SDK))" -ErrorAction Stop
@@ -166,7 +166,7 @@ jobs:
         $sdkroot = Get-ItemProperty -Path 'HKLM:\SOFTWARE\Wow6432Node\Microsoft\Windows Kits\Installed Roots' | Select-Object -ExpandProperty KitsRoot10
         $windows11sdk = "{0}bin\$(WIN11_SDK)\" -f $sdkroot
         if (Test-Path "$windows11sdk") {
-            Write-Host "##vso[task.setvariable variable=WindowsSdkVerBinPath;]$windows11sdk"
+            Write-Host "##vso[task.prependpath]$(windows11sdk)/x64"
         }
         else {
             Write-Error -Message "##[error]Can't find Windows SDK ($(WIN11_SDK))" -ErrorAction Stop
