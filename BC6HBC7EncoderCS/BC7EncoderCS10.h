@@ -8,9 +8,6 @@
 // Licensed under the MIT License (MIT).
 //--------------------------------------------------------------------------------------
 
-#ifndef __BC7ENCODERCS10_H
-#define __BC7ENCODERCS10_H
-
 #pragma once
 
 class CGPUBC7Encoder : public EncoderBase
@@ -25,7 +22,7 @@ public:
       m_fAlphaWeight( 1.0f )
     {}
 
-    HRESULT Initialize( ID3D11Device* pDevice, ID3D11DeviceContext* pContext );
+    HRESULT Initialize( ID3D11Device* pDevice, ID3D11DeviceContext* pContext ) override;
     void Cleanup();
     void SetAlphaWeight( const float fWeight ) { m_fAlphaWeight = fWeight; }
 
@@ -38,9 +35,7 @@ protected:
 
     float                m_fAlphaWeight;
 
-    HRESULT GPU_Encode( ID3D11Device* pDevice, ID3D11DeviceContext* pContext,
-                        ID3D11Texture2D* pSrcTexture,
-                        DXGI_FORMAT dstFormat, ID3D11Buffer** ppDstTextureAsBufOut );
+    HRESULT GPU_Encode(ID3D11Device* pDevice, ID3D11DeviceContext* pContext,
+        ID3D11Texture2D* pSrcTexture,
+        DXGI_FORMAT dstFormat, ID3D11Buffer** ppDstTextureAsBufOut) override;
 };
-
-#endif

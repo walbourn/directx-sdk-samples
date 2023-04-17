@@ -8,9 +8,6 @@
 // Licensed under the MIT License (MIT).
 //--------------------------------------------------------------------------------------
 
-#ifndef __ENCODERBASE_H
-#define __ENCODERBASE_H
-
 #pragma once
 
 struct BufferBC6HBC7
@@ -29,6 +26,8 @@ public:
       m_pDevice(nullptr),
       m_pContext(nullptr)
     {}
+
+    virtual ~EncoderBase() = default;
 
     virtual HRESULT Initialize(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
     {
@@ -65,5 +64,3 @@ protected:
                             WCHAR* strFilename,
                             DXGI_FORMAT dstFormat, std::vector<ID3D11Buffer*>& subTextureAsBufs );
 };
-
-#endif

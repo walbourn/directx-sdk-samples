@@ -8,9 +8,6 @@
 // Licensed under the MIT License (MIT).
 //--------------------------------------------------------------------------------------
 
-#ifndef __UTILS_H
-#define __UTILS_H
-
 #pragma once
 
 #ifndef SAFE_RELEASE
@@ -70,5 +67,3 @@ ID3D11Buffer* CreateAndCopyToCPUBuf( ID3D11Device* pDevice, ID3D11DeviceContext*
 
 //--------------------------------------------------------------------------------------
 bool FileExists( const WCHAR* pszFilename );
-
-#endif

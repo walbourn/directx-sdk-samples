@@ -10,17 +10,22 @@
 
 #include <cassert>
 #include <cstdio>
+#include <memory>
 #include <string>
+#include <tuple>
 #include <vector>
 
 #include <d3d11.h>
 #include "DirectXTex.h"
 
-#include <shlobj.h>
+#include <ShlObj.h>
+
+#include <wrl/client.h>
 
 #include "utils.h"
 
 using namespace DirectX;
+using Microsoft::WRL::ComPtr;
 
 #if defined(_DEBUG) || defined(PROFILE)
 #pragma comment(lib,"dxguid.lib")
@@ -61,40 +66,47 @@ HRESULT WINAPI Dynamic_D3D11CreateDevice( IDXGIAdapter* pAdapter,
 
             if ( !bMessageAlreadyShwon )
             {
-                OSVERSIONINFOEX osv;
-                memset( &osv, 0, sizeof(osv) );
+
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#endif
+                OSVERSIONINFO osv = {};
                 osv.dwOSVersionInfoSize = sizeof(osv);
                 #pragma warning(suppress:4996)
-                GetVersionEx( (LPOSVERSIONINFO)&osv );
+                std::ignore = GetVersionExW(&osv);
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
 
                 if ( ( osv.dwMajorVersion > 6 )
                     || ( osv.dwMajorVersion == 6 && osv.dwMinorVersion >= 1 )
                     || ( osv.dwMajorVersion == 6 && osv.dwMinorVersion == 0 && osv.dwBuildNumber > 6002 ) )
                 {
 
-                    MessageBox( 0, L"Direct3D 11 components were not found.", L"Error", MB_ICONEXCLAMATION );
+                    MessageBox(nullptr, L"Direct3D 11 components were not found.", L"Error", MB_ICONEXCLAMATION);
                     // This should not happen, but is here for completeness as the system could be
                     // corrupted or some future OS version could pull D3D11.DLL for some reason
                 }
                 else if ( osv.dwMajorVersion == 6 && osv.dwMinorVersion == 0 && osv.dwBuildNumber == 6002 )
                 {
 
-                    MessageBox( 0, L"Direct3D 11 components were not found, but are available for"\
+                    MessageBox(nullptr, L"Direct3D 11 components were not found, but are available for"\
                         L" this version of Windows.\n"\
                         L"For details see Microsoft Knowledge Base Article #971644\n"\
-                        L"http://support.microsoft.com/default.aspx/kb/971644/", L"Error", MB_ICONEXCLAMATION );
+                        L"http://support.microsoft.com/default.aspx/kb/971644/", L"Error", MB_ICONEXCLAMATION);
 
                 }
                 else if ( osv.dwMajorVersion == 6 && osv.dwMinorVersion == 0 )
                 {
-                    MessageBox( 0, L"Direct3D 11 components were not found. Please install the latest Service Pack.\n"\
+                    MessageBox(nullptr, L"Direct3D 11 components were not found. Please install the latest Service Pack.\n"\
                         L"For details see Microsoft Knowledge Base Article #935791\n"\
-                        L" http://support.microsoft.com/default.aspx/kb/935791", L"Error", MB_ICONEXCLAMATION );
+                        L" http://support.microsoft.com/default.aspx/kb/935791", L"Error", MB_ICONEXCLAMATION);
 
                 }
                 else
                 {
-                    MessageBox( 0, L"Direct3D 11 is not supported on this OS.", L"Error", MB_ICONEXCLAMATION );
+                    MessageBox(nullptr, L"Direct3D 11 is not supported on this OS.", L"Error", MB_ICONEXCLAMATION);
                 }
 
                 bMessageAlreadyShwon = true;
@@ -103,7 +115,7 @@ HRESULT WINAPI Dynamic_D3D11CreateDevice( IDXGIAdapter* pAdapter,
             return E_FAIL;
         }
 
-        s_DynamicD3D11CreateDevice = ( LPD3D11CREATEDEVICE )GetProcAddress( hModD3D11, "D3D11CreateDevice" );
+        s_DynamicD3D11CreateDevice = reinterpret_cast<LPD3D11CREATEDEVICE>(reinterpret_cast<void*>(GetProcAddress(hModD3D11, "D3D11CreateDevice")));
     }
 
     return s_DynamicD3D11CreateDevice( pAdapter, DriverType, Software, Flags, pFeatureLevels, FeatureLevels,
@@ -212,60 +224,48 @@ void RunComputeShader( ID3D11DeviceContext* pd3dImmediateContext,
 HRESULT LoadTextureFromFile( ID3D11Device* pd3dDevice, LPCTSTR lpFileName, DXGI_FORMAT fmtLoadAs, BOOL bNoMips,
     DirectX::TEX_FILTER_FLAGS dwFilter, ID3D11Texture2D** ppTextureOut )
 {
+    if (!ppTextureOut)
+        return E_INVALIDARG;
+
+    *ppTextureOut = nullptr;
+
     HRESULT hr = S_OK;
 
     WCHAR ext[_MAX_EXT];
     WCHAR fname[_MAX_FNAME];
     _wsplitpath_s( lpFileName, nullptr, 0, nullptr, 0, fname, _MAX_FNAME, ext, _MAX_EXT );
 
-    TexMetadata info;
-    ScratchImage* image = new ScratchImage;
-    if ( !image )
-    {
+    std::unique_ptr<ScratchImage> image(new (std::nothrow) ScratchImage);
+    if (!image)
         return E_OUTOFMEMORY;
-    }
 
+    TexMetadata info;
     if ( _wcsicmp( ext, L".dds" ) == 0 )
     {
         hr = LoadFromDDSFile( lpFileName, DDS_FLAGS_NONE, &info, *image );
         if ( FAILED(hr) )
-        {
-            delete image;
             return hr;
-        }
     }
     else if ( _wcsicmp( ext, L".tga" ) == 0 )
     {
         hr = LoadFromTGAFile( lpFileName, &info, *image );
         if ( FAILED(hr) )
-        {
-            delete image;
             return hr;
-        }
     }
     else
     {
         hr = LoadFromWICFile( lpFileName, WIC_FLAGS_NONE | dwFilter, &info, *image );
         if ( FAILED(hr) )
-        {
-            delete image;
             return hr;
-        }
     }
 
     // Texture 3D is not currently supported
     if ( info.dimension == TEX_DIMENSION_TEXTURE3D )
-    {
-        delete image;
         return E_FAIL;
-    }
 
     // We want to encode uncompressed files
     if ( IsCompressed( info.format ) )
-    {
-        delete image;
         return E_FAIL;
-    }
 
     // If input is sRGB, we want to maintain it instead of incorrectly converting it
     if ( IsSRGB(info.format) && fmtLoadAs == DXGI_FORMAT_R8G8B8A8_UNORM )
@@ -276,20 +276,13 @@ HRESULT LoadTextureFromFile( ID3D11Device* pd3dDevice, LPCTSTR lpFileName, DXGI_
     // Convert to fmtLoadAs, so that our encoder can accept it
     if ( info.format != fmtLoadAs )
     {
-        ScratchImage* timage = new ScratchImage;
+        std::unique_ptr<ScratchImage> timage(new (std::nothrow) ScratchImage);
         if ( !timage )
-        {
-            delete image;
             return E_OUTOFMEMORY;
-        }
 
         hr = Convert( image->GetImages(), image->GetImageCount(), image->GetMetadata(), fmtLoadAs, dwFilter /*| dwSRGB*/, 0.5f, *timage );
         if ( FAILED(hr) )
-        {
-            delete timage;
-            delete image;
             return hr;
-        }
 
         const TexMetadata& tinfo = timage->GetMetadata();
 
@@ -304,8 +297,7 @@ HRESULT LoadTextureFromFile( ID3D11Device* pd3dDevice, LPCTSTR lpFileName, DXGI_
         assert( info.miscFlags == tinfo.miscFlags );
         assert( info.dimension == tinfo.dimension );
 
-        delete image;
-        image = timage;
+        image.swap(timage);
     }
 
     // If the number of mip levels from the input texture is 1 and the user didn't disable mip, we generate the full mip chain
@@ -313,20 +305,13 @@ HRESULT LoadTextureFromFile( ID3D11Device* pd3dDevice, LPCTSTR lpFileName, DXGI_
     if ( ( info.mipLevels <= 1 && !bNoMips )
          && ispow2(info.width) && ispow2(info.height) )
     {
-        ScratchImage* timage = new ScratchImage;
+        std::unique_ptr<ScratchImage> timage(new (std::nothrow) ScratchImage);
         if ( !timage )
-        {
-            delete image;
             return E_OUTOFMEMORY;
-        }
 
         hr = GenerateMipMaps( image->GetImages(), image->GetImageCount(), image->GetMetadata(), dwFilter /*| dwFilterOpts*/, 0, *timage );
         if ( FAILED(hr) )
-        {
-            delete timage;
-            delete image;
             return hr;
-        }
 
         const TexMetadata& tinfo = timage->GetMetadata();
         info.mipLevels = tinfo.mipLevels;
@@ -339,35 +324,38 @@ HRESULT LoadTextureFromFile( ID3D11Device* pd3dDevice, LPCTSTR lpFileName, DXGI_
         assert( info.miscFlags == tinfo.miscFlags );
         assert( info.dimension == tinfo.dimension );
 
-        delete image;
-        image = timage;
+        image.swap(timage);
     }
 
     if ( !bNoMips )
     {
         // The user didn't disable mip, then use the full input resource,
         // which contains mip levels either directly read from the file, or generated from above
-        hr = CreateTexture( pd3dDevice, image->GetImages(), image->GetImageCount(), image->GetMetadata(), (ID3D11Resource**)ppTextureOut );
+        ComPtr<ID3D11Resource> res;
+        hr = CreateTexture(pd3dDevice, image->GetImages(), image->GetImageCount(), image->GetMetadata(), res.GetAddressOf());
         if ( FAILED(hr) )
-        {
-            delete image;
             return hr;
-        }
+
+        hr = res->QueryInterface(IID_PPV_ARGS(ppTextureOut));
+        if (FAILED(hr))
+            return hr;
     }
     else
     {
         // The user explicitly disabled mip, then we only use mip 0 from all faces of the input resource
         std::vector<Image> images;
-        for ( size_t item = 0; item < info.arraySize; ++item )
-            images.push_back( *(image->GetImage( 0, item, 0 )) );
+        for (size_t item = 0; item < info.arraySize; ++item)
+            images.push_back(*(image->GetImage(0, item, 0)));
         info.mipLevels = 1;
 
-        hr = CreateTexture( pd3dDevice, &images[0], images.size(), info, (ID3D11Resource**)ppTextureOut );
-        if ( FAILED(hr) )
-        {
-            delete image;
+        ComPtr<ID3D11Resource> res;
+        hr = CreateTexture(pd3dDevice, &images[0], images.size(), info, res.GetAddressOf());
+        if (FAILED(hr))
             return hr;
-        }
+
+        hr = res->QueryInterface(IID_PPV_ARGS(ppTextureOut));
+        if (FAILED(hr))
+            return hr;
     }
 
     return hr;
@@ -389,7 +377,7 @@ ID3D11Buffer* CreateAndCopyToCPUBuf( ID3D11Device* pDevice, ID3D11DeviceContext*
     if ( SUCCEEDED(pDevice->CreateBuffer(&desc, nullptr, &cpubuf)) )
     {
 #if defined(_DEBUG) || defined(PROFILE)
-        cpubuf->SetPrivateData( WKPDID_D3DDebugObjectName, sizeof( "CPU" ) - 1, "CPU" );
+        std::ignore = cpubuf->SetPrivateData( WKPDID_D3DDebugObjectName, sizeof( "CPU" ) - 1, "CPU" );
 #endif
         pd3dImmediateContext->CopyResource( cpubuf, pBuffer );
     }
