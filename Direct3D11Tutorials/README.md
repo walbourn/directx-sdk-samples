@@ -84,7 +84,7 @@ In the previous tutorial, we introduced lighting to our project. Now we will bui
 The purpose of this tutorial is to modify the center cube to have a texture mapped onto it. 
 
  
-http://msdn.microsoft.com/en-us/library/windows/apps/ff729724.aspx 
+http://msdn.microsoft.com/en-us/library/windows/apps/ff729724.aspx
 
 Note rather than use the deprecated D3DX11 library to load the texture as was used in the original tutorial, this version uses the included DDSTextureLoader module.
 
