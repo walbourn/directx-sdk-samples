@@ -44,4 +44,3 @@ void CSimpleAPO::DoProcess( const SimpleAPOParams& params, FLOAT32* __restrict p
         pData[i] *= gain;
     }
 }
-

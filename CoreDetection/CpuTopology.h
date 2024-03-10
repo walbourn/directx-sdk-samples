@@ -8,7 +8,7 @@
 //-------------------------------------------------------------------------------------
 #pragma once
 
-#include <windows.h>
+#include <Windows.h>
 
 class ICpuTopology;
 
@@ -24,10 +24,10 @@ public:
                 CpuTopology( bool bForceCpuid = false );
                 ~CpuTopology();
 
-    bool        IsDefaultImpl() const;
-    DWORD       NumberOfProcessCores() const;
-    DWORD       NumberOfSystemCores() const;
-    DWORD_PTR   CoreAffinityMask( DWORD coreIdx ) const;
+    bool        IsDefaultImpl() const noexcept;
+    DWORD       NumberOfProcessCores() const noexcept;
+    DWORD       NumberOfSystemCores() const noexcept;
+    DWORD_PTR   CoreAffinityMask( DWORD coreIdx ) const noexcept;
 
     void        ForceCpuid( bool bForce );
 private:

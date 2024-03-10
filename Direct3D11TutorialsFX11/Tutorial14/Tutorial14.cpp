@@ -14,14 +14,16 @@
 #include "DXUT.h"
 #include "DXUTcamera.h"
 #include "DXUTgui.h"
-#include "DXUTsettingsDlg.h"
+#include "DXUTsettingsdlg.h"
 #include "SDKmisc.h"
 #include "SDKmesh.h"
 #include "DDSTextureLoader.h"
 
 #include <d3dx11effect.h>
 
-#pragma warning( disable : 4100 )
+#include <iterator>
+
+#pragma warning( disable : 4619 4616 4100 4946 )
 
 using namespace DirectX;
 
@@ -225,7 +227,7 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
         { "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
         { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 24, D3D11_INPUT_PER_VERTEX_DATA, 0 },
     };
-    UINT numElements = ARRAYSIZE( layout );
+    auto const numElements = static_cast<UINT>(std::size(layout));
 
     // Create the input layout
     D3DX11_PASS_DESC PassDesc;
@@ -267,6 +269,7 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
         D3D11_USAGE_DEFAULT,
         D3D11_BIND_VERTEX_BUFFER,
         0,
+        0,
         0
     };
 
@@ -277,7 +280,7 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
     V_RETURN( pd3dDevice->CreateBuffer( &vbdesc, &InitData, &g_pScreenQuadVB ) );
 
     // Load the texture for the screen quad
-    WCHAR* szScreenTextures[] =
+    const wchar_t* szScreenTextures[] =
     {
         L"misc\\MarbleClouds.dds",
         L"misc\\NormTest.dds"
@@ -289,8 +292,8 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
     }
 
     // Setup the camera's view parameters
-    static const XMVECTORF32 s_Eye = { 0.0f, 3.0f, -800.0f, 0.f };
-    static const XMVECTORF32 s_At = { 0.0f, 1.0f, 0.0f, 0.f };
+    static const XMVECTORF32 s_Eye = { { { 0.0f, 3.0f, -800.0f, 0.f } } };
+    static const XMVECTORF32 s_At = { { { 0.0f, 1.0f, 0.0f, 0.f } } };
     g_Camera.SetViewParams( s_Eye, s_At );
 
     return S_OK;
@@ -308,15 +311,18 @@ HRESULT CALLBACK OnD3D11ResizedSwapChain( ID3D11Device* pd3dDevice, IDXGISwapCha
     V_RETURN( g_DialogResourceManager.OnD3D11ResizedSwapChain( pd3dDevice, pBackBufferSurfaceDesc ) );
     V_RETURN( g_SettingsDlg.OnD3D11ResizedSwapChain( pd3dDevice, pBackBufferSurfaceDesc ) );
 
+    auto const iwidth = static_cast<int>(pBackBufferSurfaceDesc->Width);
+    auto const iheight = static_cast<int>(pBackBufferSurfaceDesc->Height);
+
     // Setup the camera's projection parameters
-    float fAspectRatio = pBackBufferSurfaceDesc->Width / ( FLOAT )pBackBufferSurfaceDesc->Height;
+    const float fAspectRatio = static_cast<float>(pBackBufferSurfaceDesc->Width) / static_cast<float>(pBackBufferSurfaceDesc->Height);
     g_Camera.SetProjParams( XM_PI / 4, fAspectRatio, 0.1f, 5000.0f );
-    g_Camera.SetWindow( pBackBufferSurfaceDesc->Width, pBackBufferSurfaceDesc->Height );
+    g_Camera.SetWindow( iwidth, iheight );
     g_Camera.SetButtonMasks( MOUSE_LEFT_BUTTON, MOUSE_WHEEL, MOUSE_MIDDLE_BUTTON );
 
-    g_HUD.SetLocation( pBackBufferSurfaceDesc->Width - 170, 0 );
+    g_HUD.SetLocation( iwidth - 170, 0 );
     g_HUD.SetSize( 170, 170 );
-    g_SampleUI.SetLocation( pBackBufferSurfaceDesc->Width - 270, pBackBufferSurfaceDesc->Height - 300 );
+    g_SampleUI.SetLocation( iwidth - 270, iheight - 300 );
     g_SampleUI.SetSize( 170, 300 );
 
     return S_OK;
@@ -331,9 +337,11 @@ void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext 
     // Update the camera's position based on user input 
     g_Camera.FrameMove( fElapsedTime );
 
+    auto const t = static_cast<float>(fTime);
+
     if( g_bSpinning )
     {
-        g_World = XMMatrixRotationY( 60.0f * XMConvertToRadians((float)fTime) );
+        g_World = XMMatrixRotationY( 60.0f * XMConvertToRadians( t ) );
     }
     else
     {
@@ -386,14 +394,13 @@ void CALLBACK OnD3D11FrameRender( ID3D11Device* pd3dDevice, ID3D11DeviceContext*
 
     XMMATRIX mView = g_Camera.GetViewMatrix();
     XMMATRIX mProj = g_Camera.GetProjMatrix();
-    XMMATRIX mWorldViewProjection = g_World * mView * mProj;
 
     //
     // Update variables that change once per frame
     //
-    g_pProjectionVariable->SetMatrix( ( float* )&mProj );
-    g_pViewVariable->SetMatrix( ( float* )&mView );
-    g_pWorldVariable->SetMatrix( ( float* )&g_World );
+    g_pProjectionVariable->SetMatrix( reinterpret_cast<float*>(&mProj) );
+    g_pViewVariable->SetMatrix( reinterpret_cast<float*>(&mView) );
+    g_pWorldVariable->SetMatrix( reinterpret_cast<float*>(&g_World) );
 
     //
     // Update the Cull Mode (non-FX method)
@@ -414,7 +421,7 @@ void CALLBACK OnD3D11FrameRender( ID3D11Device* pd3dDevice, ID3D11DeviceContext*
     UINT Offsets[1];
     ID3D11Buffer* pVB[1];
     pVB[0] = g_Mesh.GetVB11( 0, 0 );
-    Strides[0] = ( UINT )g_Mesh.GetVertexStride( 0, 0 );
+    Strides[0] = static_cast<UINT>(g_Mesh.GetVertexStride( 0, 0 ));
     Offsets[0] = 0;
     pd3dImmediateContext->IASetVertexBuffers( 0, 1, pVB, Strides, Offsets );
     pd3dImmediateContext->IASetIndexBuffer( g_Mesh.GetIB11( 0 ), g_Mesh.GetIBFormat11( 0 ), 0 );
@@ -429,14 +436,14 @@ void CALLBACK OnD3D11FrameRender( ID3D11Device* pd3dDevice, ID3D11DeviceContext*
         {
             auto pSubset = g_Mesh.GetSubset( 0, subset );
 
-            auto PrimType = g_Mesh.GetPrimitiveType11( ( SDKMESH_PRIMITIVE_TYPE )pSubset->PrimitiveType );
+            auto PrimType = g_Mesh.GetPrimitiveType11( static_cast<SDKMESH_PRIMITIVE_TYPE>(pSubset->PrimitiveType) );
             pd3dImmediateContext->IASetPrimitiveTopology( PrimType );
 
             auto pDiffuseRV = g_Mesh.GetMaterial( pSubset->MaterialID )->pDiffuseRV11;
             g_ptxDiffuseVariable->SetResource( pDiffuseRV );
 
             g_pTechniqueScene->GetPassByIndex( p )->Apply( 0, pd3dImmediateContext );
-            pd3dImmediateContext->DrawIndexed( ( UINT )pSubset->IndexCount, 0, ( UINT )pSubset->VertexStart );
+            pd3dImmediateContext->DrawIndexed( static_cast<UINT>(pSubset->IndexCount), 0, static_cast<INT>(pSubset->VertexStart) );
         }
     }
 
@@ -444,7 +451,7 @@ void CALLBACK OnD3D11FrameRender( ID3D11Device* pd3dDevice, ID3D11DeviceContext*
     // Reset the world transform
     //
     XMMATRIX mWorld = XMMatrixScaling( 150.0f, 150.0f, 1.0f );
-    g_pWorldVariable->SetMatrix( ( const float* )&mWorld );
+    g_pWorldVariable->SetMatrix( reinterpret_cast<const float*>(&mWorld) );
 
     //
     // Render the screen space quad
@@ -622,21 +629,21 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
         case IDC_QUADRENDER_MODE:
         {
             auto pComboBox = reinterpret_cast<CDXUTComboBox*>( pControl );
-            g_eQuadRenderMode = ( UINT )PtrToInt( pComboBox->GetSelectedData() );
+            g_eQuadRenderMode = static_cast<UINT>(PtrToInt( pComboBox->GetSelectedData() ));
             break;
         }
 
         case IDC_SCENEDEPTHSTENCIL_MODE:
         {
             auto pComboBox = reinterpret_cast<CDXUTComboBox*>( pControl );
-            g_eSceneDepthStencilMode = ( UINT )PtrToInt( pComboBox->GetSelectedData() );
+            g_eSceneDepthStencilMode = static_cast<UINT>(PtrToInt( pComboBox->GetSelectedData() ));
             break;
         }
 
         case IDC_SCENERASTERIZER_MODE:
         {
             auto pComboBox = reinterpret_cast<CDXUTComboBox*>( pControl );
-            g_eSceneRasterizerMode = ( UINT )PtrToInt( pComboBox->GetSelectedData() );
+            g_eSceneRasterizerMode = static_cast<UINT>(PtrToInt( pComboBox->GetSelectedData() ));
             break;
         }
     }
@@ -756,13 +763,12 @@ void LoadQuadTechniques()
     for( UINT i = 0; i < MAX_QUAD_TECHNIQUES; i++ )
     {
         char mbstr[MAX_PATH];
-        if ( !WideCharToMultiByte( CP_ACP, 0, g_szQuadTechniques[i], -1, mbstr, MAX_PATH, 0, 0 ) )
+        if ( !WideCharToMultiByte( CP_ACP, 0, g_szQuadTechniques[i], -1, mbstr, MAX_PATH, nullptr, nullptr ) )
             continue;
 
         g_pTechniqueQuad[i] = g_pEffect->GetTechniqueByName( mbstr );
 
-        g_SampleUI.GetComboBox( IDC_QUADRENDER_MODE )->AddItem( g_szQuadTechniques[i], ( void* )( UINT64 )i );
-
+        g_SampleUI.GetComboBox( IDC_QUADRENDER_MODE )->AddItem( g_szQuadTechniques[i], IntToPtr(static_cast<int>(i)) );
     }
 }
 
@@ -870,8 +876,7 @@ void LoadDepthStencilStates( ID3D11Device* pd3dDevice )
         // Create depth stencil state
         pd3dDevice->CreateDepthStencilState( &dsDesc, &g_pDepthStencilStates[i] );
 
-        g_SampleUI.GetComboBox( IDC_SCENEDEPTHSTENCIL_MODE )->AddItem( g_szDepthStencilModes[i],
-                                                                       ( void* )( UINT64 )i );
+        g_SampleUI.GetComboBox( IDC_SCENEDEPTHSTENCIL_MODE )->AddItem( g_szDepthStencilModes[i], IntToPtr(static_cast<int>(i)) );
     }
 }
 
@@ -917,6 +922,6 @@ void LoadRasterizerStates( ID3D11Device* pd3dDevice )
         rasterizerState.AntialiasedLineEnable = false;
         pd3dDevice->CreateRasterizerState( &rasterizerState, &g_pRasterStates[i] );
 
-        g_SampleUI.GetComboBox( IDC_SCENERASTERIZER_MODE )->AddItem( g_szRasterizerModes[i], ( void* )( UINT64 )i );
+        g_SampleUI.GetComboBox( IDC_SCENERASTERIZER_MODE )->AddItem( g_szRasterizerModes[i], IntToPtr(static_cast<int>(i)) );
     }
 }

@@ -25,7 +25,7 @@ LANGUAGE 9, 1
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
 
-IDI_TUTORIAL1       ICON         "..\..\DXUT\Optional\directx.ico"
+IDI_TUTORIAL1       ICON         "..\\..\\DXUT\\Optional\\directx.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //

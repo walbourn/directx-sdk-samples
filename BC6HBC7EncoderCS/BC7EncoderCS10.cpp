@@ -8,6 +8,9 @@
 // Licensed under the MIT License (MIT).
 //--------------------------------------------------------------------------------------
 
+#define NOMINMAX 1
+#include <algorithm>
+#include <tuple>
 #include <vector>
 
 #include <d3d11.h>
@@ -36,6 +39,10 @@ namespace
 #include "BC7Encode_TryMode456CS_cs40.inc"
     }
 }
+
+#ifdef __clang__
+#pragma clang diagnostic ignored "-Wundefined-reinterpret-cast"
+#endif
 
 //--------------------------------------------------------------------------------------
 // Initialize the encoder
@@ -71,13 +78,21 @@ HRESULT CGPUBC7Encoder::Initialize( ID3D11Device* pDevice, ID3D11DeviceContext* 
 
 #if defined(_DEBUG) || defined(PROFILE)
     if (m_pTryMode456CS)
-        m_pTryMode456CS->SetPrivateData( WKPDID_D3DDebugObjectName, sizeof( "BC7Encode_TryMode456CS" ) - 1, "BC7Encode_TryMode456CS" );
+    {
+        std::ignore = m_pTryMode456CS->SetPrivateData(WKPDID_D3DDebugObjectName, sizeof("BC7Encode_TryMode456CS") - 1, "BC7Encode_TryMode456CS");
+    }
     if (m_pTryMode137CS)
-        m_pTryMode137CS->SetPrivateData( WKPDID_D3DDebugObjectName, sizeof( "BC7Encode_TryMode137CS" ) - 1, "BC7Encode_TryMode137CS" );
+    {
+        std::ignore = m_pTryMode137CS->SetPrivateData(WKPDID_D3DDebugObjectName, sizeof("BC7Encode_TryMode137CS") - 1, "BC7Encode_TryMode137CS");
+    }
     if (m_pTryMode02CS)
-        m_pTryMode02CS->SetPrivateData( WKPDID_D3DDebugObjectName, sizeof( "BC7Encode_TryMode02CS" ) - 1, "BC7Encode_TryMode02CS" );
+    {
+        std::ignore = m_pTryMode02CS->SetPrivateData(WKPDID_D3DDebugObjectName, sizeof("BC7Encode_TryMode02CS") - 1, "BC7Encode_TryMode02CS");
+    }
     if (m_pEncodeBlockCS)
-        m_pEncodeBlockCS->SetPrivateData( WKPDID_D3DDebugObjectName, sizeof( "BC7Encode_EncodeBlockCS" ) -1, "BC7Encode_EncodeBlockCS" );
+    {
+        std::ignore = m_pEncodeBlockCS->SetPrivateData(WKPDID_D3DDebugObjectName, sizeof("BC7Encode_EncodeBlockCS") - 1, "BC7Encode_EncodeBlockCS");
+    }
 #endif
 
     return hr;
@@ -136,7 +151,7 @@ HRESULT CGPUBC7Encoder::GPU_Encode( ID3D11Device* pDevice, ID3D11DeviceContext* 
 #if defined(_DEBUG) || defined(PROFILE)
         if ( pSRV )
         {
-            pSRV->SetPrivateData( WKPDID_D3DDebugObjectName, sizeof( "BC7 SRV" ) - 1, "BC7 SRV" );
+            std::ignore = pSRV->SetPrivateData( WKPDID_D3DDebugObjectName, sizeof( "BC7 SRV" ) - 1, "BC7 SRV" );
         }
 #endif
     }
@@ -160,15 +175,15 @@ HRESULT CGPUBC7Encoder::GPU_Encode( ID3D11Device* pDevice, ID3D11DeviceContext* 
 #if defined(_DEBUG) || defined(PROFILE)
         if ( *ppDstTextureAsBufOut )
         {
-            (*ppDstTextureAsBufOut)->SetPrivateData( WKPDID_D3DDebugObjectName, sizeof( "BC7 Dest" ) - 1, "BC7 Dest" );
+            std::ignore = (*ppDstTextureAsBufOut)->SetPrivateData( WKPDID_D3DDebugObjectName, sizeof( "BC7 Dest" ) - 1, "BC7 Dest" );
         }
         if ( pErrBestModeBuffer[0] )
         {
-            pErrBestModeBuffer[0]->SetPrivateData( WKPDID_D3DDebugObjectName, sizeof( "BC7 ErrBest0" ) - 1, "BC7 ErrBest0" );
+            std::ignore = pErrBestModeBuffer[0]->SetPrivateData( WKPDID_D3DDebugObjectName, sizeof( "BC7 ErrBest0" ) - 1, "BC7 ErrBest0" );
         }
         if ( pErrBestModeBuffer[1] )
         {
-            pErrBestModeBuffer[1]->SetPrivateData( WKPDID_D3DDebugObjectName, sizeof( "BC7 ErrBest1" ) - 1, "BC7 ErrBest1" );
+            std::ignore = pErrBestModeBuffer[1]->SetPrivateData( WKPDID_D3DDebugObjectName, sizeof( "BC7 ErrBest1" ) - 1, "BC7 ErrBest1" );
         }
 #endif
     }
@@ -190,15 +205,15 @@ HRESULT CGPUBC7Encoder::GPU_Encode( ID3D11Device* pDevice, ID3D11DeviceContext* 
 #if defined(_DEBUG) || defined(PROFILE)
         if ( pUAV )
         {
-            pUAV->SetPrivateData( WKPDID_D3DDebugObjectName, sizeof( "BC7 Dest UAV" ) - 1, "BC7 Dest UAV" );
+            std::ignore = pUAV->SetPrivateData( WKPDID_D3DDebugObjectName, sizeof( "BC7 Dest UAV" ) - 1, "BC7 Dest UAV" );
         }
         if ( pErrBestModeUAV[0] )
         {
-            pErrBestModeUAV[0]->SetPrivateData( WKPDID_D3DDebugObjectName, sizeof( "BC7 ErrBest0 UAV" ) - 1, "BC7 ErrBest0 UAV" );
+            std::ignore = pErrBestModeUAV[0]->SetPrivateData( WKPDID_D3DDebugObjectName, sizeof( "BC7 ErrBest0 UAV" ) - 1, "BC7 ErrBest0 UAV" );
         }
         if ( pErrBestModeUAV[1] )
         {
-            pErrBestModeUAV[1]->SetPrivateData( WKPDID_D3DDebugObjectName, sizeof( "BC7 ErrBest1 UAV" ) - 1, "BC7 ErrBest1 UAV" );
+            std::ignore = pErrBestModeUAV[1]->SetPrivateData( WKPDID_D3DDebugObjectName, sizeof( "BC7 ErrBest1 UAV" ) - 1, "BC7 ErrBest1 UAV" );
         }
 #endif
     }
@@ -218,11 +233,11 @@ HRESULT CGPUBC7Encoder::GPU_Encode( ID3D11Device* pDevice, ID3D11DeviceContext* 
 #if defined(_DEBUG) || defined(PROFILE)
         if ( pErrBestModeSRV[0] )
         {
-            pErrBestModeSRV[0]->SetPrivateData( WKPDID_D3DDebugObjectName, sizeof( "BC7 ErrBest0 SRV" ) - 1, "BC7 ErrBest0 SRV" );
+            std::ignore = pErrBestModeSRV[0]->SetPrivateData( WKPDID_D3DDebugObjectName, sizeof( "BC7 ErrBest0 SRV" ) - 1, "BC7 ErrBest0 SRV" );
         }
         if ( pErrBestModeSRV[1] )
         {
-            pErrBestModeSRV[1]->SetPrivateData( WKPDID_D3DDebugObjectName, sizeof( "BC7 ErrBest1 SRV" ) - 1, "BC7 ErrBest1 SRV" );
+            std::ignore = pErrBestModeSRV[1]->SetPrivateData( WKPDID_D3DDebugObjectName, sizeof( "BC7 ErrBest1 SRV" ) - 1, "BC7 ErrBest1 SRV" );
         }
 #endif
     }
@@ -240,7 +255,7 @@ HRESULT CGPUBC7Encoder::GPU_Encode( ID3D11Device* pDevice, ID3D11DeviceContext* 
 #if defined(_DEBUG) || defined(PROFILE)
         if ( pCBCS )
         {
-            pCBCS->SetPrivateData( WKPDID_D3DDebugObjectName, sizeof( "BC7Encode" ) - 1, "BC7Encode" );
+            std::ignore = pCBCS->SetPrivateData( WKPDID_D3DDebugObjectName, sizeof( "BC7Encode" ) - 1, "BC7Encode" );
         }
 #endif
     }
@@ -248,8 +263,8 @@ HRESULT CGPUBC7Encoder::GPU_Encode( ID3D11Device* pDevice, ID3D11DeviceContext* 
     num_blocks = num_total_blocks = texSrcDesc.Width / BLOCK_SIZE_X * texSrcDesc.Height / BLOCK_SIZE_Y;
     while (num_blocks > 0)
     {
-        int n = min(num_blocks, MAX_BLOCK_BATCH);
-        UINT uThreadGroupCount = n;
+        int n = std::min(num_blocks, MAX_BLOCK_BATCH);
+        auto uThreadGroupCount = static_cast<UINT>(n);
 
         {
             D3D11_MAPPED_SUBRESOURCE cbMapped;
@@ -258,17 +273,17 @@ HRESULT CGPUBC7Encoder::GPU_Encode( ID3D11Device* pDevice, ID3D11DeviceContext* 
             UINT param[8];
             param[0] = texSrcDesc.Width;
             param[1] = texSrcDesc.Width / BLOCK_SIZE_X;
-            param[2] = dstFormat;
-            param[3] = 0;
-            param[4] = start_block_id;
-            param[5] = num_total_blocks;
-            *((float*)&param[6]) = m_fAlphaWeight;
+            param[2] = static_cast<UINT>(dstFormat);
+            param[3] = 0u;
+            param[4] = static_cast<UINT>(start_block_id);
+            param[5] = static_cast<UINT>(num_total_blocks);
+            *reinterpret_cast<float*>(&param[6]) = m_fAlphaWeight;
             memcpy( cbMapped.pData, param, sizeof( param ) );
             pContext->Unmap( pCBCS, 0 );
         }
 
         ID3D11ShaderResourceView* pSRVs[] = { pSRV, nullptr };
-        RunComputeShader( pContext, m_pTryMode456CS, pSRVs, 2, pCBCS, pErrBestModeUAV[0], __max(uThreadGroupCount / 4, 1), 1, 1 );
+        RunComputeShader( pContext, m_pTryMode456CS, pSRVs, 2, pCBCS, pErrBestModeUAV[0], std::max(uThreadGroupCount / 4, 1u), 1, 1 );
 
         for (int i = 0; i < 3; ++ i)
         {
@@ -280,11 +295,11 @@ HRESULT CGPUBC7Encoder::GPU_Encode( ID3D11Device* pDevice, ID3D11DeviceContext* 
                 UINT param[8];
                 param[0] = texSrcDesc.Width;
                 param[1] = texSrcDesc.Width / BLOCK_SIZE_X;
-                param[2] = dstFormat;
-                param[3] = modes[i];
-                param[4] = start_block_id;
-                param[5] = num_total_blocks;
-                *((float*)&param[6]) = m_fAlphaWeight;
+                param[2] = static_cast<UINT>(dstFormat);
+                param[3] = static_cast<UINT>(modes[i]);
+                param[4] = static_cast<UINT>(start_block_id);
+                param[5] = static_cast<UINT>(num_total_blocks);
+                *reinterpret_cast<float*>(&param[6]) = m_fAlphaWeight;
                 memcpy( cbMapped.pData, param, sizeof( param ) );
                 pContext->Unmap( pCBCS, 0 );
             }
@@ -303,11 +318,11 @@ HRESULT CGPUBC7Encoder::GPU_Encode( ID3D11Device* pDevice, ID3D11DeviceContext* 
                 UINT param[8];
                 param[0] = texSrcDesc.Width;
                 param[1] = texSrcDesc.Width / BLOCK_SIZE_X;
-                param[2] = dstFormat;
-                param[3] = modes[i];
-                param[4] = start_block_id;
-                param[5] = num_total_blocks;
-                *((float*)&param[6]) = m_fAlphaWeight;
+                param[2] = static_cast<UINT>(dstFormat);
+                param[3] = static_cast<UINT>(modes[i]);
+                param[4] = static_cast<UINT>(start_block_id);
+                param[5] = static_cast<UINT>(num_total_blocks);
+                *reinterpret_cast<float*>(&param[6]) = m_fAlphaWeight;
                 memcpy( cbMapped.pData, param, sizeof( param ) );
                 pContext->Unmap( pCBCS, 0 );
             }
@@ -317,7 +332,7 @@ HRESULT CGPUBC7Encoder::GPU_Encode( ID3D11Device* pDevice, ID3D11DeviceContext* 
         }
 
         pSRVs[1] = pErrBestModeSRV[1];
-        RunComputeShader( pContext, m_pEncodeBlockCS, pSRVs, 2, pCBCS,  pUAV, __max(uThreadGroupCount / 4, 1), 1, 1 );
+        RunComputeShader( pContext, m_pEncodeBlockCS, pSRVs, 2, pCBCS,  pUAV, std::max(uThreadGroupCount / 4, 1u), 1, 1 );
 
         start_block_id += n;
         num_blocks -= n;

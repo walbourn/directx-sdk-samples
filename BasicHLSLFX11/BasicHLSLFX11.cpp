@@ -10,9 +10,9 @@
 #include "DXUT.h"
 #include "DXUTcamera.h"
 #include "DXUTgui.h"
-#include "DXUTsettingsDlg.h"
+#include "DXUTsettingsdlg.h"
 #include "SDKmisc.h"
-#include "SDKMesh.h"
+#include "SDKmesh.h"
 #include "resource.h"
 
 #include <d3dx11effect.h>
@@ -141,8 +141,8 @@ void InitApp()
 {
     for( int i = 0; i < MAX_LIGHTS; i++ )
     {
-        g_LightControl[i].SetLightDirection( XMFLOAT3( sinf( XM_PI * 2 * i / MAX_LIGHTS - XM_PI / 6 ),
-                                                       0, -cosf( XM_PI * 2 * i / MAX_LIGHTS - XM_PI / 6 ) ) );
+        g_LightControl[i].SetLightDirection( XMFLOAT3( sinf( XM_PI * 2 * static_cast<float>(i) / MAX_LIGHTS - XM_PI / 6 ),
+                                                       0, -cosf( XM_PI * 2 * static_cast<float>(i) / MAX_LIGHTS - XM_PI / 6 ) ) );
     }
 
     g_nActiveLight = 0;
@@ -171,7 +171,7 @@ void InitApp()
     iY += 24;
     swprintf_s( sz, 100, L"Light scale: %0.2f", g_fLightScale );
     g_SampleUI.AddStatic( IDC_LIGHT_SCALE_STATIC, sz, 35, iY += 24, 125, 22 );
-    g_SampleUI.AddSlider( IDC_LIGHT_SCALE, 50, iY += 24, 100, 22, 0, 20, ( int )( g_fLightScale * 10.0f ) );
+    g_SampleUI.AddSlider( IDC_LIGHT_SCALE, 50, iY += 24, 100, 22, 0, 20, static_cast<int>( g_fLightScale * 10.0f ) );
 
     iY += 24;
     g_SampleUI.AddButton( IDC_ACTIVE_LIGHT, L"Change active light (K)", 35, iY += 24, 125, 22, 'K' );
@@ -211,7 +211,7 @@ void RenderText()
     // Draw help
     if( g_bShowHelp )
     {
-        UINT nBackBufferHeight = DXUTGetDXGIBackBufferSurfaceDesc()->Height;
+        auto nBackBufferHeight = static_cast<int>(DXUTGetDXGIBackBufferSurfaceDesc()->Height);
         g_pTxtHelper->SetInsertionPos( 2, nBackBufferHeight - 15 * 6 );
         g_pTxtHelper->SetForegroundColor( Colors::Orange );
         g_pTxtHelper->DrawTextLine( L"Controls:" );
@@ -323,7 +323,7 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
             break;
 
         case IDC_LIGHT_SCALE:
-            g_fLightScale = ( float )( g_SampleUI.GetSlider( IDC_LIGHT_SCALE )->GetValue() * 0.10f );
+            g_fLightScale = static_cast<float>( g_SampleUI.GetSlider( IDC_LIGHT_SCALE )->GetValue() ) * 0.10f;
 
             WCHAR sz[100];
             swprintf_s( sz, 100, L"Light scale: %0.2f", g_fLightScale );
@@ -450,11 +450,11 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
     // Set effect variables as needed
     XMFLOAT4 colorMtrlDiffuse( 1.0f, 1.0f, 1.0f, 1.0f );
     XMFLOAT4 colorMtrlAmbient( 0.35f, 0.35f, 0.35f, 0 );
-    V_RETURN( g_pMaterialAmbientColor->SetFloatVector( ( float* )&colorMtrlAmbient ) );
-    V_RETURN( g_pMaterialDiffuseColor->SetFloatVector( ( float* )&colorMtrlDiffuse ) );
+    V_RETURN( g_pMaterialAmbientColor->SetFloatVector( reinterpret_cast<float*>(&colorMtrlAmbient) ) );
+    V_RETURN( g_pMaterialDiffuseColor->SetFloatVector( reinterpret_cast<float*>(&colorMtrlDiffuse) ) );
 
     // Setup the camera's view parameters
-    static const XMVECTORF32 s_vecEye = { 0.0f, 0.0f, -15.0f, 0.0f };
+    static const XMVECTORF32 s_vecEye = { { { 0.0f, 0.0f, -15.0f, 0.0f } } };
     g_Camera.SetViewParams( s_vecEye, g_XMZero );
     g_Camera.SetRadius( fObjectRadius * 3.0f, fObjectRadius * 0.5f, fObjectRadius * 10.0f );
 
@@ -473,15 +473,18 @@ HRESULT CALLBACK OnD3D11ResizedSwapChain( ID3D11Device* pd3dDevice, IDXGISwapCha
     V_RETURN( g_DialogResourceManager.OnD3D11ResizedSwapChain( pd3dDevice, pBackBufferSurfaceDesc ) );
     V_RETURN( g_D3DSettingsDlg.OnD3D11ResizedSwapChain( pd3dDevice, pBackBufferSurfaceDesc ) );
 
+    auto const iwidth = static_cast<int>(pBackBufferSurfaceDesc->Width);
+    auto const iheight = static_cast<int>(pBackBufferSurfaceDesc->Height);
+
     // Setup the camera's projection parameters
-    float fAspectRatio = pBackBufferSurfaceDesc->Width / ( FLOAT )pBackBufferSurfaceDesc->Height;
+    const float fAspectRatio = static_cast<float>(pBackBufferSurfaceDesc->Width) / static_cast<float>(pBackBufferSurfaceDesc->Height);
     g_Camera.SetProjParams( XM_PI / 4, fAspectRatio, 2.0f, 4000.0f );
-    g_Camera.SetWindow( pBackBufferSurfaceDesc->Width, pBackBufferSurfaceDesc->Height );
+    g_Camera.SetWindow( iwidth, iheight );
     g_Camera.SetButtonMasks( MOUSE_LEFT_BUTTON, MOUSE_WHEEL, MOUSE_MIDDLE_BUTTON );
 
-    g_HUD.SetLocation( pBackBufferSurfaceDesc->Width - 170, 0 );
+    g_HUD.SetLocation( iwidth - 170, 0 );
     g_HUD.SetSize( 170, 170 );
-    g_SampleUI.SetLocation( pBackBufferSurfaceDesc->Width - 170, pBackBufferSurfaceDesc->Height - 300 );
+    g_SampleUI.SetLocation( iwidth - 170, iheight - 300 );
     g_SampleUI.SetSize( 170, 300 );
 
     return S_OK;
@@ -528,16 +531,16 @@ void CALLBACK OnD3D11FrameRender( ID3D11Device* pd3dDevice, ID3D11DeviceContext*
     }
 
     V( g_pLightDir->SetRawValue( vLightDir, 0, sizeof( XMFLOAT3 ) * MAX_LIGHTS ) );
-    V( g_pLightDiffuse->SetFloatVectorArray( ( float* )vLightDiffuse, 0, MAX_LIGHTS ) );
+    V( g_pLightDiffuse->SetFloatVectorArray( reinterpret_cast<float*>(vLightDiffuse), 0, MAX_LIGHTS ) );
 
     XMFLOAT4X4 m;
     XMStoreFloat4x4( &m, mWorldViewProjection );
-    V( g_pmWorldViewProjection->SetMatrix( ( float* )&m ) );
+    V( g_pmWorldViewProjection->SetMatrix( reinterpret_cast<float*>(&m) ) );
 
     XMStoreFloat4x4( &m, mWorld );
-    V( g_pmWorld->SetMatrix( ( float* )&m) );
+    V( g_pmWorld->SetMatrix( reinterpret_cast<float*>(&m)) );
 
-    V( g_pfTime->SetFloat( ( float )fTime ) );
+    V( g_pfTime->SetFloat( static_cast<float>(fTime) ) );
     V( g_pnNumLights->SetInt( g_nNumActiveLights ) );
 
     // Render the scene with this technique as defined in the .fx file
@@ -565,7 +568,7 @@ void CALLBACK OnD3D11FrameRender( ID3D11Device* pd3dDevice, ID3D11DeviceContext*
     UINT Offsets[1];
     ID3D11Buffer* pVB[1];
     pVB[0] = g_Mesh11.GetVB11( 0, 0 );
-    Strides[0] = ( UINT )g_Mesh11.GetVertexStride( 0, 0 );
+    Strides[0] = static_cast<UINT>(g_Mesh11.GetVertexStride( 0, 0 ));
     Offsets[0] = 0;
     pd3dImmediateContext->IASetVertexBuffers( 0, 1, pVB, Strides, Offsets );
     pd3dImmediateContext->IASetIndexBuffer( g_Mesh11.GetIB11( 0 ), g_Mesh11.GetIBFormat11( 0 ), 0 );
@@ -581,14 +584,14 @@ void CALLBACK OnD3D11FrameRender( ID3D11Device* pd3dDevice, ID3D11DeviceContext*
             // Get the subset
             auto pSubset = g_Mesh11.GetSubset( 0, subset );
 
-            auto  PrimType = CDXUTSDKMesh::GetPrimitiveType11( ( SDKMESH_PRIMITIVE_TYPE )pSubset->PrimitiveType );
+            auto  PrimType = CDXUTSDKMesh::GetPrimitiveType11( static_cast<SDKMESH_PRIMITIVE_TYPE>(pSubset->PrimitiveType) );
             pd3dImmediateContext->IASetPrimitiveTopology( PrimType );
 
             auto pDiffuseRV = g_Mesh11.GetMaterial( pSubset->MaterialID )->pDiffuseRV11;
             g_ptxDiffuse->SetResource( pDiffuseRV );
 
             pRenderTechnique->GetPassByIndex( p )->Apply( 0, pd3dImmediateContext );
-            pd3dImmediateContext->DrawIndexed( ( UINT )pSubset->IndexCount, 0, ( UINT )pSubset->VertexStart );
+            pd3dImmediateContext->DrawIndexed( static_cast<UINT>(pSubset->IndexCount), 0, static_cast<INT>(pSubset->VertexStart) );
         }
     }
 

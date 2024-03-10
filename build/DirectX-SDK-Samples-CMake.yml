@@ -1,0 +1,169 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+#
+# https://github.com/walbourn/directx-sdk-samples/
+
+schedules:
+- cron: "0 4 * * *"
+  displayName: 'Nightly build'
+  branches:
+    include:
+    - main
+
+resources:
+  repositories:
+  - repository: self
+    type: git
+    ref: refs/heads/main
+    trigger:
+      branches:
+        include:
+        - main
+      paths:
+        include:
+        - CMakeLists.txt
+
+name: $(Year:yyyy).$(Month).$(DayOfMonth)$(Rev:.r)
+
+variables:
+  VCPKG_CMAKE_DIR: '$(VCPKG_ROOT)/scripts/buildsystems/vcpkg.cmake'
+  GITHUB_PAT: $(GITHUBPUBLICTOKEN)
+  VS_GENERATOR: 'Visual Studio 16 2019'
+  WIN10_SDK: '10.0.19041.0'
+
+pool:
+  vmImage: windows-2019
+
+jobs:
+- job: CMAKE_BUILD_X64
+  displayName: CMake using VS Generator (x64)
+  steps:
+  - checkout: self
+    clean: true
+    fetchTags: false
+  - task: CmdLine@2
+    displayName: Fetch VCPKG
+    inputs:
+      script: git clone --quiet https://%GITHUB_PAT%@github.com/microsoft/vcpkg.git
+      workingDirectory: $(Build.SourcesDirectory)
+  - task: CmdLine@2
+    displayName: VCPKG Bootstrap
+    inputs:
+      script: |
+        call bootstrap-vcpkg.bat
+        echo ##vso[task.setvariable variable=VCPKG_DEFAULT_TRIPLET;]x64-windows
+
+      workingDirectory: $(Build.SourcesDirectory)\vcpkg
+  - task: CmdLine@2
+    displayName: VCPKG install headers
+    inputs:
+      script: |
+        call vcpkg install directxmath
+        @if ERRORLEVEL 1 goto error
+        call vcpkg install dxut
+        @if ERRORLEVEL 1 goto error
+        call vcpkg install effects11
+        @if ERRORLEVEL 1 goto error
+        call vcpkg install directxtk
+        @if ERRORLEVEL 1 goto error
+        call vcpkg install directxtex
+        @if ERRORLEVEL 1 goto error
+        call vcpkg install xaudio2redist
+        @if ERRORLEVEL 1 goto error
+        :finish
+        @echo --- VCPKG COMPLETE ---
+        exit /b 0
+        :error
+        @echo --- ERROR: VCPKG FAILED ---
+        exit /b 1
+
+      workingDirectory: $(Build.SourcesDirectory)\vcpkg
+  - task: CMake@1
+    displayName: 'CMake (MSVC): Config x64'
+    inputs:
+      cwd: '$(Build.SourcesDirectory)'
+      cmakeArgs: '-G "$(VS_GENERATOR)" -A x64 -B out -DCMAKE_SYSTEM_VERSION=$(WIN10_SDK) -DCMAKE_TOOLCHAIN_FILE="$(VCPKG_CMAKE_DIR)"'
+  - task: CMake@1
+    displayName: 'CMake (MSVC): Build x64 Debug'
+    inputs:
+      cwd: '$(Build.SourcesDirectory)'
+      cmakeArgs: --build out -v --config Debug
+  - task: CMake@1
+    displayName: 'CMake (MSVC): Build x64 Release'
+    inputs:
+      cwd: '$(Build.SourcesDirectory)'
+      cmakeArgs: --build out -v --config RelWithDebInfo
+  - task: CMake@1
+    displayName: 'CMake (ClangCl): Config x64'
+    inputs:
+      cwd: '$(Build.SourcesDirectory)'
+      cmakeArgs: '-G "$(VS_GENERATOR)" -A x64 -T clangcl -B out2 -DCMAKE_SYSTEM_VERSION=$(WIN10_SDK) -DCMAKE_TOOLCHAIN_FILE="$(VCPKG_CMAKE_DIR)"'
+  - task: CMake@1
+    displayName: 'CMake (ClangCl): Build x64 Debug'
+    inputs:
+      cwd: '$(Build.SourcesDirectory)'
+      cmakeArgs: --build out2 -v --config Debug
+  - task: CMake@1
+    displayName: 'CMake (ClangCl): Build x64 Release'
+    inputs:
+      cwd: '$(Build.SourcesDirectory)'
+      cmakeArgs: --build out2 -v --config RelWithDebInfo
+
+- job: CMAKE_BUILD_X86
+  displayName: CMake using VS Generator (x86)
+  steps:
+  - checkout: self
+    clean: true
+    fetchTags: false
+  - task: CmdLine@2
+    displayName: Fetch VCPKG
+    inputs:
+      script: git clone --quiet https://%GITHUB_PAT%@github.com/microsoft/vcpkg.git
+      workingDirectory: $(Build.SourcesDirectory)
+  - task: CmdLine@2
+    displayName: VCPKG Bootstrap
+    inputs:
+      script: |
+        call bootstrap-vcpkg.bat
+        echo ##vso[task.setvariable variable=VCPKG_DEFAULT_TRIPLET;]x86-windows
+
+      workingDirectory: $(Build.SourcesDirectory)\vcpkg
+  - task: CmdLine@2
+    displayName: VCPKG install headers
+    inputs:
+      script: |
+        call vcpkg install directxmath
+        @if ERRORLEVEL 1 goto error
+        call vcpkg install dxut
+        @if ERRORLEVEL 1 goto error
+        call vcpkg install effects11
+        @if ERRORLEVEL 1 goto error
+        call vcpkg install directxtk
+        @if ERRORLEVEL 1 goto error
+        call vcpkg install directxtex
+        @if ERRORLEVEL 1 goto error
+        call vcpkg install xaudio2redist
+        @if ERRORLEVEL 1 goto error
+        :finish
+        @echo --- VCPKG COMPLETE ---
+        exit /b 0
+        :error
+        @echo --- ERROR: VCPKG FAILED ---
+        exit /b 1
+
+      workingDirectory: $(Build.SourcesDirectory)\vcpkg
+  - task: CMake@1
+    displayName: 'CMake (MSVC): Config x86'
+    inputs:
+      cwd: '$(Build.SourcesDirectory)'
+      cmakeArgs: '-G "$(VS_GENERATOR)" -A Win32 -B out -DCMAKE_SYSTEM_VERSION=$(WIN10_SDK) -DCMAKE_TOOLCHAIN_FILE="$(VCPKG_CMAKE_DIR)"'
+  - task: CMake@1
+    displayName: 'CMake (MSVC): Build x86 Debug'
+    inputs:
+      cwd: '$(Build.SourcesDirectory)'
+      cmakeArgs: --build out -v --config Debug
+  - task: CMake@1
+    displayName: 'CMake (MSVC): Build x86 Release'
+    inputs:
+      cwd: '$(Build.SourcesDirectory)'
+      cmakeArgs: --build out -v --config RelWithDebInfo

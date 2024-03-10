@@ -18,12 +18,13 @@
 
 //--------------------------------------------------------------------------------------
 CScanCS::CScanCS() :
+    m_pScanCS(nullptr),
+    m_pScan2CS(nullptr),
+    m_pScan3CS(nullptr),
     m_pcbCS(nullptr),
     m_pAuxBuf(nullptr),
     m_pAuxBufRV(nullptr),
-    m_pAuxBufUAV(nullptr),
-    m_pScanCS(nullptr),
-    m_pScan2CS(nullptr)
+    m_pAuxBufUAV(nullptr)
 {
 }
 
@@ -53,7 +54,6 @@ HRESULT CScanCS::OnD3D11CreateDevice( ID3D11Device* pd3dDevice )
     Desc.Usage = D3D11_USAGE_DYNAMIC;
     Desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
     Desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-    Desc.MiscFlags = 0;    
     Desc.ByteWidth = sizeof( CB_CS );
     V_RETURN( pd3dDevice->CreateBuffer( &Desc, nullptr, &m_pcbCS ) );
     DXUT_SetDebugName( m_pcbCS, "CB_CS" );
@@ -70,7 +70,6 @@ HRESULT CScanCS::OnD3D11CreateDevice( ID3D11Device* pd3dDevice )
     D3D11_SHADER_RESOURCE_VIEW_DESC DescRV = {};
     DescRV.ViewDimension = D3D11_SRV_DIMENSION_BUFFER;
     DescRV.Format = DXGI_FORMAT_UNKNOWN;
-    DescRV.Buffer.FirstElement = 0;
     DescRV.Buffer.NumElements = 128;
     V_RETURN( pd3dDevice->CreateShaderResourceView( m_pAuxBuf, &DescRV, &m_pAuxBufRV ) );
     DXUT_SetDebugName( m_pAuxBufRV, "Aux SRV" );
@@ -78,7 +77,6 @@ HRESULT CScanCS::OnD3D11CreateDevice( ID3D11Device* pd3dDevice )
     D3D11_UNORDERED_ACCESS_VIEW_DESC DescUAV = {};
     DescUAV.Format = DXGI_FORMAT_UNKNOWN;
     DescUAV.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
-    DescUAV.Buffer.FirstElement = 0;
     DescUAV.Buffer.NumElements = 128;
     V_RETURN( pd3dDevice->CreateUnorderedAccessView( m_pAuxBuf, &DescUAV, &m_pAuxBufUAV ) );
     DXUT_SetDebugName( m_pAuxBufUAV, "Aux UAV" );
@@ -111,6 +109,8 @@ HRESULT CScanCS::ScanCS( ID3D11DeviceContext* pd3dImmediateContext,
 {
     HRESULT hr = S_OK;    
 
+    auto const iscan = static_cast<UINT>(ceilf(static_cast<float>(nNumToScan)/128.0f));
+
     // first pass, scan in each bucket
     {
         pd3dImmediateContext->CSSetShader( m_pScanCS, nullptr, 0 );
@@ -121,7 +121,7 @@ HRESULT CScanCS::ScanCS( ID3D11DeviceContext* pd3dImmediateContext,
         ID3D11UnorderedAccessView* aUAViews[ 1 ] = { p1UAV };
         pd3dImmediateContext->CSSetUnorderedAccessViews( 0, 1, aUAViews, nullptr );        
 
-        pd3dImmediateContext->Dispatch( INT(ceil(nNumToScan/128.0f)), 1, 1 );
+        pd3dImmediateContext->Dispatch( iscan, 1, 1 );
 
         ID3D11UnorderedAccessView* ppUAViewNULL[1] = { nullptr };
         pd3dImmediateContext->CSSetUnorderedAccessViews( 0, 1, ppUAViewNULL, nullptr );
@@ -153,7 +153,7 @@ HRESULT CScanCS::ScanCS( ID3D11DeviceContext* pd3dImmediateContext,
         ID3D11UnorderedAccessView* aUAViews[ 1 ] = { p0UAV };
         pd3dImmediateContext->CSSetUnorderedAccessViews( 0, 1, aUAViews, nullptr );
 
-        pd3dImmediateContext->Dispatch( INT(ceil(nNumToScan/128.0f)), 1, 1 );
+        pd3dImmediateContext->Dispatch( iscan, 1, 1 );
     }
 
     // Unbind resources for CS

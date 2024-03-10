@@ -44,14 +44,14 @@ void InitLookupTables()
         int level = 0;
         for (;;)
         {
-            if (0 == (((i - 2) - ((1UL << level) - 1)) & ((1UL << (level + 1)) - 1)))
+            if (0 == (((i - 2) - ((1L << level) - 1)) & ((1L << (level + 1)) - 1)))
             {
                 break;
             }
             ++ level;
         }
 
-        finalPointPositionTable[i] = ((MAX_FACTOR >> 1) + ((i - 2) - ((1UL << level) - 1))) >> (level + 1);
+        finalPointPositionTable[i] = ((MAX_FACTOR >> 1) + ((i - 2) - ((1L << level) - 1))) >> (level + 1);
     }
 
     for (int h = 0; h <= MAX_FACTOR / 2; ++ h)
@@ -128,27 +128,31 @@ void InitLookupTables()
 
 //--------------------------------------------------------------------------------------
 CTessellator::CTessellator() :
+    m_pBaseVBSRV(nullptr),
+    m_pTessedVerticesBufSRV(nullptr),
+    m_nVertices(0),
     m_pd3dDevice(nullptr),
     m_pd3dImmediateContext(nullptr),
-    m_pBaseVB(nullptr),
-    m_pBaseVBSRV(nullptr),
+    m_pEdgeFactorBuf(nullptr),
     m_pEdgeFactorBufSRV(nullptr),
     m_pEdgeFactorBufUAV(nullptr),
     m_pScanBuf0(nullptr),
+    m_pScanBuf1(nullptr),
     m_pScanBuf0SRV(nullptr),
+    m_pScanBuf1SRV(nullptr),
     m_pScanBuf0UAV(nullptr),
+    m_pScanBuf1UAV(nullptr),
     m_pScatterVertexBuf(nullptr),
     m_pScatterIndexBuf(nullptr),
     m_pScatterVertexBufSRV(nullptr),
     m_pScatterIndexBufSRV(nullptr),
     m_pScatterVertexBufUAV(nullptr),
     m_pScatterIndexBufUAV(nullptr),
-    m_pTessedVerticesBufSRV(nullptr),
-    m_pTessedVerticesBufUAV(nullptr),
-    m_pTessedIndicesBufUAV(nullptr),
+    m_tess_edge_len_scale{},
     m_nCachedTessedVertices(0),
     m_nCachedTessedIndices(0),
-    m_nVertices(0)
+    m_pTessedVerticesBufUAV(nullptr),
+    m_pTessedIndicesBufUAV(nullptr)
 {
     InitLookupTables();
 }
@@ -229,8 +233,8 @@ void CTessellator::OnDestroyDevice()
 HRESULT CTessellator::OnD3D11ResizedSwapChain( const DXGI_SURFACE_DESC* pBackBufferSurfaceDesc )
 {
     const float adaptive_scale_in_pixels= 15.0f;
-    m_tess_edge_len_scale.x= (pBackBufferSurfaceDesc->Width * 0.5f) / adaptive_scale_in_pixels;
-    m_tess_edge_len_scale.y= (pBackBufferSurfaceDesc->Height * 0.5f) / adaptive_scale_in_pixels;
+    m_tess_edge_len_scale.x= (static_cast<float>(pBackBufferSurfaceDesc->Width) * 0.5f) / adaptive_scale_in_pixels;
+    m_tess_edge_len_scale.y= (static_cast<float>(pBackBufferSurfaceDesc->Height) * 0.5f) / adaptive_scale_in_pixels;
 
     return S_OK;
 }
@@ -273,7 +277,7 @@ HRESULT CTessellator::CreateCSForPartitioningMode( PARTITIONING_MODE mode,
 
 //--------------------------------------------------------------------------------------
 HRESULT CTessellator::SetBaseMesh( ID3D11Device* pd3dDevice, ID3D11DeviceContext* pd3dImmediateContext, 
-                                   INT nVertices,
+                                   UINT nVertices,
                                    ID3D11Buffer* pBaseVB )
 {
     DeleteDeviceObjects();
@@ -323,7 +327,7 @@ HRESULT CTessellator::SetBaseMesh( ID3D11Device* pd3dDevice, ID3D11DeviceContext
 
 
         // constant buffers used to pass parameters to CS
-        D3D11_BUFFER_DESC Desc;
+        D3D11_BUFFER_DESC Desc = {};
         
         int lut[(sizeof(insidePointIndex) + sizeof(outsidePointIndex)) / sizeof(int)];
         memcpy(&lut[0], &insidePointIndex[0][0][0], sizeof(insidePointIndex));
@@ -331,8 +335,6 @@ HRESULT CTessellator::SetBaseMesh( ID3D11Device* pd3dDevice, ID3D11DeviceContext
 
         Desc.Usage = D3D11_USAGE_IMMUTABLE;
         Desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-        Desc.CPUAccessFlags = 0;
-        Desc.MiscFlags = 0;
         Desc.ByteWidth = sizeof(lut);
         D3D11_SUBRESOURCE_DATA init_data;
         init_data.pSysMem = &lut[0];
@@ -498,6 +500,8 @@ void CTessellator::PerEdgeTessellation( CXMMATRIX matWVP,
                                         DWORD* num_tessed_vertices, DWORD* num_tessed_indices )
 {
     HRESULT hr;
+
+    auto const iscan = static_cast<UINT>(ceilf(static_cast<float>(m_nVertices / 3) / 128.0f));
     
     // Update per-edge tessellation factors
     {
@@ -513,12 +517,12 @@ void CTessellator::PerEdgeTessellation( CXMMATRIX matWVP,
                           nullptr,
                           s_pEdgeFactorCSCB, &cbCS, sizeof(cbCS),
                           m_pEdgeFactorBufUAV,
-                          INT(ceil(m_nVertices/3 / 128.0f)), 1, 1 );
+                          iscan, 1, 1 );
     }    
 
     // How many vertices/indices are needed for the tessellated mesh?
     {
-        INT cbCS[4] = {m_nVertices/3, 0, 0, 0};
+        UINT cbCS[4] = {m_nVertices/3, 0, 0, 0};
         ID3D11ShaderResourceView* aRViews[1] = { m_pEdgeFactorBufSRV };
         RunComputeShader( m_pd3dImmediateContext,
                           s_pNumVerticesIndicesCSs[m_PartitioningMode],
@@ -526,7 +530,7 @@ void CTessellator::PerEdgeTessellation( CXMMATRIX matWVP,
                           s_pLookupTableCSCB,
                           s_pCSCB, cbCS, sizeof(INT)*4,
                           m_pScanBuf0UAV,
-                          INT(ceil(m_nVertices/3 / 128.0f)), 1, 1 );
+                          iscan, 1, 1 );
         s_ScanCS.ScanCS( m_pd3dImmediateContext, m_nVertices/3, m_pScanBuf0SRV, m_pScanBuf0UAV, m_pScanBuf1SRV, m_pScanBuf1UAV );
 
         // read back the number of vertices/indices for tessellation output
@@ -540,8 +544,8 @@ void CTessellator::PerEdgeTessellation( CXMMATRIX matWVP,
         m_pd3dImmediateContext->CopySubresourceRegion(s_pCSReadBackBuf, 0, 0, 0, 0, m_pScanBuf0, 0, &box);
         D3D11_MAPPED_SUBRESOURCE MappedResource; 
         V( m_pd3dImmediateContext->Map( s_pCSReadBackBuf, 0, D3D11_MAP_READ, 0, &MappedResource ) );       
-        *num_tessed_vertices = ((DWORD*)MappedResource.pData)[0];
-        *num_tessed_indices = ((DWORD*)MappedResource.pData)[1];
+        *num_tessed_vertices = static_cast<DWORD*>(MappedResource.pData)[0];
+        *num_tessed_indices = static_cast<DWORD*>(MappedResource.pData)[1];
         m_pd3dImmediateContext->Unmap( s_pCSReadBackBuf, 0 );
     }
 
@@ -676,7 +680,7 @@ void CTessellator::PerEdgeTessellation( CXMMATRIX matWVP,
 
     // Scatter TriID, IndexID
     {
-        INT cbCS[4] = {m_nVertices/3, 0, 0, 0};
+        UINT cbCS[4] = {m_nVertices/3, 0, 0, 0};
 
         // Scatter vertex TriID, IndexID
         ID3D11ShaderResourceView* aRViews[1] = { m_pScanBuf0SRV };
@@ -686,7 +690,7 @@ void CTessellator::PerEdgeTessellation( CXMMATRIX matWVP,
                           nullptr,
                           s_pCSCB, cbCS, sizeof(INT)*4,
                           m_pScatterVertexBufUAV,
-                          INT(ceil(m_nVertices/3 / 128.0f)), 1, 1 );
+                          iscan, 1, 1 );
         
         // Scatter index TriID, IndexID
         RunComputeShader( m_pd3dImmediateContext,
@@ -695,7 +699,7 @@ void CTessellator::PerEdgeTessellation( CXMMATRIX matWVP,
                           nullptr,
                           s_pCSCB, cbCS, sizeof(INT)*4,
                           m_pScatterIndexBufUAV,
-                          INT(ceil(m_nVertices/3 / 128.0f)), 1, 1 );
+                          iscan, 1, 1 );
     }
 
     // Turn on this and set a breakpoint on the line beginning with "p = " and see what has been written to m_pScatterVertexBuf
@@ -715,9 +719,11 @@ void CTessellator::PerEdgeTessellation( CXMMATRIX matWVP,
     }
 #endif
 
+    const auto tscan = static_cast<UINT>(ceilf(static_cast<float>(*num_tessed_vertices) / 128.0f));
+
     // Tessellate vertex
     {
-        INT cbCS[4] = { static_cast<INT>(*num_tessed_vertices), 0, 0, 0};
+        UINT cbCS[4] = { *num_tessed_vertices, 0, 0, 0};
         ID3D11ShaderResourceView* aRViews[2] = { m_pScatterVertexBufSRV, m_pEdgeFactorBufSRV };
         RunComputeShader( m_pd3dImmediateContext,
                           s_pTessVerticesCSs[m_PartitioningMode],
@@ -725,7 +731,7 @@ void CTessellator::PerEdgeTessellation( CXMMATRIX matWVP,
                           s_pLookupTableCSCB,
                           s_pCSCB, cbCS, sizeof(INT)*4,
                           m_pTessedVerticesBufUAV,
-                          INT(ceil(*num_tessed_vertices/128.0f)), 1, 1 );
+                          tscan, 1, 1 );
     }
 
     // Turn on this and set a breakpoint on the line beginning with "p = " and see what has been written to *ppTessedVerticesBuf
@@ -748,7 +754,7 @@ void CTessellator::PerEdgeTessellation( CXMMATRIX matWVP,
 
     // Tessellate indices
     {
-        INT cbCS[4] = { static_cast<INT>(*num_tessed_indices), 0, 0, 0};
+        UINT cbCS[4] = { *num_tessed_indices, 0, 0, 0};
         ID3D11ShaderResourceView* aRViews[3] = { m_pScatterIndexBufSRV, m_pEdgeFactorBufSRV, m_pScanBuf0SRV };
         RunComputeShader( m_pd3dImmediateContext,
             s_pTessIndicesCSs[m_PartitioningMode],
@@ -756,7 +762,7 @@ void CTessellator::PerEdgeTessellation( CXMMATRIX matWVP,
             s_pLookupTableCSCB,
             s_pCSCB, cbCS, sizeof(INT)*4,
             m_pTessedIndicesBufUAV,
-            INT(ceil(*num_tessed_indices/128.0f)), 1, 1 );
+            tscan, 1, 1 );
     }
 
     // Turn on this and set a breakpoint on the line beginning with "p = " and see what has been written to *ppTessedIndicesBuf

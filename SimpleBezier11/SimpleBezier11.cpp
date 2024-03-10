@@ -10,7 +10,7 @@
 #include "DXUT.h"
 #include "DXUTcamera.h"
 #include "DXUTgui.h"
-#include "DXUTsettingsDlg.h"
+#include "DXUTsettingsdlg.h"
 #include "SDKmisc.h"
 #include "resource.h"
 #include "MobiusStrip.h"
@@ -19,8 +19,8 @@
 
 using namespace DirectX;
 
-const DWORD MIN_DIVS = 4;
-const DWORD MAX_DIVS = 16; // Min and Max divisions of the patch per side for the slider control
+constexpr DWORD MIN_DIVS = 4;
+constexpr DWORD MAX_DIVS = 16; // Min and Max divisions of the patch per side for the slider control
 
 //--------------------------------------------------------------------------------------
 // Global variables
@@ -169,7 +169,7 @@ void InitApp()
     iY += 24;
     swprintf_s( sz, L"Patch Divisions: %2.1f", g_fSubdivs );
     g_SampleUI.AddStatic( IDC_PATCH_SUBDIVS_STATIC, sz, 10, iY += 26, 150, 22 );
-    g_SampleUI.AddSlider( IDC_PATCH_SUBDIVS, 10, iY += 24, 150, 22, 10 * MIN_DIVS, 10 * MAX_DIVS, (int)(g_fSubdivs * 10) );
+    g_SampleUI.AddSlider( IDC_PATCH_SUBDIVS, 10, iY += 24, 150, 22, 10 * MIN_DIVS, 10 * MAX_DIVS, static_cast<int>(g_fSubdivs * 10) );
 
     iY += 24;
     g_SampleUI.AddCheckBox( IDC_TOGGLE_LINES, L"Toggle Wires", 20, iY += 26, 150, 22, g_bDrawWires );
@@ -181,8 +181,8 @@ void InitApp()
     g_SampleUI.GetRadioButton( IDC_PARTITION_INTEGER )->SetChecked( true );
 
     // Setup the camera's view parameters
-    static const XMVECTORF32 s_vecEye = { 1.0f, 1.5f, -3.5f, 0.f };
-    static const XMVECTORF32 s_vecAt = { 0.0f, 0.0f, 0.0f, 0.f };
+    static const XMVECTORF32 s_vecEye = { { { 1.0f, 1.5f, -3.5f, 0.f } } };
+    static const XMVECTORF32 s_vecAt = { { { 0.0f, 0.0f, 0.0f, 0.f } } };
     g_Camera.SetViewParams( s_vecEye, s_vecAt );
 
 }
@@ -273,7 +273,7 @@ void CALLBACK OnGUIEvent( UINT nEvent, int nControlID, CDXUTControl* pControl, v
             // Custom app controls
         case IDC_PATCH_SUBDIVS:
         {
-            g_fSubdivs = g_SampleUI.GetSlider( IDC_PATCH_SUBDIVS )->GetValue() / 10.0f;
+            g_fSubdivs = static_cast<float>(g_SampleUI.GetSlider( IDC_PATCH_SUBDIVS )->GetValue()) / 10.0f;
 
             WCHAR sz[100];
             swprintf_s( sz, L"Patch Divisions: %2.1f", g_fSubdivs );
@@ -330,9 +330,9 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
 
     // This macro is used to compile the hull shader with different partition modes
     // Please see the partitioning mode attribute for the hull shader for more information
-    D3D_SHADER_MACRO integerPartitioning[] = { { "BEZIER_HS_PARTITION", "\"integer\"" }, { 0 } };
-    D3D_SHADER_MACRO fracEvenPartitioning[] = { { "BEZIER_HS_PARTITION", "\"fractional_even\"" }, { 0 } };
-    D3D_SHADER_MACRO fracOddPartitioning[] = { { "BEZIER_HS_PARTITION", "\"fractional_odd\"" }, { 0 } };
+    const D3D_SHADER_MACRO integerPartitioning[] = { { "BEZIER_HS_PARTITION", "\"integer\"" }, { nullptr, nullptr } };
+    const D3D_SHADER_MACRO fracEvenPartitioning[] = { { "BEZIER_HS_PARTITION", "\"fractional_even\"" }, { nullptr, nullptr } };
+    const D3D_SHADER_MACRO fracOddPartitioning[] = { { "BEZIER_HS_PARTITION", "\"fractional_odd\"" }, { nullptr, nullptr } };
 
     V_RETURN( DXUTCompileFromFile( L"SimpleBezier11.hlsl", nullptr, "BezierVS", "vs_5_0",
                                    D3DCOMPILE_ENABLE_STRICTNESS, 0, &pBlobVS ) );
@@ -437,15 +437,18 @@ HRESULT CALLBACK OnD3D11ResizedSwapChain( ID3D11Device* pd3dDevice, IDXGISwapCha
     V_RETURN( g_DialogResourceManager.OnD3D11ResizedSwapChain( pd3dDevice, pBackBufferSurfaceDesc ) );
     V_RETURN( g_D3DSettingsDlg.OnD3D11ResizedSwapChain( pd3dDevice, pBackBufferSurfaceDesc ) );
 
+    auto const iwidth = static_cast<int>(pBackBufferSurfaceDesc->Width);
+    auto const iheight = static_cast<int>(pBackBufferSurfaceDesc->Height);
+
     // Setup the camera's projection parameters
-    float fAspectRatio = pBackBufferSurfaceDesc->Width / ( FLOAT )pBackBufferSurfaceDesc->Height;
+    const float fAspectRatio = static_cast<float>(pBackBufferSurfaceDesc->Width) / static_cast<float>(pBackBufferSurfaceDesc->Height);
     g_Camera.SetProjParams( XM_PI / 4, fAspectRatio, 0.1f, 20.0f );
-    g_Camera.SetWindow( pBackBufferSurfaceDesc->Width, pBackBufferSurfaceDesc->Height );
+    g_Camera.SetWindow( iwidth, iheight );
     g_Camera.SetButtonMasks( MOUSE_MIDDLE_BUTTON, MOUSE_WHEEL, MOUSE_LEFT_BUTTON );
 
-    g_HUD.SetLocation( pBackBufferSurfaceDesc->Width - 170, 0 );
+    g_HUD.SetLocation( iwidth - 170, 0 );
     g_HUD.SetSize( 170, 170 );
-    g_SampleUI.SetLocation( pBackBufferSurfaceDesc->Width - 170, pBackBufferSurfaceDesc->Height - 300 );
+    g_SampleUI.SetLocation( iwidth - 170, iheight - 300 );
     g_SampleUI.SetSize( 170, 300 );
 
     return S_OK;
@@ -476,7 +479,7 @@ void CALLBACK OnD3D11FrameRender( ID3D11Device* pd3dDevice, ID3D11DeviceContext*
     auto pData = reinterpret_cast<CB_PER_FRAME_CONSTANTS*>( MappedResource.pData );
     XMStoreFloat4x4( &pData->mViewProjection, XMMatrixTranspose( mViewProjection ) );
     XMStoreFloat3( &pData->vCameraPosWorld, g_Camera.GetEyePt() );
-    pData->fTessellationFactor = (float)g_fSubdivs;
+    pData->fTessellationFactor = static_cast<float>(g_fSubdivs);
 
     pd3dImmediateContext->Unmap( g_pcbPerFrame, 0 );
 

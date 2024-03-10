@@ -8,6 +8,7 @@
 // Licensed under the MIT License (MIT).
 //--------------------------------------------------------------------------------------
 
+#include <cstdio>
 #include <memory>
 #include <vector>
 
@@ -116,7 +117,7 @@ HRESULT EncoderBase::GPU_SaveToFile( ID3D11Texture2D* pSrcTexture,
     D3D11_TEXTURE2D_DESC desc;
     pSrcTexture->GetDesc( &desc );
 
-    if ( (desc.ArraySize * desc.MipLevels) != (UINT)subTextureAsBufs.size() )
+    if ( (desc.ArraySize * desc.MipLevels) != static_cast<UINT>(subTextureAsBufs.size()) )
         return E_INVALIDARG;
 
     auto image = std::make_unique<ScratchImage>();

@@ -12,7 +12,9 @@
 //--------------------------------------------------------------------------------------
 
 #define WIN32_LEAN_AND_MEAN
+#define NOMINMAX
 #include <Windows.h>
+#include <algorithm>
 #include <cassert>
 #include <cstdio>
 
@@ -25,24 +27,15 @@ using namespace DirectX;
 using Microsoft::WRL::ComPtr;
 
 //--------------------------------------------------------------------------------------
-#define STREAMING_BUFFER_SIZE 65536
-#define MAX_BUFFER_COUNT 3
-
 // Use 4k streaming alignment to support Advanced Format (4Kn) drives. See the xwbtool -af switch.
 // Otherwise uses 2K streaming alignment to support DVD, HDDs, and Advanced Format (512e) drives.
 #define SUPPORT_AF_4KN
 
-#ifdef SUPPORT_AF_4KN
-static_assert( (STREAMING_BUFFER_SIZE % 4096) == 0,
-    "Streaming size error for non-buffered async I/O for Advanced Format (4Kn)" );
-#else
-static_assert( (STREAMING_BUFFER_SIZE % 2048) == 0,
-    "Streaming size error for non-buffered async I/O for DVD/HDD" );
-#endif
-
-
 namespace
 {
+    constexpr DWORD STREAMING_BUFFER_SIZE = 65536;
+    constexpr size_t MAX_BUFFER_COUNT = 3;
+
 #ifdef SUPPORT_AF_4KN
     const wchar_t* c_bankFileName = L"Media\\Banks\\WaveBank4Kn.xwb";
 #else
@@ -50,32 +43,40 @@ namespace
 #endif
 }
 
+#ifdef SUPPORT_AF_4KN
+static_assert((STREAMING_BUFFER_SIZE % 4096) == 0,
+    "Streaming size error for non-buffered async I/O for Advanced Format (4Kn)");
+#else
+static_assert((STREAMING_BUFFER_SIZE % 2048) == 0,
+    "Streaming size error for non-buffered async I/O for DVD/HDD");
+#endif
+
 
 //--------------------------------------------------------------------------------------
 // Callback structure
 //--------------------------------------------------------------------------------------
 struct StreamingVoiceContext : public IXAudio2VoiceCallback
 {
-    STDMETHOD_( void, OnVoiceProcessingPassStart )( UINT32 ) override
+    STDMETHOD_(void, OnVoiceProcessingPassStart)(UINT32) override
     {
     }
-    STDMETHOD_( void, OnVoiceProcessingPassEnd )() override
+    STDMETHOD_(void, OnVoiceProcessingPassEnd)() override
     {
     }
-    STDMETHOD_( void, OnStreamEnd )() override
+    STDMETHOD_(void, OnStreamEnd)() override
     {
     }
-    STDMETHOD_( void, OnBufferStart )( void* ) override
+    STDMETHOD_(void, OnBufferStart)(void*) override
     {
     }
-    STDMETHOD_( void, OnBufferEnd )( void* ) override
+    STDMETHOD_(void, OnBufferEnd)(void*) override
     {
-        SetEvent( hBufferEndEvent );
+        SetEvent(hBufferEndEvent);
     }
-    STDMETHOD_( void, OnLoopEnd )( void* ) override
+    STDMETHOD_(void, OnLoopEnd)(void*) override
     {
     }
-    STDMETHOD_( void, OnVoiceError )( void*, HRESULT ) override
+    STDMETHOD_(void, OnVoiceError)(void*, HRESULT) override
     {
     }
 
@@ -83,15 +84,15 @@ struct StreamingVoiceContext : public IXAudio2VoiceCallback
 
     StreamingVoiceContext() :
 #if (_WIN32_WINNT >= _WIN32_WINNT_VISTA)
-        hBufferEndEvent( CreateEventEx( nullptr, nullptr, 0, EVENT_MODIFY_STATE | SYNCHRONIZE ) )
+        hBufferEndEvent(CreateEventEx(nullptr, nullptr, 0, EVENT_MODIFY_STATE | SYNCHRONIZE))
 #else
-        hBufferEndEvent( CreateEvent( nullptr, FALSE, FALSE, nullptr ) )
+        hBufferEndEvent(CreateEvent(nullptr, FALSE, FALSE, nullptr))
 #endif
     {
     }
     virtual ~StreamingVoiceContext()
     {
-        CloseHandle( hBufferEndEvent );
+        CloseHandle(hBufferEndEvent);
     }
 };
 
@@ -99,7 +100,7 @@ struct StreamingVoiceContext : public IXAudio2VoiceCallback
 //--------------------------------------------------------------------------------------
 // Forward declaration
 //--------------------------------------------------------------------------------------
-HRESULT FindMediaFileCch( _Out_writes_(cchDest) WCHAR* strDestPath, _In_ int cchDest, _In_z_ LPCWSTR strFilename );
+HRESULT FindMediaFileCch(_Out_writes_(cchDest) WCHAR* strDestPath, _In_ size_t cchDest, _In_z_ LPCWSTR strFilename);
 
 
 //--------------------------------------------------------------------------------------
@@ -113,7 +114,7 @@ int main()
     HRESULT hr = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
     if (FAILED(hr))
     {
-        wprintf(L"Failed to init COM: %#X\n", hr);
+        wprintf(L"Failed to init COM: %#X\n", static_cast<unsigned int>(hr));
         return 0;
     }
 
@@ -141,7 +142,7 @@ int main()
     hr = XAudio2Create(pXAudio2.GetAddressOf(), flags);
     if (FAILED(hr))
     {
-        wprintf(L"Failed to init XAudio2 engine: %#X\n", hr);
+        wprintf(L"Failed to init XAudio2 engine: %#X\n", static_cast<unsigned int>(hr));
         CoUninitialize();
         return 0;
     }
@@ -150,12 +151,12 @@ int main()
     // To see the trace output, you need to view ETW logs for this application:
     //    Go to Control Panel, Administrative Tools, Event Viewer.
     //    View->Show Analytic and Debug Logs.
-    //    Applications and Services Logs / Microsoft / Windows / XAudio2. 
-    //    Right click on Microsoft Windows XAudio2 debug logging, Properties, then Enable Logging, and hit OK 
+    //    Applications and Services Logs / Microsoft / Windows / XAudio2.
+    //    Right click on Microsoft Windows XAudio2 debug logging, Properties, then Enable Logging, and hit OK
     XAUDIO2_DEBUG_CONFIGURATION debug = {};
     debug.TraceMask = XAUDIO2_LOG_ERRORS | XAUDIO2_LOG_WARNINGS;
     debug.BreakMask = XAUDIO2_LOG_ERRORS;
-    pXAudio2->SetDebugConfiguration(&debug, 0);
+    pXAudio2->SetDebugConfiguration(&debug, nullptr);
 #endif
 
     //
@@ -165,7 +166,7 @@ int main()
 
     if (FAILED(hr = pXAudio2->CreateMasteringVoice(&pMasteringVoice)))
     {
-        wprintf(L"Failed creating mastering voice: %#X\n", hr);
+        wprintf(L"Failed creating mastering voice: %#X\n", static_cast<unsigned int>(hr));
         pXAudio2.Reset();
         CoUninitialize();
         return 0;
@@ -178,7 +179,7 @@ int main()
 
     if (FAILED(hr = FindMediaFileCch(wavebank, MAX_PATH, c_bankFileName)))
     {
-        wprintf(L"Failed to find media file (%#X)\n", hr);
+        wprintf(L"Failed to find media file (%#X)\n", static_cast<unsigned int>(hr));
         pXAudio2.Reset();
         CoUninitialize();
         return 0;
@@ -194,7 +195,7 @@ int main()
 
     if (FAILED(hr = wb.Open(wavebank)))
     {
-        wprintf(L"Failed to wavebank data (%#X)\n", hr);
+        wprintf(L"Failed to wavebank data (%#X)\n", static_cast<unsigned int>(hr));
         pXAudio2.Reset();
         CoUninitialize();
         return 0;
@@ -222,36 +223,36 @@ int main()
     }
 #endif
 
-    wprintf( L"Press <ESC> to exit.\n" );
+    wprintf(L"Press <ESC> to exit.\n");
 
     //
     // Repeated loop through all the wavebank entries
     //
     bool exit = false;
 
-    while( !exit )
+    while (!exit)
     {
-        for( DWORD i = 0; i < wb.Count(); ++i )
+        for (uint32_t i = 0; i < wb.Count(); ++i)
         {
-            wprintf( L"Now playing wave entry %u", i );
+            wprintf(L"Now playing wave entry %u", i);
 
             //
             // Get the info we need to play back this wave (need enough space for PCM, ADPCM, and xWMA formats)
             //
-            char formatBuff[ 64 ]; 
-            WAVEFORMATEX *wfx = reinterpret_cast<WAVEFORMATEX*>(&formatBuff);
+            char formatBuff[64];
+            WAVEFORMATEX* wfx = reinterpret_cast<WAVEFORMATEX*>(&formatBuff);
 
-            if( FAILED( hr = wb.GetFormat( i, wfx, 64 ) ) )
+            if (FAILED(hr = wb.GetFormat(i, wfx, 64)))
             {
-                wprintf( L"\nCouldn't get wave format for entry %u: error 0x%x\n", i, hr );
+                wprintf(L"\nCouldn't get wave format for entry %u: error 0x%x\n", i, static_cast<unsigned int>(hr));
                 exit = true;
                 break;
             }
 
             WaveBankReader::Metadata metadata;
-            if ( FAILED( hr = wb.GetMetadata( i, metadata ) ) )
+            if (FAILED(hr = wb.GetMetadata(i, metadata)))
             {
-                wprintf( L"\nCouldn't get metadta for entry %u: error 0x%x\n", i, hr );
+                wprintf(L"\nCouldn't get metadta for entry %u: error 0x%x\n", i, static_cast<unsigned int>(hr));
                 exit = true;
                 break;
             }
@@ -262,39 +263,39 @@ int main()
             StreamingVoiceContext voiceContext;
 
             IXAudio2SourceVoice* pSourceVoice;
-            if( FAILED( hr = pXAudio2->CreateSourceVoice( &pSourceVoice, wfx, 0, 1.0f, &voiceContext ) ) )
+            if (FAILED(hr = pXAudio2->CreateSourceVoice(&pSourceVoice, wfx, 0, 1.0f, &voiceContext)))
             {
-                wprintf( L"\nError %#X creating source voice\n", hr );
+                wprintf(L"\nError %#X creating source voice\n", static_cast<unsigned int>(hr));
                 exit = true;
                 break;
             }
-            pSourceVoice->Start( 0, 0 );
+            pSourceVoice->Start(0, 0);
 
             //
             // Create an overlapped structure and buffers to handle the async I/O
             //
             OVERLAPPED ovlCurrentRequest = {};
 #if (_WIN32_WINNT >= _WIN32_WINNT_VISTA)
-            ovlCurrentRequest.hEvent = CreateEventEx( nullptr, nullptr, CREATE_EVENT_MANUAL_RESET, EVENT_MODIFY_STATE | SYNCHRONIZE );
+            ovlCurrentRequest.hEvent = CreateEventEx(nullptr, nullptr, CREATE_EVENT_MANUAL_RESET, EVENT_MODIFY_STATE | SYNCHRONIZE);
 #else
-            ovlCurrentRequest.hEvent = CreateEvent( nullptr, TRUE, FALSE, nullptr );
+            ovlCurrentRequest.hEvent = CreateEvent(nullptr, TRUE, FALSE, nullptr);
 #endif
 
-            if ( (STREAMING_BUFFER_SIZE % wfx->nBlockAlign) != 0 )
+            if ((STREAMING_BUFFER_SIZE % wfx->nBlockAlign) != 0)
             {
                 //
                 // non-PCM data will fail here. ADPCM requires a more complicated streaming mechanism to deal with submission in audio frames that do
                 // not necessarily align to the 2K async boundary.
                 //
-                wprintf( L"\nStreaming buffer size (%u) is not aligned with sample block requirements (%u)\n", STREAMING_BUFFER_SIZE, wfx->nBlockAlign );
+                wprintf(L"\nStreaming buffer size (%lu) is not aligned with sample block requirements (%u)\n", STREAMING_BUFFER_SIZE, wfx->nBlockAlign);
                 exit = true;
                 break;
             }
 
             std::unique_ptr<uint8_t[]> buffers[MAX_BUFFER_COUNT];
-            for( size_t j=0; j < MAX_BUFFER_COUNT; ++j )
+            for (size_t j = 0; j < MAX_BUFFER_COUNT; ++j)
             {
-                buffers[j].reset( new uint8_t[ STREAMING_BUFFER_SIZE ] );
+                buffers[j].reset(new uint8_t[STREAMING_BUFFER_SIZE]);
             }
             DWORD currentDiskReadBuffer = 0;
             DWORD currentPosition = 0;
@@ -317,16 +318,16 @@ int main()
             //
             HANDLE async = wb.GetAsyncHandle();
 
-            while( currentPosition < metadata.lengthBytes )
+            while (currentPosition < metadata.lengthBytes)
             {
-                wprintf( L"." );
+                wprintf(L".");
 
-                if( GetAsyncKeyState( VK_ESCAPE ) )
+                if (GetAsyncKeyState(VK_ESCAPE))
                 {
                     exit = true;
 
-                    while( GetAsyncKeyState( VK_ESCAPE ) )
-                        Sleep( 10 );
+                    while (GetAsyncKeyState(VK_ESCAPE))
+                        Sleep(10);
 
                     break;
                 }
@@ -345,16 +346,16 @@ int main()
                 // handle this conditionally, make all reads the same size but remember how many
                 // bytes we actually want and only submit that many to the voice.
                 //
-                DWORD cbValid = min( STREAMING_BUFFER_SIZE, metadata.lengthBytes - currentPosition );
+                DWORD cbValid = std::min(STREAMING_BUFFER_SIZE, metadata.lengthBytes - currentPosition);
                 ovlCurrentRequest.Offset = metadata.offsetBytes + currentPosition;
 
                 bool wait = false;
-                if( !ReadFile( async, buffers[ currentDiskReadBuffer ].get(), STREAMING_BUFFER_SIZE, nullptr, &ovlCurrentRequest ) )
+                if (!ReadFile(async, buffers[currentDiskReadBuffer].get(), STREAMING_BUFFER_SIZE, nullptr, &ovlCurrentRequest))
                 {
                     DWORD error = GetLastError();
-                    if ( error != ERROR_IO_PENDING )
+                    if (error != ERROR_IO_PENDING)
                     {
-                        wprintf( L"\nCouldn't start async read: error %#X\n", HRESULT_FROM_WIN32( error ) );
+                        wprintf(L"\nCouldn't start async read: error %#X\n", static_cast<unsigned int>(HRESULT_FROM_WIN32(error)));
                         exit = true;
                         break;
                     }
@@ -368,18 +369,18 @@ int main()
                 // other processing while we wait for it to finish. For the purposes of this sample,
                 // however, we'll just go to sleep until the read is done.
                 //
-                if ( wait )
-                    WaitForSingleObject( ovlCurrentRequest.hEvent, INFINITE );
+                if (wait)
+                    WaitForSingleObject(ovlCurrentRequest.hEvent, INFINITE);
 
                 DWORD cb;
 #if (_WIN32_WINNT >= 0x0602 /*_WIN32_WINNT_WIN8*/)
-                BOOL result = GetOverlappedResultEx( async, &ovlCurrentRequest, &cb, 0, FALSE );
+                BOOL result = GetOverlappedResultEx(async, &ovlCurrentRequest, &cb, 0, FALSE);
 #else
-                BOOL result = GetOverlappedResult( async, &ovlCurrentRequest, &cb, FALSE );
+                BOOL result = GetOverlappedResult(async, &ovlCurrentRequest, &cb, FALSE);
 #endif
-                if( !result )
+                if (!result)
                 {
-                    wprintf( L"\nFailed waiting for async read: error %#X\n", HRESULT_FROM_WIN32( GetLastError() ) );
+                    wprintf(L"\nFailed waiting for async read: error %#X\n", static_cast<unsigned int>(HRESULT_FROM_WIN32(GetLastError())));
                     exit = true;
                     break;
                 }
@@ -391,13 +392,13 @@ int main()
                 // buffers on the queue, so that one buffer is always free for disk I/O.
                 //
                 XAUDIO2_VOICE_STATE state;
-                for( ;; )
+                for (;; )
                 {
-                    pSourceVoice->GetState( &state );
-                    if( state.BuffersQueued < MAX_BUFFER_COUNT - 1 )
+                    pSourceVoice->GetState(&state);
+                    if (state.BuffersQueued < MAX_BUFFER_COUNT - 1)
                         break;
 
-                    WaitForSingleObject( voiceContext.hBufferEndEvent, INFINITE );
+                    WaitForSingleObject(voiceContext.hBufferEndEvent, INFINITE);
                 }
 
                 //
@@ -407,45 +408,45 @@ int main()
                 XAUDIO2_BUFFER buf = {};
                 buf.AudioBytes = cbValid;
                 buf.pAudioData = buffers[currentDiskReadBuffer].get();
-                if( currentPosition >= metadata.lengthBytes )
+                if (currentPosition >= metadata.lengthBytes)
                     buf.Flags = XAUDIO2_END_OF_STREAM;
 
-                pSourceVoice->SubmitSourceBuffer( &buf );
+                pSourceVoice->SubmitSourceBuffer(&buf);
 
                 currentDiskReadBuffer++;
                 currentDiskReadBuffer %= MAX_BUFFER_COUNT;
             }
 
-            if( !exit )
+            if (!exit)
             {
-                wprintf( L"done streaming.." );
+                wprintf(L"done streaming..");
 
                 XAUDIO2_VOICE_STATE state;
-                for(; ; )
+                for (; ; )
                 {
-                    pSourceVoice->GetState( &state );
-                    if( !state.BuffersQueued )
+                    pSourceVoice->GetState(&state);
+                    if (!state.BuffersQueued)
                         break;
 
-                    wprintf( L"." );
-                    WaitForSingleObject( voiceContext.hBufferEndEvent, INFINITE );
+                    wprintf(L".");
+                    WaitForSingleObject(voiceContext.hBufferEndEvent, INFINITE);
                 }
             }
 
             //
             // Clean up
             //
-            pSourceVoice->Stop( 0 );
+            pSourceVoice->Stop(0);
             pSourceVoice->DestroyVoice();
 
-            CloseHandle( ovlCurrentRequest.hEvent );
+            CloseHandle(ovlCurrentRequest.hEvent);
 
-            wprintf( L"stopped\n" );
+            wprintf(L"stopped\n");
 
-            if( exit )
+            if (exit)
                 break;
 
-            Sleep( 500 );
+            Sleep(500);
         }
     }
 
@@ -471,76 +472,76 @@ int main()
 // Helper function to try to find the location of a media file
 //--------------------------------------------------------------------------------------
 _Use_decl_annotations_
-HRESULT FindMediaFileCch( WCHAR* strDestPath, int cchDest, LPCWSTR strFilename )
+HRESULT FindMediaFileCch(WCHAR* strDestPath, size_t cchDest, LPCWSTR strFilename)
 {
     bool bFound = false;
 
-    if( !strFilename || strFilename[0] == 0 || !strDestPath || cchDest < 10 )
+    if (!strFilename || strFilename[0] == 0 || !strDestPath || cchDest < 10)
         return E_INVALIDARG;
 
     // Get the exe name, and exe path
     WCHAR strExePath[MAX_PATH] = {};
     WCHAR strExeName[MAX_PATH] = {};
     WCHAR* strLastSlash = nullptr;
-    GetModuleFileName( nullptr, strExePath, MAX_PATH );
+    GetModuleFileName(nullptr, strExePath, MAX_PATH);
     strExePath[MAX_PATH - 1] = 0;
-    strLastSlash = wcsrchr( strExePath, TEXT( '\\' ) );
-    if( strLastSlash )
+    strLastSlash = wcsrchr(strExePath, TEXT('\\'));
+    if (strLastSlash)
     {
-        wcscpy_s( strExeName, MAX_PATH, &strLastSlash[1] );
+        wcscpy_s(strExeName, MAX_PATH, &strLastSlash[1]);
 
         // Chop the exe name from the exe path
         *strLastSlash = 0;
 
         // Chop the .exe from the exe name
-        strLastSlash = wcsrchr( strExeName, TEXT( '.' ) );
-        if( strLastSlash )
+        strLastSlash = wcsrchr(strExeName, TEXT('.'));
+        if (strLastSlash)
             *strLastSlash = 0;
     }
 
-    wcscpy_s( strDestPath, cchDest, strFilename );
-    if( GetFileAttributes( strDestPath ) != 0xFFFFFFFF )
+    wcscpy_s(strDestPath, cchDest, strFilename);
+    if (GetFileAttributes(strDestPath) != 0xFFFFFFFF)
         return S_OK;
 
     // Search all parent directories starting at .\ and using strFilename as the leaf name
     WCHAR strLeafName[MAX_PATH] = {};
-    wcscpy_s( strLeafName, MAX_PATH, strFilename );
+    wcscpy_s(strLeafName, MAX_PATH, strFilename);
 
     WCHAR strFullPath[MAX_PATH] = {};
     WCHAR strFullFileName[MAX_PATH] = {};
     WCHAR strSearch[MAX_PATH] = {};
     WCHAR* strFilePart = nullptr;
 
-    GetFullPathName( L".", MAX_PATH, strFullPath, &strFilePart );
-    if( !strFilePart )
+    GetFullPathName(L".", MAX_PATH, strFullPath, &strFilePart);
+    if (!strFilePart)
         return E_FAIL;
 
-    while( strFilePart && *strFilePart != '\0' )
+    while (strFilePart && *strFilePart != '\0')
     {
-        swprintf_s( strFullFileName, MAX_PATH, L"%s\\%s", strFullPath, strLeafName );
-        if( GetFileAttributes( strFullFileName ) != 0xFFFFFFFF )
+        swprintf_s(strFullFileName, MAX_PATH, L"%ls\\%ls", strFullPath, strLeafName);
+        if (GetFileAttributes(strFullFileName) != 0xFFFFFFFF)
         {
-            wcscpy_s( strDestPath, cchDest, strFullFileName );
+            wcscpy_s(strDestPath, cchDest, strFullFileName);
             bFound = true;
             break;
         }
 
-        swprintf_s( strFullFileName, MAX_PATH, L"%s\\%s\\%s", strFullPath, strExeName, strLeafName );
-        if( GetFileAttributes( strFullFileName ) != 0xFFFFFFFF )
+        swprintf_s(strFullFileName, MAX_PATH, L"%ls\\%ls\\%ls", strFullPath, strExeName, strLeafName);
+        if (GetFileAttributes(strFullFileName) != 0xFFFFFFFF)
         {
-            wcscpy_s( strDestPath, cchDest, strFullFileName );
+            wcscpy_s(strDestPath, cchDest, strFullFileName);
             bFound = true;
             break;
         }
 
-        swprintf_s( strSearch, MAX_PATH, L"%s\\..", strFullPath );
-        GetFullPathName( strSearch, MAX_PATH, strFullPath, &strFilePart );
+        swprintf_s(strSearch, MAX_PATH, L"%ls\\..", strFullPath);
+        GetFullPathName(strSearch, MAX_PATH, strFullPath, &strFilePart);
     }
-    if( bFound )
+    if (bFound)
         return S_OK;
 
     // On failure, return the file as the path but also return an error code
-    wcscpy_s( strDestPath, cchDest, strFilename );
+    wcscpy_s(strDestPath, cchDest, strFilename);
 
-    return HRESULT_FROM_WIN32( ERROR_FILE_NOT_FOUND );
+    return HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND);
 }

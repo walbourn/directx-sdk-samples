@@ -10,9 +10,9 @@
 #include "DXUT.h"
 #include "DXUTcamera.h"
 #include "DXUTgui.h"
-#include "DXUTsettingsDlg.h"
+#include "DXUTsettingsdlg.h"
 #include "SDKmisc.h"
-#include "SDKMesh.h"
+#include "SDKmesh.h"
 #include "resource.h"
 
 #pragma warning( disable : 4100 )
@@ -142,7 +142,7 @@ int WINAPI wWinMain( _In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 //--------------------------------------------------------------------------------------
 void InitApp()
 {
-    static const XMVECTORF32 s_vLightDir = { -1.f, 1, -1.f, 0.f };
+    static const XMVECTORF32 s_vLightDir = { { { -1.f, 1, -1.f, 0.f } } };
     XMVECTOR vLightDir = XMVector3Normalize( s_vLightDir );
     g_LightControl.SetLightDirection( vLightDir );
 
@@ -185,7 +185,7 @@ void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext 
 //--------------------------------------------------------------------------------------
 void RenderText()
 {
-    UINT nBackBufferHeight = DXUTGetDXGIBackBufferSurfaceDesc()->Height;
+    auto nBackBufferHeight = static_cast<int>(DXUTGetDXGIBackBufferSurfaceDesc()->Height);
 
     g_pTxtHelper->Begin();
     g_pTxtHelper->SetInsertionPos( 2, 0 );
@@ -403,7 +403,7 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
     DXUT_SetDebugName( g_pcbPSPerFrame, "CB_PS_PER_FRAME" );
 
     // Setup the camera's view parameters
-    static const XMVECTORF32 s_vecEye = { 0.0f, 0.0f, -100.0f, 0.0f };
+    static const XMVECTORF32 s_vecEye = {  { { 0.0f, 0.0f, -100.0f, 0.0f } } };
     g_Camera.SetViewParams( s_vecEye, g_XMZero );
     g_Camera.SetRadius( fObjectRadius * 3.0f, fObjectRadius * 0.5f, fObjectRadius * 10.0f );
 
@@ -424,15 +424,18 @@ HRESULT CALLBACK OnD3D11ResizedSwapChain( ID3D11Device* pd3dDevice, IDXGISwapCha
     V_RETURN( g_DialogResourceManager.OnD3D11ResizedSwapChain( pd3dDevice, pBackBufferSurfaceDesc ) );
     V_RETURN( g_D3DSettingsDlg.OnD3D11ResizedSwapChain( pd3dDevice, pBackBufferSurfaceDesc ) );
 
+    auto const iwidth = static_cast<int>(pBackBufferSurfaceDesc->Width);
+    auto const iheight = static_cast<int>(pBackBufferSurfaceDesc->Height);
+
     // Setup the camera's projection parameters
-    float fAspectRatio = pBackBufferSurfaceDesc->Width / ( FLOAT )pBackBufferSurfaceDesc->Height;
+    const float fAspectRatio = static_cast<float>(pBackBufferSurfaceDesc->Width) / static_cast<float>(pBackBufferSurfaceDesc->Height);
     g_Camera.SetProjParams( XM_PI / 4, fAspectRatio, 2.0f, 4000.0f );
-    g_Camera.SetWindow( pBackBufferSurfaceDesc->Width, pBackBufferSurfaceDesc->Height );
+    g_Camera.SetWindow( iwidth, iheight );
     g_Camera.SetButtonMasks( MOUSE_MIDDLE_BUTTON, MOUSE_WHEEL, MOUSE_LEFT_BUTTON );
 
-    g_HUD.SetLocation( pBackBufferSurfaceDesc->Width - 170, 0 );
+    g_HUD.SetLocation( iwidth - 170, 0 );
     g_HUD.SetSize( 170, 170 );
-    g_SampleUI.SetLocation( pBackBufferSurfaceDesc->Width - 170, pBackBufferSurfaceDesc->Height - 300 );
+    g_SampleUI.SetLocation( iwidth - 170, iheight - 300 );
     g_SampleUI.SetSize( 170, 300 );
 
     return S_OK;
@@ -481,7 +484,7 @@ void CALLBACK OnD3D11FrameRender( ID3D11Device* pd3dDevice, ID3D11DeviceContext*
     UINT Offsets[1];
     ID3D11Buffer* pVB[1];
     pVB[0] = g_Mesh11.GetVB11( 0, 0 );
-    Strides[0] = ( UINT )g_Mesh11.GetVertexStride( 0, 0 );
+    Strides[0] = static_cast<UINT>(g_Mesh11.GetVertexStride( 0, 0 ));
     Offsets[0] = 0;
     pd3dImmediateContext->IASetVertexBuffers( 0, 1, pVB, Strides, Offsets );
     pd3dImmediateContext->IASetIndexBuffer( g_Mesh11.GetIB11( 0 ), g_Mesh11.GetIBFormat11( 0 ), 0 );
@@ -525,14 +528,14 @@ void CALLBACK OnD3D11FrameRender( ID3D11Device* pd3dDevice, ID3D11DeviceContext*
         // Get the subset
         auto pSubset = g_Mesh11.GetSubset( 0, subset );
 
-        auto PrimType = CDXUTSDKMesh::GetPrimitiveType11( ( SDKMESH_PRIMITIVE_TYPE )pSubset->PrimitiveType );
+        auto PrimType = CDXUTSDKMesh::GetPrimitiveType11( static_cast<SDKMESH_PRIMITIVE_TYPE>(pSubset->PrimitiveType) );
         pd3dImmediateContext->IASetPrimitiveTopology( PrimType );
 
         // Ignores most of the material information in them mesh to use only a simple shader
         auto pDiffuseRV = g_Mesh11.GetMaterial( pSubset->MaterialID )->pDiffuseRV11;
         pd3dImmediateContext->PSSetShaderResources( 0, 1, &pDiffuseRV );
 
-        pd3dImmediateContext->DrawIndexed( ( UINT )pSubset->IndexCount, 0, ( UINT )pSubset->VertexStart );
+        pd3dImmediateContext->DrawIndexed( static_cast<UINT>(pSubset->IndexCount), 0, static_cast<INT>(pSubset->VertexStart) );
     }
 
     DXUT_BeginPerfEvent( DXUT_PERFEVENTCOLOR, L"HUD / Stats" );

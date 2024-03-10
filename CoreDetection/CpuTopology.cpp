@@ -7,12 +7,22 @@
 // Licensed under the MIT License (MIT).
 //-------------------------------------------------------------------------------------
 #include "CpuTopology.h"
-#include <stdlib.h>
-#include <crtdbg.h>
+
+#include <cassert>
+#include <cstdlib>
+#include <tuple>
 
 #include <intrin.h>
 
+#if (defined(__clang__) || defined(__GNUC__)) && (__x86_64__ || __i386__)
+#include <cpuid.h>
+#endif
+
 #pragma warning( disable : 4481 )
+
+#ifdef __clang__
+#pragma clang diagnostic ignored "-Wunused-member-function"
+#endif
 
 //---------------------------------------------------------------------------------
 // Name: ICpuToplogy
@@ -26,10 +36,10 @@ public:
     virtual             ~ICpuTopology()
     {
     }
-    virtual bool        IsDefaultImpl() const                   = 0;
-    virtual DWORD       NumberOfProcessCores() const            = 0;
-    virtual DWORD       NumberOfSystemCores() const             = 0;
-    virtual DWORD_PTR   CoreAffinityMask( DWORD coreIdx ) const = 0;
+    virtual bool        IsDefaultImpl() const noexcept                   = 0;
+    virtual DWORD       NumberOfProcessCores() const noexcept            = 0;
+    virtual DWORD       NumberOfSystemCores() const noexcept             = 0;
+    virtual DWORD_PTR   CoreAffinityMask( DWORD coreIdx ) const noexcept = 0;
 };
 
 
@@ -52,7 +62,7 @@ public:
     //-----------------------------------------------------------------------------
     // DefaultImpl::IsDefaultImpl
     //-----------------------------------------------------------------------------
-    /*virtual*/ bool        IsDefaultImpl() const override
+    /*virtual*/ bool        IsDefaultImpl() const noexcept override
     {
         return true;
     }
@@ -60,7 +70,7 @@ public:
     //-----------------------------------------------------------------------------
     // DefaultImpl::NumberOfProcessCores
     //-----------------------------------------------------------------------------
-    /*virtual*/ DWORD       NumberOfProcessCores() const override
+    /*virtual*/ DWORD       NumberOfProcessCores() const noexcept override
     {
         return 1;
     }
@@ -68,7 +78,7 @@ public:
     //-----------------------------------------------------------------------------
     // DefaultImpl::IsNumberOfSystemCores
     //-----------------------------------------------------------------------------
-    /*virtual*/ DWORD       NumberOfSystemCores() const override
+    /*virtual*/ DWORD       NumberOfSystemCores() const noexcept override
     {
         return 1;
     }
@@ -76,13 +86,13 @@ public:
     //-----------------------------------------------------------------------------
     // DefaultImpl::CoreAffinityMask
     //-----------------------------------------------------------------------------
-    /*virtual*/ DWORD_PTR   CoreAffinityMask( DWORD coreIdx ) const override
+    /*virtual*/ DWORD_PTR   CoreAffinityMask( DWORD coreIdx ) const noexcept override
     {
         DWORD_PTR coreAffinity = 0;
         if( 1 == coreIdx )
         {
             DWORD_PTR dwSystemAffinity;
-            GetProcessAffinityMask( GetCurrentProcess(), &coreAffinity, &dwSystemAffinity );
+            std::ignore = GetProcessAffinityMask( GetCurrentProcess(), &coreAffinity, &dwSystemAffinity );
         }
         return coreAffinity;
     }
@@ -106,15 +116,15 @@ public:
     GlpiImpl() : m_pSlpi( nullptr ),
                     m_nItems( 0 )
     {
-        _ASSERT( IsSupported() );
+        assert( IsSupported() );
 
         GlpiFnPtr pGlpi = GetGlpiFn_();
-        _ASSERT( pGlpi );
+        assert( pGlpi );
 
         DWORD cbBuffer = 0;
-        pGlpi( 0, &cbBuffer );
+        pGlpi( nullptr, &cbBuffer );
 
-        m_pSlpi = ( SYSTEM_LOGICAL_PROCESSOR_INFORMATION* )malloc( cbBuffer );
+        m_pSlpi = static_cast<SYSTEM_LOGICAL_PROCESSOR_INFORMATION*>(malloc( cbBuffer ));
         pGlpi( m_pSlpi, &cbBuffer );
         m_nItems = cbBuffer / sizeof( SYSTEM_LOGICAL_PROCESSOR_INFORMATION );
     }
@@ -122,17 +132,17 @@ public:
     //-----------------------------------------------------------------------------
     // Name: GlpiImpl::~GlpiImpl
     //-----------------------------------------------------------------------------
-    /*virtual*/ ~GlpiImpl()
+    /*virtual*/ ~GlpiImpl() override
     {
         free( m_pSlpi );
-        m_pSlpi = 0;
+        m_pSlpi = nullptr;
         m_nItems = 0;
     }
 
     //-----------------------------------------------------------------------------
     // Name: GlpiImpl::IsDefaultImpl
     //-----------------------------------------------------------------------------
-    /*virtual*/ bool        IsDefaultImpl() const override
+    /*virtual*/ bool        IsDefaultImpl() const noexcept override
     {
         return false;
     }
@@ -142,10 +152,10 @@ public:
     // Desc: Gets the total number of physical processor cores available to the
     //       current process.
     //-----------------------------------------------------------------------------
-    /*virtual*/ DWORD       NumberOfProcessCores() const override
+    /*virtual*/ DWORD       NumberOfProcessCores() const noexcept override
     {
         DWORD_PTR dwProcessAffinity, dwSystemAffinity;
-        GetProcessAffinityMask( GetCurrentProcess(), &dwProcessAffinity, &dwSystemAffinity );
+        std::ignore = GetProcessAffinityMask( GetCurrentProcess(), &dwProcessAffinity, &dwSystemAffinity );
 
         DWORD nCores = 0;
         for( DWORD i = 0; i < m_nItems; ++i )
@@ -164,7 +174,7 @@ public:
     // Desc: Gets the total number of physical processor cores enabled on the
     //       system.
     //-----------------------------------------------------------------------------
-    /*virtual*/ DWORD       NumberOfSystemCores() const override
+    /*virtual*/ DWORD       NumberOfSystemCores() const noexcept override
     {
         DWORD nCores = 0;
         for( DWORD i = 0; i < m_nItems; ++i )
@@ -180,10 +190,10 @@ public:
     // Desc: Gets an affinity mask that corresponds to the requested processor
     //       core.
     //-----------------------------------------------------------------------------
-    /*virtual*/ DWORD_PTR   CoreAffinityMask( DWORD coreIdx ) const override
+    /*virtual*/ DWORD_PTR   CoreAffinityMask( DWORD coreIdx ) const noexcept override
     {
         DWORD_PTR dwProcessAffinity, dwSystemAffinity;
-        GetProcessAffinityMask( GetCurrentProcess(), &dwProcessAffinity, &dwSystemAffinity );
+        std::ignore = GetProcessAffinityMask( GetCurrentProcess(), &dwProcessAffinity, &dwSystemAffinity );
 
         for( DWORD i = 0; i < m_nItems; ++i )
         {
@@ -201,9 +211,9 @@ public:
     //-----------------------------------------------------------------------------
     // Name: GlpiImpl::IsSupported
     //-----------------------------------------------------------------------------
-    static bool             IsSupported()
+    static bool             IsSupported() noexcept
     {
-        return GetGlpiFn_() != 0;
+        return GetGlpiFn_() != nullptr;
     }
 
 private:
@@ -227,7 +237,7 @@ private:
         if ( !hMod )
             return nullptr;
 
-        GlpiFnPtr pGlpi = ( GlpiFnPtr )GetProcAddress( hMod, "GetLogicalProcessorInformation" );
+        auto pGlpi = reinterpret_cast<GlpiFnPtr>(reinterpret_cast<void*>(GetProcAddress( hMod, "GetLogicalProcessorInformation" )));
 
         if ( !pGlpi )
         {
@@ -240,11 +250,7 @@ private:
                                            DWORD,
                                            DWORDLONG );
 
-#ifdef _UNICODE
-        VviFnPtr pVvi = ( VviFnPtr ) GetProcAddress( hMod, "VerifyVersionInfoW" );
-#else
-        VviFnPtr pVvi = ( VviFnPtr ) GetProcAddress( hMod, "VerifyVersionInfoA" );
-#endif
+        auto pVvi = reinterpret_cast<VviFnPtr>(reinterpret_cast<void*>(GetProcAddress( hMod, "VerifyVersionInfoW" )));
 
         if( pVvi )
         {
@@ -253,12 +259,13 @@ private:
                                                      DWORD,
                                                      BYTE );
 
-            VscmFnPtr pVscm = ( VscmFnPtr )GetProcAddress( hMod, "VerSetConditionMask" );
+            auto pVscm = reinterpret_cast<VscmFnPtr>(reinterpret_cast<void*>(GetProcAddress( hMod, "VerSetConditionMask" )));
 
-            _ASSERT( pVscm );
+            assert( pVscm );
 
             // Check for Windows Server 2003 (Windows XP x64 Edition is the same version/codebase)
-            OSVERSIONINFOEX osvi = { sizeof( OSVERSIONINFOEX ) };
+            OSVERSIONINFOEX osvi = {};
+            osvi.dwOSVersionInfoSize = sizeof( OSVERSIONINFOEX );
             osvi.dwMajorVersion = 5;
             osvi.dwMinorVersion = 2;
 
@@ -280,7 +287,7 @@ private:
     // Name: GlpiImpl::GetGlpiFn_
     // Desc: Gets a cached pointer to the GetLogicalProcessorInformation function.
     //-----------------------------------------------------------------------------
-    static GlpiFnPtr        GetGlpiFn_()
+    static GlpiFnPtr        GetGlpiFn_() noexcept
     {
         static GlpiFnPtr pGlpi = VerifyGlpiFn_();
         return pGlpi;
@@ -290,6 +297,8 @@ private:
     SYSTEM_LOGICAL_PROCESSOR_INFORMATION* m_pSlpi;
     DWORD m_nItems;
 };
+
+#if (defined(_M_IX86) || defined(_M_X64) || __i386__ || __x86_64__) && !defined(_M_HYBRID_X86_ARM64) && !defined(_M_ARM64EC)
 
 //---------------------------------------------------------------------------------
 // Name: ApicExtractor
@@ -371,16 +380,16 @@ public:
     //-----------------------------------------------------------------------------
     void        SetPackageTopology( DWORD nLogProcsPerPkg, DWORD nCoresPerPkg )
     {
-        m_nLogProcsPerPkg = ( BYTE )nLogProcsPerPkg;
-        m_nCoresPerPkg = ( BYTE )nCoresPerPkg;
+        m_nLogProcsPerPkg = static_cast<BYTE>(nLogProcsPerPkg);
+        m_nCoresPerPkg = static_cast<BYTE>(nCoresPerPkg);
 
         m_smtIdMask.width = GetMaskWidth_( m_nLogProcsPerPkg / m_nCoresPerPkg );
         m_coreIdMask.width = GetMaskWidth_( m_nCoresPerPkg );
         m_pkgIdMask.width = 8 - ( m_smtIdMask.width + m_coreIdMask.width );
 
-        m_pkgIdMask.mask = ( BYTE )( 0xFF << ( m_smtIdMask.width + m_coreIdMask.width ) );
-        m_coreIdMask.mask = ( BYTE )( ( 0xFF << m_smtIdMask.width ) ^ m_pkgIdMask.mask );
-        m_smtIdMask.mask = ( BYTE )~( 0xFF << m_smtIdMask.width );
+        m_pkgIdMask.mask = static_cast<BYTE>( 0xFF << ( m_smtIdMask.width + m_coreIdMask.width ) );
+        m_coreIdMask.mask = static_cast<BYTE>( ( 0xFF << m_smtIdMask.width ) ^ m_pkgIdMask.mask );
+        m_smtIdMask.mask = static_cast<BYTE>(~( 0xFF << m_smtIdMask.width ));
 
     }
 
@@ -430,7 +439,7 @@ class Cpuid
 {
 public:
     // FnSet values are used to indicate a CPUID function set.
-    enum FnSet
+    enum FnSet : DWORD
     {
         Std = 0x00000000,
         Ext = 0x80000000
@@ -515,9 +524,6 @@ public:
             case Ext:
                 ret = ( fn <= MaxExtFn );
                 break;
-            default:
-                _ASSERT( 0 );   // should never get here
-                break;
         }
         return ret;
     }
@@ -544,11 +550,15 @@ private:
     void        UncheckedCall_( FnSet fnSet, DWORD fn )
     {
         int CPUInfo[4];
+#if defined(__clang__) || defined(__GNUC__)
+        __cpuid_count(fnSet | fn, 0, CPUInfo[0], CPUInfo[1], CPUInfo[2], CPUInfo[3]);
+#else 
         __cpuidex( CPUInfo, fnSet | fn, 0 );
-        m_eax = CPUInfo[0];
-        m_ebx = CPUInfo[1];
-        m_ecx = CPUInfo[2];
-        m_edx = CPUInfo[3];
+#endif
+        m_eax = static_cast<DWORD>(CPUInfo[0]);
+        m_ebx = static_cast<DWORD>(CPUInfo[1]);
+        m_ecx = static_cast<DWORD>(CPUInfo[2]);
+        m_edx = static_cast<DWORD>(CPUInfo[3]);
     }
 
     // Private Members
@@ -569,7 +579,7 @@ class CpuidImpl : public ICpuTopology
 public:
     // CpuidFnMasks are used when extracting bit-encoded information retrieved from
     // the CPUID instruction
-    enum CpuidFnMasks
+    enum CpuidFnMasks : DWORD
     {
         HTT                     = 0x10000000,   // Fn0000_0001  EDX[28]
         LogicalProcessorCount   = 0x00FF0000,   // Fn0000_0001  EBX[23:16]
@@ -592,7 +602,7 @@ public:
     //-----------------------------------------------------------------------------
     CpuidImpl() : m_nItems( 0 )
     {
-        _ASSERT( IsSupported() );
+        assert( IsSupported() );
 
         DWORD nLogProcsPerPkg = 1;
         DWORD nCoresPerPkg = 1;
@@ -617,7 +627,7 @@ public:
             }
             else
             {
-                _ASSERT( Cpuid::IsVendor( AuthenticAMD ) );
+                assert( Cpuid::IsVendor( AuthenticAMD ) );
                 if( cpu.Call( Cpuid::Ext, 8 ) )
                 {
                     // AMD reports the msb width of the CORE_ID bit field of the APIC ID
@@ -653,12 +663,12 @@ public:
         DWORD_PTR dwProcessAffinity, dwSystemAffinity;
         HANDLE hProcess = GetCurrentProcess();
         HANDLE hThread = GetCurrentThread();
-        GetProcessAffinityMask( hProcess, &dwProcessAffinity, &dwSystemAffinity );
+        std::ignore = GetProcessAffinityMask( hProcess, &dwProcessAffinity, &dwSystemAffinity );
         if( 1 == dwSystemAffinity )
         {
             // Since we only have 1 logical processor present on the system, we
             // can explicitly set a single APIC ID to zero.
-            _ASSERT( 1 == nLogProcsPerPkg );
+            assert( 1 == nLogProcsPerPkg );
             m_apicIds[m_nItems++] = 0;
         }
         else
@@ -682,13 +692,13 @@ public:
                     {
                         // Save the previous thread affinity so we can return
                         // the executing thread affinity back to this state.
-                        _ASSERT( 0 == m_nItems );
+                        assert( 0 == m_nItems );
                         dwPrevThreadAffinity = SetThreadAffinityMask( hThread,
                                                                         dwThreadAffinity );
                     }
                     else
                     {
-                        _ASSERT( m_nItems > 0 );
+                        assert( m_nItems > 0 );
                         SetThreadAffinityMask( hThread, dwThreadAffinity );
                     }
 
@@ -697,7 +707,7 @@ public:
 
                     // Store the APIC ID
                     cpu.Call( Cpuid::Std, 1 );
-                    m_apicIds[m_nItems++] = ( BYTE )( ( cpu.Ebx() & ApicId ) >> 24 );
+                    m_apicIds[m_nItems++] = static_cast<BYTE>( ( cpu.Ebx() & ApicId ) >> 24 );
                 }
             }
 
@@ -712,7 +722,7 @@ public:
     //-----------------------------------------------------------------------------
     // Name: CpuidImpl::IsDefaultImpl
     //-----------------------------------------------------------------------------
-    /*virtual*/ bool        IsDefaultImpl() const override
+    /*virtual*/ bool        IsDefaultImpl() const noexcept override
     {
         return false;
     }
@@ -723,17 +733,17 @@ public:
     //       The total accounts for cores that may have been masked out by process
     //       affinity.
     //-----------------------------------------------------------------------------
-    /*virtual*/ DWORD       NumberOfProcessCores() const override
+    /*virtual*/ DWORD       NumberOfProcessCores() const noexcept override
     {
         DWORD_PTR dwProcessAffinity, dwSystemAffinity;
-        GetProcessAffinityMask( GetCurrentProcess(), &dwProcessAffinity, &dwSystemAffinity );
+        std::ignore = GetProcessAffinityMask( GetCurrentProcess(), &dwProcessAffinity, &dwSystemAffinity );
 
-        BYTE pkgCoreIds[MaxLogicalProcessors] = { 0 };
+        BYTE pkgCoreIds[MaxLogicalProcessors] = {};
         DWORD nPkgCoreIds = 0;
 
         for( DWORD i = 0; i < m_nItems; ++i )
         {
-            if( dwProcessAffinity & ( ( DWORD_PTR )1 << i ) )
+            if( dwProcessAffinity & ( static_cast<DWORD_PTR>(1) << i ) )
             {
                 AddUniquePkgCoreId_( i, pkgCoreIds, nPkgCoreIds );
             }
@@ -745,9 +755,9 @@ public:
     // Name: CpuidImpl::NumberOfSystemCores
     // Desc: Gets the number of processor cores on the system.
     //-----------------------------------------------------------------------------
-    /*virtual*/ DWORD       NumberOfSystemCores() const override
+    /*virtual*/ DWORD       NumberOfSystemCores() const noexcept override
     {
-        BYTE pkgCoreIds[MaxLogicalProcessors] = { 0 };
+        BYTE pkgCoreIds[MaxLogicalProcessors] = {};
         DWORD nPkgCoreIds = 0;
         for( DWORD i = 0; i < m_nItems; ++i )
         {
@@ -762,9 +772,9 @@ public:
     //       coreIdx must be less than the total number of processor cores
     //       recognized by the operating system (NumberOfSystemCores()).
     //-----------------------------------------------------------------------------
-    /*virtual*/ DWORD_PTR   CoreAffinityMask( DWORD coreIdx ) const override
+    /*virtual*/ DWORD_PTR   CoreAffinityMask( DWORD coreIdx ) const noexcept override
     {
-        BYTE pkgCoreIds[MaxLogicalProcessors] = { 0 };
+        BYTE pkgCoreIds[MaxLogicalProcessors] = {};
         DWORD nPkgCoreIds = 0;
         for( DWORD i = 0; i < m_nItems; ++i )
         {
@@ -772,7 +782,7 @@ public:
         }
 
         DWORD_PTR dwProcessAffinity, dwSystemAffinity;
-        GetProcessAffinityMask( GetCurrentProcess(), &dwProcessAffinity, &dwSystemAffinity );
+        std::ignore = GetProcessAffinityMask( GetCurrentProcess(), &dwProcessAffinity, &dwSystemAffinity );
 
         DWORD_PTR coreAffinity = 0;
         if( coreIdx < nPkgCoreIds )
@@ -781,7 +791,7 @@ public:
             {
                 if( m_apicExtractor.PackageCoreId( m_apicIds[i] ) == pkgCoreIds[coreIdx] )
                 {
-                    coreAffinity |= ( dwProcessAffinity & ( ( DWORD_PTR )1 << i ) );
+                    coreAffinity |= ( dwProcessAffinity & ( static_cast<DWORD_PTR>(1) << i ) );
                 }
             }
         }
@@ -797,7 +807,7 @@ public:
     //       also not supported if thread affinity cannot be set on systems with
     //       more than 1 logical processor.
     //-----------------------------------------------------------------------------
-    static bool             IsSupported()
+    static bool             IsSupported() noexcept
     {
         bool bSupported = Cpuid::IsVendor( GenuineIntel )
             || Cpuid::IsVendor( AuthenticAMD );
@@ -855,8 +865,8 @@ private:
     //-----------------------------------------------------------------------------
     void                    AddUniquePkgCoreId_( DWORD idx, BYTE* pkgCoreIds, DWORD& nPkgCoreIds ) const
     {
-        _ASSERT( idx < m_nItems );
-        _ASSERT( pkgCoreIds != 0 );
+        assert( idx < m_nItems );
+        assert( pkgCoreIds != nullptr );
 
         DWORD j;
         for( j = 0; j < nPkgCoreIds; ++j )
@@ -885,6 +895,16 @@ private:
 const char CpuidImpl::GenuineIntel[] = "GenuineIntel";
 const char CpuidImpl::AuthenticAMD[] = "AuthenticAMD";
 
+#else // ARM(64)
+
+class CpuidImpl : public DefaultImpl
+{
+public:
+    static bool IsSupported() noexcept { return false; }
+};
+
+
+#endif // _M_IX86 || _M_X64
 }   // unnamed-namespace
 
 //-------------------------------------------------------------------------------------
@@ -910,7 +930,7 @@ CpuTopology::~CpuTopology()
 // Desc: Gets the total number of physical processor cores available to the current
 //       process.
 //-------------------------------------------------------------------------------------
-DWORD CpuTopology::NumberOfProcessCores() const
+DWORD CpuTopology::NumberOfProcessCores() const noexcept
 {
     return m_pImpl->NumberOfProcessCores();
 }
@@ -919,7 +939,7 @@ DWORD CpuTopology::NumberOfProcessCores() const
 // Name: CpuTopology::NumberOfSystemCores
 // Desc: Gets the total number of physical processor cores enabled on the system.
 //-------------------------------------------------------------------------------------
-DWORD CpuTopology::NumberOfSystemCores() const
+DWORD CpuTopology::NumberOfSystemCores() const noexcept
 {
     return m_pImpl->NumberOfSystemCores();
 }
@@ -928,7 +948,7 @@ DWORD CpuTopology::NumberOfSystemCores() const
 // Name: CpuTopology::CoreAffinityMask
 // Desc: Gets an affinity mask that corresponds to the requested processor core.
 //-------------------------------------------------------------------------------------
-DWORD_PTR CpuTopology::CoreAffinityMask( DWORD coreIdx ) const
+DWORD_PTR CpuTopology::CoreAffinityMask( DWORD coreIdx ) const noexcept
 {
     return m_pImpl->CoreAffinityMask( coreIdx );
 }
@@ -939,7 +959,7 @@ DWORD_PTR CpuTopology::CoreAffinityMask( DWORD coreIdx ) const
 //       indicate whether or not the prescribed methods (CPUID or
 //       GetLogicalProcessorInformation) are supported on the system.
 //-------------------------------------------------------------------------------------
-bool CpuTopology::IsDefaultImpl() const
+bool CpuTopology::IsDefaultImpl() const noexcept
 {
     return m_pImpl->IsDefaultImpl();
 }

@@ -53,12 +53,12 @@ struct CommandLineOptions
     {
     }
 
-    BOOL SetMode( Mode mode )
+    BOOL SetMode( Mode m )
     {
         // Three modes are mutually exclusive
         if ( this->mode == MODE_NOT_SET )
         {
-            this->mode = mode;
+            this->mode = m;
             return TRUE;
         }
 
@@ -94,7 +94,7 @@ void PrintList(SValue* pValue)
 {
     while ( pValue->pName )
     {
-        wprintf( L"\t/%s\n", pValue->pName );
+        wprintf( L"\t/%ls\n", pValue->pName );
         pValue++;
     }
 }
@@ -135,7 +135,7 @@ HRESULT Encode( WCHAR* strSrcFilename, ID3D11Texture2D* pSourceTexture, DXGI_FOR
 
     std::wstring fname = strSrcFilename;
 
-    INT pos = (INT)fname.rfind( '.' );
+    auto pos = fname.rfind( '.' );
     if ( g_CommandLineOptions.mode == CommandLineOptions::MODE_ENCODE_BC6HS ||
          g_CommandLineOptions.mode == CommandLineOptions::MODE_ENCODE_BC6HU )
     {
@@ -145,7 +145,7 @@ HRESULT Encode( WCHAR* strSrcFilename, ID3D11Texture2D* pSourceTexture, DXGI_FOR
     {
         fname.insert( pos, L"_BC7" );
     }
-    pos = (INT)fname.rfind( '.' );
+    pos = fname.rfind( '.' );
     fname.erase( pos + 1, fname.length() );
     fname += std::wstring( L"dds" );
 
@@ -229,7 +229,7 @@ BOOL ParseCommandLine( int argc, WCHAR* argv[] )
                 g_CommandLineOptions.dwFilter = dw;
             } else
             {
-                wprintf( L"Unknown option %s\n", argv[i] );
+                wprintf( L"Unknown option %ls\n", argv[i] );
                 return FALSE;
             }
         }
@@ -341,11 +341,11 @@ int __cdecl wmain(int argc, WCHAR* argv[])
 
         if ( !FileExists( argv[i] ) )
         {
-            wprintf( L"\nFile not found: %s\n", argv[i] );
+            wprintf( L"\nFile not found: %ls\n", argv[i] );
             continue;
         }
 
-        wprintf( L"\nProcessing source texture %s...\n", argv[i] );
+        wprintf( L"\nProcessing source texture %ls...\n", argv[i] );
 
         DXGI_FORMAT fmtLoadAs = DXGI_FORMAT_UNKNOWN;
         if ( g_CommandLineOptions.mode == CommandLineOptions::MODE_ENCODE_BC6HS ||
@@ -373,7 +373,7 @@ int __cdecl wmain(int argc, WCHAR* argv[])
             {
                 if ( FAILED( Encode( argv[i], g_pSourceTexture, DXGI_FORMAT_BC7_UNORM_SRGB, &g_GPUBC7Encoder ) ) )
                 {
-                    printf("\nFailed BC7 SRGB encoding %S\n", argv[i] );
+                    printf("\nFailed BC7 SRGB encoding %ls\n", argv[i] );
                     nReturn = 1;
                     continue;
                 }
@@ -382,7 +382,7 @@ int __cdecl wmain(int argc, WCHAR* argv[])
             {
                 if ( FAILED( Encode( argv[i], g_pSourceTexture, DXGI_FORMAT_BC7_UNORM, &g_GPUBC7Encoder ) ) )
                 {
-                    printf("\nFailed BC7 encoding %S\n", argv[i] );
+                    printf("\nFailed BC7 encoding %ls\n", argv[i] );
                     nReturn = 1;
                     continue;
                 }
@@ -392,7 +392,7 @@ int __cdecl wmain(int argc, WCHAR* argv[])
             // Encode to BC6HU
             if ( FAILED( Encode( argv[i], g_pSourceTexture, DXGI_FORMAT_BC6H_UF16, &g_GPUBC6HEncoder ) ) )
             {
-                printf("\nFailed BC6HU encoding %S\n", argv[i] );
+                printf("\nFailed BC6HU encoding %ls\n", argv[i] );
                 nReturn = 1;
                 continue;
             }
@@ -401,7 +401,7 @@ int __cdecl wmain(int argc, WCHAR* argv[])
             // Encode to BC6HS
             if ( FAILED( Encode( argv[i], g_pSourceTexture, DXGI_FORMAT_BC6H_SF16, &g_GPUBC6HEncoder ) ) )
             {
-                printf("\nFailed BC6HS encoding %S\n", argv[i] );
+                printf("\nFailed BC6HS encoding %ls\n", argv[i] );
                 nReturn = 1;
                 continue;
             }

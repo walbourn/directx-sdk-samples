@@ -25,7 +25,7 @@
 //#define TEST_DOUBLE
 
 // The number of elements in a buffer to be tested
-const UINT NUM_ELEMENTS = 1024;
+constexpr UINT NUM_ELEMENTS = 1024;
 
 
 //--------------------------------------------------------------------------------------
@@ -48,7 +48,7 @@ void RunComputeShader( _In_ ID3D11DeviceContext* pd3dImmediateContext,
                        _In_ ID3D11UnorderedAccessView* pUnorderedAccessView,
                        _In_ UINT X, _In_ UINT Y, _In_ UINT Z );
 HRESULT FindDXSDKShaderFileCch( _Out_writes_(cchDest) WCHAR* strDestPath,
-                                _In_ int cchDest, 
+                                _In_ size_t cchDest, 
                                 _In_z_ LPCWSTR strFilename );
 
 //--------------------------------------------------------------------------------------
@@ -80,7 +80,7 @@ BufType g_vBuf1[NUM_ELEMENTS];
 //--------------------------------------------------------------------------------------
 // Entry point to the program
 //--------------------------------------------------------------------------------------
-int __cdecl main()
+int __cdecl wmain()
 {
     // Enable run-time memory check for debug builds.
 #ifdef _DEBUG
@@ -98,18 +98,18 @@ int __cdecl main()
     printf( "done\n" );
 
     printf( "Creating buffers and filling them with initial data..." );
-    for ( int i = 0; i < NUM_ELEMENTS; ++i ) 
+    for ( int i = 0; i < static_cast<int>(NUM_ELEMENTS); ++i ) 
     {
         g_vBuf0[i].i = i;
-        g_vBuf0[i].f = (float)i;
+        g_vBuf0[i].f = static_cast<float>(i);
 #ifdef TEST_DOUBLE
-        g_vBuf0[i].d = (double)i;
+        g_vBuf0[i].d = static_cast<double>(i);
 #endif
 
         g_vBuf1[i].i = i;
-        g_vBuf1[i].f = (float)i;
+        g_vBuf1[i].f = static_cast<float>(i);
 #ifdef TEST_DOUBLE
-        g_vBuf1[i].d = (double)i;
+        g_vBuf1[i].d = static_cast<double>(i);
 #endif
     }
 
@@ -159,17 +159,16 @@ int __cdecl main()
     {
         ID3D11Buffer* debugbuf = CreateAndCopyToDebugBuf( g_pDevice, g_pContext, g_pBufResult );
         D3D11_MAPPED_SUBRESOURCE MappedResource; 
-        BufType *p;
         g_pContext->Map( debugbuf, 0, D3D11_MAP_READ, 0, &MappedResource );
 
         // Set a break point here and put down the expression "p, 1024" in your watch window to see what has been written out by our CS
         // This is also a common trick to debug CS programs.
-        p = (BufType*)MappedResource.pData;
+        auto p = reinterpret_cast<BufType*>(MappedResource.pData);
 
         // Verify that if Compute Shader has done right
         printf( "Verifying against CPU result..." );
         bool bSuccess = true;
-        for ( int i = 0; i < NUM_ELEMENTS; ++i )
+        for ( int i = 0; i < static_cast<int>(NUM_ELEMENTS); ++i )
             if ( (p[i].i != g_vBuf0[i].i + g_vBuf1[i].i)
                  || (p[i].f != g_vBuf0[i].f + g_vBuf1[i].f)
 #ifdef TEST_DOUBLE
@@ -335,13 +334,13 @@ HRESULT CreateComputeShader( LPCWSTR pSrcFile, LPCSTR pFunctionName,
     const D3D_SHADER_MACRO defines[] = 
     {
 #ifdef USE_STRUCTURED_BUFFERS
-        "USE_STRUCTURED_BUFFERS", "1",
+        { "USE_STRUCTURED_BUFFERS", "1" },
 #endif
 
 #ifdef TEST_DOUBLE
-        "TEST_DOUBLE", "1",
+        { "TEST_DOUBLE", "1" },
 #endif
-        nullptr, nullptr
+        { nullptr, nullptr }
     };
 
     // We generally prefer to use the higher CS shader profile when possible as CS 5.0 is better performance on 11-class hardware
@@ -354,7 +353,7 @@ HRESULT CreateComputeShader( LPCWSTR pSrcFile, LPCSTR pFunctionName,
     if ( FAILED(hr) )
     {
         if ( pErrorBlob )
-            OutputDebugStringA( (char*)pErrorBlob->GetBufferPointer() );
+            OutputDebugStringA( reinterpret_cast<char*>(pErrorBlob->GetBufferPointer()) );
 
         SAFE_RELEASE( pErrorBlob );
         SAFE_RELEASE( pBlob );    
@@ -370,7 +369,7 @@ HRESULT CreateComputeShader( LPCWSTR pSrcFile, LPCSTR pFunctionName,
 #if defined(_DEBUG) || defined(PROFILE)
     if ( SUCCEEDED(hr) )
     {
-        (*ppShaderOut)->SetPrivateData( WKPDID_D3DDebugObjectName, lstrlenA(pFunctionName), pFunctionName );
+        (*ppShaderOut)->SetPrivateData( WKPDID_D3DDebugObjectName, static_cast<UINT>(lstrlenA(pFunctionName)), pFunctionName );
     }
 #endif
 
@@ -563,7 +562,7 @@ void RunComputeShader( ID3D11DeviceContext* pd3dImmediateContext,
 //--------------------------------------------------------------------------------------
 _Use_decl_annotations_
 HRESULT FindDXSDKShaderFileCch( WCHAR* strDestPath,
-                                int cchDest, 
+                                size_t cchDest, 
                                 LPCWSTR strFilename )
 {
     if( !strFilename || strFilename[0] == 0 || !strDestPath || cchDest < 10 )

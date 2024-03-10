@@ -6,16 +6,19 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License (MIT).
 //-------------------------------------------------------------------------------------
-#ifndef _UNICODE
-#define _UNICODE
-#endif
-#include <windows.h>
+
+#define NOMINMAX 1
+#include <Windows.h>
+
 #include <crtdbg.h>
 #include <mmsystem.h>
-#include <stdio.h>
-#include <wchar.h>
 #include <process.h>
 #include <conio.h>
+
+#include <algorithm>
+#include <cstdio>
+#include <cwchar>
+
 #include "CpuTopology.h"
 
 #pragma comment( lib, "winmm.lib" )
@@ -37,7 +40,7 @@ const DWORD     SPISystemLen = sizeof( SPISystemStr ) / sizeof( WCHAR );
 const DWORD     SPIProcessLen = sizeof( SPIProcessStr ) / sizeof( WCHAR );
 const DWORD     SPIHalfSystemLen = SPISystemLen / 2;
 const DWORD     SPIHalfProcessLen = SPIProcessLen / 2;
-const DWORD     SPILeftColumnLen = max( SPICpuCoresLen, SPILogProcsLen );
+const DWORD     SPILeftColumnLen = std::max( SPICpuCoresLen, SPILogProcsLen );
 
 // Core Info Table Formatting Constants
 // NOTE: Header strings must be longer or equal to the max width of column data
@@ -58,7 +61,7 @@ const DWORD     CIHalfEnabledLen = CIEnabledLen / 2;
 //-------------------------------------------------------------------------------------
 unsigned int WINAPI SpinThreadProc( void* lpParameter )
 {
-    DWORD endTime = timeGetTime() + ( DWORD )( DWORD_PTR )lpParameter;
+    DWORD endTime = timeGetTime() + static_cast<DWORD>(reinterpret_cast<DWORD_PTR>(lpParameter));
     DWORD curTime;
     do
     {
@@ -75,8 +78,8 @@ unsigned int WINAPI SpinThreadProc( void* lpParameter )
 LPWSTR GetAffinityStr( DWORD_PTR dwAffinity, LPWSTR str )
 {
     WCHAR* p = str;
-    for( DWORD msb = ( DWORD )1 << 31; msb; msb >>= 1 )
-        *p++ = ( ( msb & ( DWORD )dwAffinity ) ? L'1' : L'0' );
+    for( DWORD msb = 1lu << 31; msb; msb >>= 1 )
+        *p++ = ( ( msb & (static_cast<DWORD>(dwAffinity) ) ) ? L'1' : L'0' );
     *p = 0;
     return str;
 }
@@ -117,11 +120,11 @@ int wmain()
 
         if( ch == L'm' || ch == L'M' )
         {
-            //
+           //
             // Max the CPU
             //
             wprintf( L"\nMaxing out the CPU for %zu seconds\n", CpuLoadTime / 1000 );
-            wprintf( L"(%u Thread%s): ", dwProcessCores,
+            wprintf( L"(%ld Thread%ls): ", dwProcessCores,
                      dwProcessCores > 1 ? L"s" : L"" );
 
             DWORD nThreads = 0;
@@ -131,12 +134,12 @@ int wmain()
                 DWORD_PTR dwCoreAffinity = cpu.CoreAffinityMask( i );
                 if( dwCoreAffinity )
                 {
-                    threads[nThreads] = ( HANDLE )_beginthreadex( nullptr,
+                    threads[nThreads] = reinterpret_cast<HANDLE>(_beginthreadex( nullptr,
                                                                   0,
                                                                   SpinThreadProc,
-                                                                  ( void* )CpuLoadTime,
+                                                                  reinterpret_cast<void*>(CpuLoadTime),
                                                                   CREATE_SUSPENDED,
-                                                                  nullptr );
+                                                                  nullptr ));
                     SetThreadAffinityMask( threads[nThreads], dwCoreAffinity );
                     ResumeThread( threads[nThreads] );
                     ++nThreads;
@@ -168,7 +171,7 @@ int wmain()
                                         &dwSystemAffinity ) )
             {
                 // Get the number of logical processors on the system.
-                SYSTEM_INFO si = { 0 };
+                SYSTEM_INFO si = {};
                 GetSystemInfo( &si );
                 DWORD dwLogProcs = si.dwNumberOfProcessors;
 
@@ -199,8 +202,8 @@ int wmain()
                 _putws( scratch );
 
                 // display headings
-                wprintf( L"%c% *s%c%s%c%s%c\n", 0xba,
-                         SPILeftColumnLen - 1,
+                wprintf( L"%c% *s%c%ls%c%ls%c\n", 0xba,
+                         static_cast<int>(SPILeftColumnLen - 1),
                          L"",
                          0xb3,
                          SPISystemStr,
@@ -218,34 +221,34 @@ int wmain()
                 _putws( scratch );
 
                 // display core information
-                wprintf( L"%c% *s%c% *u% *s%c% *u% *s%c\n", 0xba,
-                         SPILeftColumnLen - 1,
+                wprintf( L"%c% *s%c% *lu% *s%c% *lu% *s%c\n", 0xba,
+                         static_cast<int>(SPILeftColumnLen - 1),
                          SPICpuCoresStr,
                          0xb3,
-                         SPIHalfSystemLen,
+                         static_cast<int>(SPIHalfSystemLen),
                          dwSystemCores,
-                         SPISystemLen - SPIHalfSystemLen - 1,
+                         static_cast<int>(SPISystemLen - SPIHalfSystemLen - 1),
                          L"",
                          0xb3,
-                         SPIHalfProcessLen,
+                         static_cast<int>(SPIHalfProcessLen),
                          dwProcessCores,
-                         SPIProcessLen - SPIHalfProcessLen - 1,
+                         static_cast<int>(SPIProcessLen - SPIHalfProcessLen - 1),
                          L"",
                          0xba );
 
                 // display logical processor information
-                wprintf( L"%c% *s%c% *u% *s%c% *u% *s%c\n", 0xba,
-                         SPILeftColumnLen - 1,
+                wprintf( L"%c% *s%c% *lu% *s%c% *lu% *s%c\n", 0xba,
+                         static_cast<int>(SPILeftColumnLen - 1),
                          SPILogProcsStr,
                          0xb3,
-                         SPIHalfSystemLen,
+                         static_cast<int>(SPIHalfSystemLen),
                          dwLogProcs,
-                         SPISystemLen - SPIHalfSystemLen - 1,
+                         static_cast<int>(SPISystemLen - SPIHalfSystemLen - 1),
                          L"",
                          0xb3,
-                         SPIHalfProcessLen,
+                         static_cast<int>(SPIHalfProcessLen),
                          dwAvailableLogProcs,
-                         SPIProcessLen - SPIHalfProcessLen - 1,
+                         static_cast<int>(SPIProcessLen - SPIHalfProcessLen - 1),
                          L"",
                          0xba );
 
@@ -273,7 +276,7 @@ int wmain()
                 _putws( scratch );
 
                 // display headings
-                wprintf( L"%c%s%c%s%c%s%c\n", 0xba,             // left border
+                wprintf( L"%c%ls%c%ls%c%ls%c\n", 0xba,             // left border
                          CICoreStr,        // core header
                          0xb3,             // separator
                          CIEnabledStr,     // enabled header
@@ -298,20 +301,20 @@ int wmain()
                     WCHAR sAffinity[33];
                     GetAffinityStr( dwCoreAffinity, sAffinity );
 
-                    wprintf( L"%c% *u% *s%c", 0xba,
-                             CIHalfCoreLen,
+                    wprintf( L"%c% *lu% *s%c", 0xba,
+                             static_cast<int>(CIHalfCoreLen),
                              coreIdx,
-                             CICoreLen - CIHalfCoreLen - 1,
+                             static_cast<int>(CICoreLen - CIHalfCoreLen - 1),
                              L"",
                              0xb3 );
 
-                    wprintf( L"% *s% *s%c", CIHalfEnabledLen,
+                    wprintf( L"% *s% *s%c", static_cast<int>(CIHalfEnabledLen),
                              dwCoreAffinity ? L"*" : L"",
-                             CIEnabledLen - CIHalfEnabledLen - 1,
+                             static_cast<int>(CIEnabledLen - CIHalfEnabledLen - 1),
                              L"",
                              0xb3 );
 
-                    wprintf( L" %s %c\n", sAffinity, 0xbA );
+                    wprintf( L" %ls %c\n", sAffinity, 0xbA );
                 }
 
                 // display bottom border

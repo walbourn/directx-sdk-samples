@@ -8,9 +8,6 @@
 // Licensed under the MIT License (MIT).
 //--------------------------------------------------------------------------------------
 
-#ifndef __BC6HENCODERCS10_H
-#define __BC6HENCODERCS10_H
-
 #pragma once
 
 class CGPUBC6HEncoder : public EncoderBase
@@ -23,7 +20,7 @@ public:
       m_pEncodeBlockCS( nullptr )
     {}
 
-    HRESULT Initialize( ID3D11Device* pDevice, ID3D11DeviceContext* pContext );
+    HRESULT Initialize( ID3D11Device* pDevice, ID3D11DeviceContext* pContext ) override;
     void Cleanup();
 
 
@@ -32,9 +29,7 @@ protected:
     ID3D11ComputeShader* m_pTryModeLE10CS;
     ID3D11ComputeShader* m_pEncodeBlockCS;
 
-    HRESULT GPU_Encode( ID3D11Device* pDevice, ID3D11DeviceContext* pContext,
-                        ID3D11Texture2D* pSrcTexture,
-                        DXGI_FORMAT dstFormat, ID3D11Buffer** ppDstTextureAsBufOut );
+    HRESULT GPU_Encode(ID3D11Device* pDevice, ID3D11DeviceContext* pContext,
+        ID3D11Texture2D* pSrcTexture,
+        DXGI_FORMAT dstFormat, ID3D11Buffer** ppDstTextureAsBufOut) override;
 };
-
-#endif

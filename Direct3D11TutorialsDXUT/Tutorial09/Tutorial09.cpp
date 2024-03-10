@@ -15,6 +15,8 @@
 #include "SDKmisc.h"
 #include "SDKmesh.h"
 
+#include <iterator>
+
 #pragma warning( disable : 4100 )
 
 using namespace DirectX;
@@ -48,7 +50,7 @@ XMMATRIX                    g_World;
 XMMATRIX                    g_View;
 XMMATRIX                    g_Projection;
 
-static const XMVECTORF32 s_LightDir = { -0.577f, 0.577f, -0.577f, 0.f };
+static const XMVECTORF32 s_LightDir = { { { -0.577f, 0.577f, -0.577f, 0.f } } };
 
 //--------------------------------------------------------------------------------------
 // Reject any D3D11 devices that aren't acceptable by returning false
@@ -110,7 +112,7 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
         { "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
         { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 24, D3D11_INPUT_PER_VERTEX_DATA, 0 },
     };
-    UINT numElements = ARRAYSIZE( layout );
+    auto const numElements = static_cast<UINT>(std::size(layout));
 
     // Create the input layout
     hr = pd3dDevice->CreateInputLayout( layout, numElements, pVSBlob->GetBufferPointer(),
@@ -157,9 +159,9 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
     g_World = XMMatrixIdentity();
 
     // Initialize the view matrix
-    static const XMVECTORF32 s_Eye = { 0.0f, 3.0f, -500.0f, 0.f };
-    static const XMVECTORF32 s_At = { 0.0f, 1.0f, 0.0f, 0.f };
-    static const XMVECTORF32 s_Up = { 0.0f, 1.0f, 0.0f, 0.f };
+    static const XMVECTORF32 s_Eye = { { { 0.0f, 3.0f, -500.0f, 0.f } } };
+    static const XMVECTORF32 s_At = { { { 0.0f, 1.0f, 0.0f, 0.f } } };
+    static const XMVECTORF32 s_Up = { { { 0.0f, 1.0f, 0.0f, 0.f } } };
     g_View = XMMatrixLookAtLH( s_Eye, s_At, s_Up );
 
     // Create the sample state
@@ -184,8 +186,8 @@ HRESULT CALLBACK OnD3D11ResizedSwapChain( ID3D11Device* pd3dDevice, IDXGISwapCha
                                           const DXGI_SURFACE_DESC* pBackBufferSurfaceDesc, void* pUserContext )
 {
     // Setup the projection parameters
-    float fAspect = static_cast<float>( pBackBufferSurfaceDesc->Width ) / static_cast<float>( pBackBufferSurfaceDesc->Height );
-    g_Projection = XMMatrixPerspectiveFovLH( XM_PI * 0.25f, fAspect, 0.5f, 1000.0f );
+    const float fAspectRatio = static_cast<float>(pBackBufferSurfaceDesc->Width) / static_cast<float>(pBackBufferSurfaceDesc->Height);
+    g_Projection = XMMatrixPerspectiveFovLH( XM_PI * 0.25f, fAspectRatio, 0.5f, 1000.0f );
 
     return S_OK;
 }
@@ -197,7 +199,9 @@ HRESULT CALLBACK OnD3D11ResizedSwapChain( ID3D11Device* pd3dDevice, IDXGISwapCha
 void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext )
 {
     // Rotate cube around the origin
-    g_World = XMMatrixRotationY( 60.0f * XMConvertToRadians((float)fTime) );
+    auto const t = static_cast<float>(fTime);
+
+    g_World = XMMatrixRotationY( 60.0f * XMConvertToRadians( t ) );
 }
 
 
@@ -242,7 +246,7 @@ void CALLBACK OnD3D11FrameRender( ID3D11Device* pd3dDevice, ID3D11DeviceContext*
     UINT Offsets[1];
     ID3D11Buffer* pVB[1];
     pVB[0] = g_Mesh.GetVB11( 0, 0 );
-    Strides[0] = ( UINT )g_Mesh.GetVertexStride( 0, 0 );
+    Strides[0] = static_cast<UINT>(g_Mesh.GetVertexStride( 0, 0 ));
     Offsets[0] = 0;
     pd3dImmediateContext->IASetVertexBuffers( 0, 1, pVB, Strides, Offsets );
     pd3dImmediateContext->IASetIndexBuffer( g_Mesh.GetIB11( 0 ), g_Mesh.GetIBFormat11( 0 ), 0 );
@@ -259,14 +263,14 @@ void CALLBACK OnD3D11FrameRender( ID3D11Device* pd3dDevice, ID3D11DeviceContext*
     {
         auto pSubset = g_Mesh.GetSubset( 0, subset );
 
-        auto PrimType = g_Mesh.GetPrimitiveType11( ( SDKMESH_PRIMITIVE_TYPE )pSubset->PrimitiveType );
+        auto PrimType = g_Mesh.GetPrimitiveType11( static_cast<SDKMESH_PRIMITIVE_TYPE>(pSubset->PrimitiveType) );
         pd3dImmediateContext->IASetPrimitiveTopology( PrimType );
 
         // Ignores most of the material information in them mesh to use only a simple shader
         auto pDiffuseRV = g_Mesh.GetMaterial( pSubset->MaterialID )->pDiffuseRV11;
         pd3dImmediateContext->PSSetShaderResources( 0, 1, &pDiffuseRV );
 
-        pd3dImmediateContext->DrawIndexed( ( UINT )pSubset->IndexCount, 0, ( UINT )pSubset->VertexStart );
+        pd3dImmediateContext->DrawIndexed( static_cast<UINT>(pSubset->IndexCount), 0, static_cast<INT>(pSubset->VertexStart) );
     }
 }
 

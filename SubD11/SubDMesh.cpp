@@ -38,7 +38,7 @@ static const UINT g_iBindPerSubset = 3;
 //--------------------------------------------------------------------------------------
 VOID CreateSolidTexture( ID3D11Device* pd3dDevice, DWORD ColorRGBA, ID3D11Texture2D** ppTexture2D, ID3D11ShaderResourceView** ppSRV )
 {
-    D3D11_TEXTURE2D_DESC Tex2DDesc = { 0 };
+    D3D11_TEXTURE2D_DESC Tex2DDesc = {};
     Tex2DDesc.Width = 1;
     Tex2DDesc.Height = 1;
     Tex2DDesc.ArraySize = 1;
@@ -49,7 +49,7 @@ VOID CreateSolidTexture( ID3D11Device* pd3dDevice, DWORD ColorRGBA, ID3D11Textur
     Tex2DDesc.Usage = D3D11_USAGE_DEFAULT;
     Tex2DDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
 
-    D3D11_SUBRESOURCE_DATA TexData = { 0 };
+    D3D11_SUBRESOURCE_DATA TexData = {};
     TexData.pSysMem = &ColorRGBA;
     TexData.SysMemPitch = 4;
     TexData.SysMemSlicePitch = 4;
@@ -154,7 +154,7 @@ HRESULT CSubDMesh::LoadSubDFromSDKMesh( ID3D11Device* pd3dDevice, const WCHAR* s
     // Find the file
     V_RETURN( DXUTFindDXSDKMediaFileCch( wstr, MAX_PATH, strFileName ) );
 
-    SDKMESH_CALLBACKS11 SubDLoaderCallbacks = { 0 };
+    SDKMESH_CALLBACKS11 SubDLoaderCallbacks = {};
     SubDLoaderCallbacks.pCreateVertexBuffer = (LPCREATEVERTEXBUFFER11)CreateVertexBufferAndShaderResource;
     SubDLoaderCallbacks.pContext = (void*)strFileName;
 

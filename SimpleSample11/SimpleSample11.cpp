@@ -10,8 +10,8 @@
 #include "DXUT.h"
 #include "DXUTgui.h"
 #include "DXUTmisc.h"
-#include "DXUTCamera.h"
-#include "DXUTSettingsDlg.h"
+#include "DXUTcamera.h"
+#include "DXUTsettingsdlg.h"
 #include "SDKmisc.h"
 #include "SDKmesh.h"
 #include "resource.h"
@@ -264,7 +264,7 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
     // Create other render resources here
 
     // Setup the camera's view parameters
-    static const XMVECTORF32 s_vecEye = { 0.0f, 0.0f, -5.0f, 0.f };
+    static const XMVECTORF32 s_vecEye = { { { 0.0f, 0.0f, -5.0f, 0.f } } };
     g_Camera.SetViewParams( s_vecEye, g_XMZero );
 
     g_HUD.GetButton( IDC_TOGGLEWARP )->SetEnabled( true );
@@ -284,15 +284,18 @@ HRESULT CALLBACK OnD3D11ResizedSwapChain( ID3D11Device* pd3dDevice, IDXGISwapCha
     V_RETURN( g_DialogResourceManager.OnD3D11ResizedSwapChain( pd3dDevice, pBackBufferSurfaceDesc ) );
     V_RETURN( g_SettingsDlg.OnD3D11ResizedSwapChain( pd3dDevice, pBackBufferSurfaceDesc ) );
 
+    auto const iwidth = static_cast<int>(pBackBufferSurfaceDesc->Width);
+    auto const iheight = static_cast<int>(pBackBufferSurfaceDesc->Height);
+
     // Setup the camera's projection parameters
-    float fAspectRatio = pBackBufferSurfaceDesc->Width / ( FLOAT )pBackBufferSurfaceDesc->Height;
+    const float fAspectRatio = static_cast<float>(pBackBufferSurfaceDesc->Width) / static_cast<float>(pBackBufferSurfaceDesc->Height);
     g_Camera.SetProjParams( XM_PI / 4, fAspectRatio, 0.1f, 1000.0f );
-    g_Camera.SetWindow( pBackBufferSurfaceDesc->Width, pBackBufferSurfaceDesc->Height );
+    g_Camera.SetWindow( iwidth, iheight );
     g_Camera.SetButtonMasks( MOUSE_LEFT_BUTTON, MOUSE_WHEEL, MOUSE_MIDDLE_BUTTON );
 
-    g_HUD.SetLocation( pBackBufferSurfaceDesc->Width - 170, 0 );
+    g_HUD.SetLocation( iwidth - 170, 0 );
     g_HUD.SetSize( 170, 170 );
-    g_SampleUI.SetLocation( pBackBufferSurfaceDesc->Width - 170, pBackBufferSurfaceDesc->Height - 300 );
+    g_SampleUI.SetLocation( iwidth - 170, iheight - 300 );
     g_SampleUI.SetSize( 170, 300 );
 
     return S_OK;
@@ -331,7 +334,7 @@ void CALLBACK OnD3D11FrameRender( ID3D11Device* pd3dDevice, ID3D11DeviceContext*
     V( pd3dImmediateContext->Map( g_pcbVSPerFrame11, 0, D3D11_MAP_WRITE_DISCARD, 0, &MappedResource ) );
     auto pVSPerFrame = reinterpret_cast<CB_VS_PER_FRAME*>( MappedResource.pData );
     pVSPerFrame->m_vLightDir = XMFLOAT3( 0,0.707f,-0.707f );
-    pVSPerFrame->m_fTime = (float)fTime;
+    pVSPerFrame->m_fTime = static_cast<float>(fTime);
     pVSPerFrame->m_LightDiffuse = XMFLOAT4( 1.f, 1.f, 1.f, 1.f );
     pd3dImmediateContext->Unmap( g_pcbVSPerFrame11, 0 );
     pd3dImmediateContext->VSSetConstantBuffers( 1, 1, &g_pcbVSPerFrame11 );
